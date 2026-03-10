@@ -79,6 +79,7 @@ class CandidateFeatureRow:
     hydromet: HydrometFeatures
     baseline: BaselineContextFeatures
     breach_geometry: BreachGeometryFeatures | None
+    source_event_id: str | None
     extracted_at: datetime
     rules_flood_confidence: float | None = None
     rules_breach_confidence: float | None = None
@@ -89,6 +90,7 @@ class CandidateFeatureRow:
             "snapshot_id": self.snapshot_id,
             "candidate_id": self.candidate_id,
             "candidate_kind": self.candidate_kind,
+            "source_event_id": self.source_event_id,
             "extracted_at": self.extracted_at.isoformat(),
             "sar_mean_drop_db": self.sar.mean_drop_db,
             "sar_min_drop_db": self.sar.min_drop_db,
@@ -230,6 +232,7 @@ def build_candidate_feature_row(
     hydromet: HydrometFeatures,
     baseline: BaselineContextFeatures,
     breach_geometry: BreachGeometryFeatures | None = None,
+    source_event_id: str | None = None,
     rules_flood_confidence: float | None = None,
     rules_breach_confidence: float | None = None,
     label: CandidateLabelLink | None = None,
@@ -249,6 +252,7 @@ def build_candidate_feature_row(
         hydromet=hydromet,
         baseline=baseline,
         breach_geometry=breach_geometry,
+        source_event_id=source_event_id,
         rules_flood_confidence=rules_flood_confidence,
         rules_breach_confidence=rules_breach_confidence,
         label=label,

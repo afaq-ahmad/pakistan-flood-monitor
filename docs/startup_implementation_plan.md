@@ -149,3 +149,9 @@ This preserves the roadmap order: rules-first operations remain primary, classic
 - **17.2.2 Rules baseline retained:** rule-based confidence scores remain first-class benchmark signals (`rules_flood_confidence`, `rules_breach_confidence`) and are tracked against ML validation metrics.
 - **17.2.3 Candidate-object training:** training runs consume candidate-level snapshot tables (not full-scene imagery), preserving lower compute cost and stronger explainability.
 - **17.2.4 Model metadata registry:** each training run registers training snapshot ID, feature-set version, hyperparameters, validation metrics, and deployment threshold.
+
+
+17.3 is implemented as an **operations-aware evaluation framework**:
+- **17.3.1 Event-based splits:** train/test partitioning is performed at `source_event_id` level so candidates from the same event never leak across sets.
+- **17.3.2 Geometry + operations metrics:** validation now records IoU, precision, recall, F1, alert acceptance rate, false alarm rate, and top-k breach review precision in addition to ranking discrimination metrics.
+- **17.3.3 Business usefulness guardrail:** model promotion evidence now includes analyst-burden proxies (acceptance and false-alarm behavior), so IoU-only gains do not qualify as automatic improvements.
