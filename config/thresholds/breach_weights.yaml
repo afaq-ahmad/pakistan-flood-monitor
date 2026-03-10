@@ -1,6 +1,11 @@
 breach_weights:
-  proximity_to_embankment: 0.45
-  anomaly_persistence: 0.35
-  hydromet_signal: 0.20
+  protected_side_flooding: 0.22
+  embankment_proximity: 0.20
+  expansion_away_from_levee: 0.16
+  sudden_appearance: 0.12
+  hydromet_support: 0.12
+  terrain_plausibility: 0.10
+  persistence: 0.08
+  split_merge_penalty: 0.08
 review_thresholds:
   breach_alert_min_score: 0.68
