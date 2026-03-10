@@ -81,6 +81,52 @@ class BreachCandidateScoreConfig:
     breach_alert_min_score: float = 0.68
 
 
+def _clamp01(value: float) -> float:
+    return max(0.0, min(1.0, value))
+
+
+def _bucketize_breach_confidence(confidence_100: float) -> str:
+    if confidence_100 < 35.0:
+        return "monitor"
+    if confidence_100 < 55.0:
+        return "watch"
+    if confidence_100 < 75.0:
+        return "analyst review"
+    return "review-and-alert-ready"
+
+
+def _classify_breach_category(
+    *,
+    protected_side_score: float,
+    embankment_proximity_score: float,
+    growth_direction_score: float,
+    hydromet_stress_score: float,
+    terrain_plausibility_score: float,
+    persistence_score: float,
+    sar_optical_evidence_score: float,
+) -> str:
+    strong_protected_side = protected_side_score >= 0.6
+    near_embankment = embankment_proximity_score >= 0.55
+    inland_growth = growth_direction_score >= 0.55
+    supported_context = hydromet_stress_score >= 0.4 and terrain_plausibility_score >= 0.45
+
+    if strong_protected_side and near_embankment and inland_growth and supported_context and sar_optical_evidence_score >= 0.45:
+        return "possible_breach_or_protected_side_flooding"
+
+    likely_overflow_context = (
+        protected_side_score < 0.4
+        and hydromet_stress_score >= 0.55
+        and terrain_plausibility_score >= 0.55
+        and persistence_score >= 0.4
+        and growth_direction_score < 0.55
+        and sar_optical_evidence_score >= 0.35
+    )
+    if likely_overflow_context:
+        return "likely_overflow"
+
+    return "uncertain_anomaly"
+
+
 def score_flood_candidate_confidence(
     *,
     mean_anomaly_score: float,
@@ -169,19 +215,32 @@ def score_breach_candidate(
     """Second-stage breach scorer that operates on accepted flood candidates only."""
     cfg = config or BreachCandidateScoreConfig()
 
-    embankment_proximity = max(0.0, min(1.0, 1.0 - (distance_to_embankment_m / 5000.0)))
-    split_merge_penalty = max(0.0, min(1.0, split_merge_complexity))
+    embankment_proximity = _clamp01(1.0 - (distance_to_embankment_m / 5000.0))
+    split_merge_penalty = _clamp01(split_merge_complexity)
+    sar_optical_evidence_score = _clamp01(0.6 * sudden_emergence_score + 0.4 * (1.0 - split_merge_penalty))
 
     components = {
-        "protected_side_flooding": max(0.0, min(1.0, protected_side_ratio)),
+        "protected_side_flooding": _clamp01(protected_side_ratio),
         "embankment_proximity": embankment_proximity,
-        "expansion_away_from_levee": max(0.0, min(1.0, expansion_away_from_levee_score)),
-        "sudden_appearance": max(0.0, min(1.0, sudden_emergence_score)),
-        "hydromet_support": max(0.0, min(1.0, hydromet_support_score)),
-        "terrain_plausibility": max(0.0, min(1.0, terrain_plausibility_score)),
-        "persistence": max(0.0, min(1.0, persistence_score)),
+        "expansion_away_from_levee": _clamp01(expansion_away_from_levee_score),
+        "sudden_appearance": _clamp01(sudden_emergence_score),
+        "hydromet_support": _clamp01(hydromet_support_score),
+        "terrain_plausibility": _clamp01(terrain_plausibility_score),
+        "persistence": _clamp01(persistence_score),
         "split_merge_penalty": split_merge_penalty,
     }
+
+    evidence_vector = {
+        "protected_side_score": components["protected_side_flooding"],
+        "embankment_proximity_score": components["embankment_proximity"],
+        "growth_direction_score": components["expansion_away_from_levee"],
+        "hydromet_stress_score": components["hydromet_support"],
+        "terrain_plausibility_score": components["terrain_plausibility"],
+        "persistence_score": components["persistence"],
+        "sar_optical_evidence_score": sar_optical_evidence_score,
+    }
+
+    breach_category = _classify_breach_category(**evidence_vector)
 
     score = (
         components["protected_side_flooding"] * cfg.protected_side_weight
@@ -193,11 +252,29 @@ def score_breach_candidate(
         + components["persistence"] * cfg.persistence_weight
         - components["split_merge_penalty"] * cfg.splitting_merging_penalty_weight
     )
-    breach_score = max(0.0, min(1.0, score))
+    breach_score = _clamp01(score)
+    breach_confidence_100 = round(breach_score * 100.0, 2)
+    operational_bucket = _bucketize_breach_confidence(breach_confidence_100)
+
+    if breach_category == "possible_breach_or_protected_side_flooding":
+        published_terminology = (
+            "high-confidence protected-side flooding"
+            if breach_confidence_100 >= 70.0
+            else "possible breach"
+        )
+    elif breach_category == "likely_overflow":
+        published_terminology = "likely overflow"
+    else:
+        published_terminology = "uncertain anomaly"
 
     return {
         "breach_score": breach_score,
         "is_breach_candidate": breach_score >= cfg.breach_alert_min_score,
+        "breach_confidence_100": breach_confidence_100,
+        "operational_bucket": operational_bucket,
+        "breach_category": breach_category,
+        "published_terminology": published_terminology,
+        "evidence_vector": evidence_vector,
         "components": components,
         "weights": {
             "protected_side_flooding": cfg.protected_side_weight,

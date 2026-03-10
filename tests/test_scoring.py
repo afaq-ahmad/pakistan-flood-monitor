@@ -100,12 +100,24 @@ def test_score_breach_candidate_favors_plausible_breach_pattern() -> None:
 
     assert result["breach_score"] >= result["alert_threshold"]
     assert result["is_breach_candidate"] is True
+    assert result["breach_category"] == "possible_breach_or_protected_side_flooding"
+    assert result["published_terminology"] == "high-confidence protected-side flooding"
+    assert result["operational_bucket"] in {"analyst review", "review-and-alert-ready"}
+    assert set(result["evidence_vector"].keys()) == {
+        "protected_side_score",
+        "embankment_proximity_score",
+        "growth_direction_score",
+        "hydromet_stress_score",
+        "terrain_plausibility_score",
+        "persistence_score",
+        "sar_optical_evidence_score",
+    }
 
 
 def test_score_breach_candidate_penalizes_noisy_split_merge_signal() -> None:
     result = score_breach_candidate(
-        protected_side_ratio=0.2,
-        distance_to_embankment_m=4500.0,
+        protected_side_ratio=0.1,
+        distance_to_embankment_m=6500.0,
         expansion_away_from_levee_score=0.1,
         sudden_emergence_score=0.2,
         hydromet_support_score=0.1,
@@ -116,3 +128,23 @@ def test_score_breach_candidate_penalizes_noisy_split_merge_signal() -> None:
 
     assert result["breach_score"] < 0.4
     assert result["is_breach_candidate"] is False
+    assert result["breach_category"] == "uncertain_anomaly"
+    assert result["published_terminology"] == "uncertain anomaly"
+    assert result["operational_bucket"] == "monitor"
+
+
+def test_score_breach_candidate_detects_likely_overflow_context() -> None:
+    result = score_breach_candidate(
+        protected_side_ratio=0.1,
+        distance_to_embankment_m=5000.0,
+        expansion_away_from_levee_score=0.2,
+        sudden_emergence_score=0.7,
+        hydromet_support_score=0.8,
+        terrain_plausibility_score=0.8,
+        persistence_score=0.9,
+        split_merge_complexity=0.1,
+    )
+
+    assert result["breach_category"] == "likely_overflow"
+    assert result["published_terminology"] == "likely overflow"
+    assert 0.0 <= result["breach_confidence_100"] <= 100.0
