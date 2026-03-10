@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import os
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from app.services.observability import metrics_registry
@@ -18,6 +20,11 @@ event_store: dict[str, dict[str, Any]] = {}
 review_audit_log: list[dict[str, Any]] = []
 threshold_registry: list[dict[str, Any]] = []
 model_registry: list[dict[str, Any]] = []
+privileged_audit_log: list[dict[str, Any]] = []
+
+public_router = APIRouter(prefix="/public", tags=["public"])
+internal_router = APIRouter(prefix="/internal", tags=["internal"])
+security_scheme = HTTPBearer(auto_error=False)
 
 
 class ReviewEventRequest(BaseModel):
@@ -129,6 +136,47 @@ def _confidence_bucket(score_percent: float) -> str:
     return "low"
 
 
+def _audit_privileged_action(*, actor: str, action: str, resource_type: str, resource_id: str, details: dict[str, Any] | None = None) -> None:
+    privileged_audit_log.append(
+        {
+            "actor": actor,
+            "action": action,
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "details": details or {},
+        }
+    )
+
+
+def _resolve_role(token: str) -> str | None:
+    admin_token = os.getenv("FLOOD_MONITOR_ADMIN_TOKEN")
+    analyst_token = os.getenv("FLOOD_MONITOR_ANALYST_TOKEN")
+    if admin_token and token == admin_token:
+        return "admin"
+    if analyst_token and token == analyst_token:
+        return "analyst"
+    return None
+
+
+def _require_role(*allowed_roles: str):
+    def _verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)) -> str:
+        if credentials is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
+
+        role = _resolve_role(credentials.credentials)
+        if role is None or role not in allowed_roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges")
+        return role
+
+    return _verify_token
+
+
+def _ensure_published_event(event: dict[str, Any]) -> None:
+    if event["status"] not in {"accept", "published"}:
+        raise HTTPException(status_code=404, detail="Event not found.")
+
+
 
 @app.get("/health")
 def health() -> dict[str, str | float]:
@@ -136,14 +184,14 @@ def health() -> dict[str, str | float]:
     return {"status": "ok", "api_uptime": 1.0}
 
 
-@app.get("/run/{aoi_name}")
+@internal_router.get("/run/{aoi_name}", dependencies=[Depends(_require_role("admin"))])
 def run_pipeline(aoi_name: str):
     report = pipeline.run_daily(aoi_name).model_dump()
     _record_run(report)
     return report
 
 
-@app.get("/publish/{aoi_name}")
+@public_router.get("/publish/{aoi_name}")
 def get_published_outputs(aoi_name: str):
     report = _latest_run(aoi_name)
     if not report:
@@ -161,7 +209,7 @@ def get_published_outputs(aoi_name: str):
     }
 
 
-@app.get("/alerts/feed")
+@public_router.get("/alerts/feed")
 def alert_feed():
     return [
         run["published_outputs"]["alert_feed_item"]
@@ -171,7 +219,7 @@ def alert_feed():
     ]
 
 
-@app.get("/corridors")
+@public_router.get("/corridors")
 def corridors() -> list[dict]:
     response = []
     for corridor in settings.pilot_corridors:
@@ -193,7 +241,7 @@ def corridors() -> list[dict]:
     return response
 
 
-@app.get("/corridors/{aoi_name}/status")
+@public_router.get("/corridors/{aoi_name}/status")
 def corridor_status(aoi_name: str) -> dict:
     report = _latest_run(aoi_name)
     if not report:
@@ -213,7 +261,7 @@ def corridor_status(aoi_name: str) -> dict:
     }
 
 
-@app.get("/corridors/{aoi_name}/events")
+@public_router.get("/corridors/{aoi_name}/events")
 def corridor_events(
     aoi_name: str,
     status: str | None = Query(default=None),
@@ -224,6 +272,7 @@ def corridor_events(
         raise HTTPException(status_code=404, detail="No events found for AOI.")
 
     records = [_event_record_from_run(report) for report in history]
+    records = [event for event in records if event["status"] in {"accept", "published"}]
     if status:
         records = [event for event in records if event["status"] == status]
     if confidence_bucket:
@@ -242,11 +291,12 @@ def corridor_events(
     ]
 
 
-@app.get("/events/{event_id}")
+@public_router.get("/events/{event_id}")
 def get_event(event_id: str) -> dict:
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
+    _ensure_published_event(event)
     return {
         "event_id": event["event_id"],
         "class": event["event_class"],
@@ -259,11 +309,12 @@ def get_event(event_id: str) -> dict:
     }
 
 
-@app.get("/events/{event_id}/exposure")
+@public_router.get("/events/{event_id}/exposure")
 def get_event_exposure(event_id: str) -> dict:
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
+    _ensure_published_event(event)
     return {
         "event_id": event_id,
         "district": event["exposure"]["district"],
@@ -271,11 +322,12 @@ def get_event_exposure(event_id: str) -> dict:
     }
 
 
-@app.get("/events/{event_id}/historical")
+@public_router.get("/events/{event_id}/historical")
 def get_event_historical(event_id: str) -> dict[str, Any]:
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
+    _ensure_published_event(event)
 
     history = _corridor_run_history(event["aoi"])
     trend = [
@@ -290,15 +342,16 @@ def get_event_historical(event_id: str) -> dict[str, Any]:
     return {"event_id": event_id, "event_area_trend": trend, "candidate_persistence_hours": event["candidate_persistence_hours"]}
 
 
-@app.get("/events/{event_id}/confidence")
+@public_router.get("/events/{event_id}/confidence")
 def get_event_confidence(event_id: str) -> dict[str, Any]:
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
+    _ensure_published_event(event)
     return {"event_id": event_id, "confidence_breakdown": event["confidence_breakdown"]}
 
 
-@app.get("/alerts/latest")
+@public_router.get("/alerts/latest")
 def latest_alerts() -> list[dict]:
     return [
         event["latest_event_summary"] | {"event_id": event["event_id"], "aoi": event["aoi"]}
@@ -307,7 +360,7 @@ def latest_alerts() -> list[dict]:
     ]
 
 
-@app.get("/breach-candidates")
+@internal_router.get("/breach-candidates", dependencies=[Depends(_require_role("admin", "analyst"))])
 def breach_candidates() -> list[dict]:
     items = []
     for event in _all_events():
@@ -331,7 +384,7 @@ def breach_candidates() -> list[dict]:
 
 
 
-@app.get("/monitoring/metrics")
+@internal_router.get("/monitoring/metrics", dependencies=[Depends(_require_role("admin", "analyst"))])
 def monitoring_metrics() -> dict[str, Any]:
     snapshot = metrics_registry.snapshot()
     return {
@@ -363,10 +416,11 @@ def monitoring_metrics() -> dict[str, Any]:
             "exposure_outputs_delivered": snapshot.counters.get("product.exposure_outputs_delivered", 0.0),
         },
     }
-@app.post("/admin/reprocess-scene")
+@internal_router.post("/admin/reprocess-scene", dependencies=[Depends(_require_role("admin"))])
 def admin_reprocess_scene(aoi_name: str) -> dict:
     report = pipeline.run_daily(aoi_name).model_dump()
     _record_run(report)
+    _audit_privileged_action(actor="system-admin", action="reprocess", resource_type="corridor", resource_id=aoi_name)
     return {
         "status": "reprocessed",
         "run_id": report["run_id"],
@@ -375,7 +429,7 @@ def admin_reprocess_scene(aoi_name: str) -> dict:
     }
 
 
-@app.post("/admin/review-event")
+@internal_router.post("/admin/review-event", dependencies=[Depends(_require_role("admin", "analyst"))])
 def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
     event = _event_by_id(event_id)
     if not event:
@@ -400,6 +454,13 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
             "notes": payload.notes,
         }
     )
+    _audit_privileged_action(
+        actor=payload.actor,
+        action="review",
+        resource_type="event",
+        resource_id=event_id,
+        details={"old_status": old_status, "new_status": event["status"]},
+    )
     if payload.action in {"accept", "published"}:
         metrics_registry.increment("product.alerts_confirmed")
         metrics_registry.increment("product.analyst_hours_saved_proxy", 0.75)
@@ -408,20 +469,43 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
     return {"status": "review_updated", "event": event}
 
 
-@app.get("/admin/review-audit")
+@internal_router.get("/admin/review-audit", dependencies=[Depends(_require_role("admin", "analyst"))])
 def admin_review_audit() -> list[dict[str, Any]]:
     return review_audit_log
 
 
-@app.post("/admin/register-threshold")
+@internal_router.post("/admin/register-threshold", dependencies=[Depends(_require_role("admin"))])
 def register_threshold(payload: ThresholdRegistrationRequest) -> dict[str, Any]:
     record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
     threshold_registry.append(record)
+    _audit_privileged_action(
+        actor=payload.actor,
+        action="threshold_change",
+        resource_type="threshold",
+        resource_id=payload.threshold_name,
+        details={"version": payload.version, "file_path": payload.file_path},
+    )
     return {"status": "registered", "threshold": record}
 
 
-@app.post("/admin/register-model")
+@internal_router.post("/admin/register-model", dependencies=[Depends(_require_role("admin"))])
 def register_model(payload: ModelRegistrationRequest) -> dict[str, Any]:
     record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
     model_registry.append(record)
+    _audit_privileged_action(
+        actor=payload.actor,
+        action="publish",
+        resource_type="model",
+        resource_id=payload.model_id,
+        details={"training_data_snapshot_version": payload.training_data_snapshot_version},
+    )
     return {"status": "registered", "model": record}
+
+
+@internal_router.get("/admin/privileged-audit", dependencies=[Depends(_require_role("admin"))])
+def privileged_audit() -> list[dict[str, Any]]:
+    return privileged_audit_log
+
+
+app.include_router(public_router)
+app.include_router(internal_router)
