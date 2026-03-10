@@ -1,6 +1,6 @@
 import numpy as np
 
-from app.services.scoring import compute_optical_candidate_support, score_flood_candidate_confidence
+from app.services.scoring import compute_optical_candidate_support, score_breach_candidate, score_flood_candidate_confidence
 
 
 def test_score_flood_candidate_confidence_returns_explainable_breakdown() -> None:
@@ -84,3 +84,35 @@ def test_compute_optical_candidate_support_breakdown() -> None:
     assert metrics.supported_fraction > 0
     assert metrics.obscured_fraction > 0
     assert 0.0 <= metrics.optical_support_score <= 1.0
+
+
+def test_score_breach_candidate_favors_plausible_breach_pattern() -> None:
+    result = score_breach_candidate(
+        protected_side_ratio=0.9,
+        distance_to_embankment_m=120.0,
+        expansion_away_from_levee_score=0.85,
+        sudden_emergence_score=1.0,
+        hydromet_support_score=0.8,
+        terrain_plausibility_score=0.9,
+        persistence_score=0.75,
+        split_merge_complexity=0.0,
+    )
+
+    assert result["breach_score"] >= result["alert_threshold"]
+    assert result["is_breach_candidate"] is True
+
+
+def test_score_breach_candidate_penalizes_noisy_split_merge_signal() -> None:
+    result = score_breach_candidate(
+        protected_side_ratio=0.2,
+        distance_to_embankment_m=4500.0,
+        expansion_away_from_levee_score=0.1,
+        sudden_emergence_score=0.2,
+        hydromet_support_score=0.1,
+        terrain_plausibility_score=0.2,
+        persistence_score=0.1,
+        split_merge_complexity=1.0,
+    )
+
+    assert result["breach_score"] < 0.4
+    assert result["is_breach_candidate"] is False
