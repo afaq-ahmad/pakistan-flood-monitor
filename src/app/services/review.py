@@ -109,8 +109,42 @@ class AnalystReviewService:
             output.append(ReviewPacket(rank=index, review_score=score, candidate=candidate))
         return output
 
-    def list_queue(self) -> list[ReviewItemState]:
-        return [item for item in self._items.values() if item.status in {"queued", "accepted", "needs_revision"}]
+    @staticmethod
+    def _confidence_band(confidence: float) -> str:
+        if confidence < 0.5:
+            return "low"
+        if confidence < 0.75:
+            return "medium"
+        return "high"
+
+    def list_queue(
+        self,
+        *,
+        corridor_id: str | None = None,
+        candidate_class: str | None = None,
+        review_status: str | None = None,
+        detected_after: datetime | None = None,
+        detected_before: datetime | None = None,
+        breach_suspicion_min: float | None = None,
+        confidence_band: str | None = None,
+    ) -> list[ReviewItemState]:
+        items = [item for item in self._items.values() if item.status in {"queued", "accepted", "needs_revision"}]
+        if corridor_id is not None:
+            items = [item for item in items if item.candidate.corridor_id == corridor_id]
+        if candidate_class is not None:
+            items = [item for item in items if item.candidate_class == candidate_class]
+        if review_status is not None:
+            items = [item for item in items if item.status == review_status]
+        if detected_after is not None:
+            items = [item for item in items if item.candidate.detected_at >= detected_after]
+        if detected_before is not None:
+            items = [item for item in items if item.candidate.detected_at <= detected_before]
+        if breach_suspicion_min is not None:
+            items = [item for item in items if item.candidate.breach_suspicion >= breach_suspicion_min]
+        if confidence_band is not None:
+            normalized_band = confidence_band.lower()
+            items = [item for item in items if self._confidence_band(item.candidate.confidence) == normalized_band]
+        return items
 
     def get(self, candidate_id: str) -> ReviewItemState:
         if candidate_id not in self._items:

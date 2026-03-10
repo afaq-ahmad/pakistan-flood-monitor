@@ -117,3 +117,30 @@ def test_admin_review_functions() -> None:
 
     audit = review_audit()
     assert audit[-1]["new_status"] == "accepted"
+
+
+def test_review_queue_filters_operational_dimensions() -> None:
+    service = review_service
+    service._items.clear()  # noqa: SLF001
+    service._audit_log.clear()  # noqa: SLF001
+
+    now = datetime(2026, 1, 9, 12, 0, tzinfo=UTC)
+    service.generate_review_queue(
+        [
+            _candidate("flt-1", 0.81, now - timedelta(hours=2), 0.8, 5),
+            _candidate("flt-2", 0.62, now - timedelta(days=2), 0.7, 4),
+        ],
+        now=now,
+    )
+    service.apply_action(candidate_id="flt-2", action="accept", actor="analyst-b")
+
+    filtered = service.list_queue(
+        corridor_id="indus-mid",
+        detected_after=now - timedelta(hours=6),
+        candidate_class="flood",
+        review_status="queued",
+        breach_suspicion_min=0.5,
+        confidence_band="high",
+    )
+
+    assert [item.candidate.candidate_id for item in filtered] == ["flt-1"]

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from datetime import datetime
+
+from fastapi import APIRouter, HTTPException, Query
 
 from app.pipelines import publish_events_pipeline
 from app.schemas.review import ReviewActionRequest, ReviewCandidateInput
@@ -39,8 +41,42 @@ def generate_review_queue(candidates: list[ReviewCandidateInput]) -> list[dict]:
     ]
 
 
+@router.get("/review/{candidate_id}")
+def get_review_candidate(candidate_id: str) -> dict:
+    try:
+        item = review_service.get(candidate_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return {
+        "candidate_id": item.candidate.candidate_id,
+        "candidate_type": item.candidate.candidate_type,
+        "corridor_id": item.candidate.corridor_id,
+        "district": item.candidate.district,
+        "detected_at": item.candidate.detected_at,
+        "status": item.status,
+        "class": item.candidate_class,
+        "confidence": item.candidate.confidence,
+        "breach_suspicion": item.candidate.breach_suspicion,
+        "links": {
+            "before_sar": item.candidate.before_sar_url,
+            "after_sar": item.candidate.after_sar_url,
+            "optical_support": item.candidate.optical_support_url,
+            "baseline_overlay": item.candidate.baseline_overlay_url,
+        },
+    }
+
+
 @router.get("/review/queue")
-def list_review_queue() -> list[dict]:
+def list_review_queue(
+    corridor_id: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+    event_class: str | None = Query(default=None, alias="class"),
+    review_status: str | None = None,
+    breach_suspicion_min: float | None = Query(default=None, ge=0.0, le=1.0),
+    confidence_band: str | None = Query(default=None, pattern="^(low|medium|high)$"),
+) -> list[dict]:
     return [
         {
             "candidate_id": item.candidate.candidate_id,
@@ -54,7 +90,15 @@ def list_review_queue() -> list[dict]:
                 "final_published_geometry": item.geometry.final_published_geometry if item.geometry else None,
             },
         }
-        for item in review_service.list_queue()
+        for item in review_service.list_queue(
+            corridor_id=corridor_id,
+            candidate_class=event_class,
+            review_status=review_status,
+            detected_after=date_from,
+            detected_before=date_to,
+            breach_suspicion_min=breach_suspicion_min,
+            confidence_band=confidence_band,
+        )
     ]
 
 
