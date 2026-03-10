@@ -12,11 +12,15 @@ from pakistan_flood_monitor.models.schemas import (
     BreachCategory,
     BreachSuspicionLayer,
     ConfirmedFloodExtent,
+    EventClass,
+    EventDecision,
     FloodCandidateMap,
     FloodDetectionResult,
     HistoricalEventRecord,
+    ModelVersion,
     MVPOutputs,
     ProcessingReport,
+    ReviewQueueEvent,
     ReviewStatus,
 )
 from pakistan_flood_monitor.services.alerts import AlertService
@@ -34,6 +38,52 @@ class FloodMonitoringPipeline:
     def _pilot_corridor_enabled(self, aoi_name: str) -> bool:
         return aoi_name in {corridor.name for corridor in settings.pilot_corridors}
 
+    def _event_class(self, alert_level: AlertLevel, breach_risk: float, confidence_score: float) -> EventClass:
+        if confidence_score < 0.25:
+            return EventClass.false_positive
+        if breach_risk >= 0.75:
+            return EventClass.possible_breach
+        if alert_level == AlertLevel.critical:
+            return EventClass.flood
+        if alert_level == AlertLevel.warning:
+            return EventClass.likely_overflow
+        return EventClass.uncertain
+
+    def _build_review_queue_event(
+        self,
+        run_id: str,
+        aoi_name: str,
+        source_scenes: list[str],
+        alert_level: AlertLevel,
+        breach_risk: float,
+        confidence_score: float,
+        review_status: ReviewStatus,
+    ) -> ReviewQueueEvent:
+        event_class = self._event_class(alert_level, breach_risk, confidence_score)
+        decision = EventDecision.accept if review_status == ReviewStatus.machine_only else None
+        return ReviewQueueEvent(
+            event_id=f"evt-{run_id}",
+            run_id=run_id,
+            aoi=aoi_name,
+            event_class=event_class,
+            machine_confidence=round(confidence_score * 100, 2),
+            analyst_confidence=None,
+            decision=decision,
+            notes="Auto-generated event for analyst queue.",
+            source_scenes=source_scenes,
+        )
+
+    def _active_model_version(self) -> ModelVersion:
+        return ModelVersion(
+            model_id="rules-v1",
+            training_data_snapshot_version="snapshot-2024-08-baseline",
+            training_config_path="configs/training_config.yaml",
+            threshold_file_path="configs/alert_thresholds.yaml",
+            evaluation_report_path="reports/evaluation/rules_v1.md",
+            reproducible_training_script="scripts/train_candidate_ranker.py",
+            rollback_model_id=None,
+        )
+
     def _build_outputs(
         self,
         run_id: str,
@@ -41,6 +91,8 @@ class FloodMonitoringPipeline:
         review_status: ReviewStatus,
         alert_level: AlertLevel,
         confidence_score: float,
+        breach_risk: float,
+        source_scenes: list[str],
         exposure_report: dict,
     ) -> MVPOutputs:
         polygon_ids = [f"{aoi_name}-candidate-001", f"{aoi_name}-candidate-002"]
@@ -82,6 +134,16 @@ class FloodMonitoringPipeline:
                 alert_level=alert_level,
                 confidence_score=round(confidence_score * 100, 2),
                 summary=f"{alert_level.value} flood signal for {aoi_name}",
+            ),
+            model_version=self._active_model_version(),
+            review_queue_event=self._build_review_queue_event(
+                run_id,
+                aoi_name,
+                source_scenes,
+                alert_level,
+                breach_risk,
+                confidence_score,
+                review_status,
             ),
             historical_event_dashboard=[
                 HistoricalEventRecord(
@@ -144,6 +206,8 @@ class FloodMonitoringPipeline:
                     ReviewStatus.machine_only,
                     AlertLevel.watch,
                     0.0,
+                    0.0,
+                    ["imerg", "glofas"],
                     exposure.model_dump(),
                 ),
             )
@@ -172,10 +236,11 @@ class FloodMonitoringPipeline:
             },
         )
 
+        source_sensors = ["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"]
         exposure = self.exposure.estimate(flood_area_km2)
         return ProcessingReport(
             run_id=run_id,
-            source_sensors=["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"],
+            source_sensors=source_sensors,
             detections=[detection],
             exposure={aoi_name: exposure},
             trigger_reason=trigger_reason,
@@ -185,6 +250,8 @@ class FloodMonitoringPipeline:
                 review_status,
                 alert_level,
                 confidence_score,
+                breach_risk,
+                source_sensors,
                 exposure.model_dump(),
             ),
         )

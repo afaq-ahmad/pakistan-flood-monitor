@@ -1,0 +1,11 @@
+model_name: candidate_ranker_baseline
+algorithm: logistic_regression
+feature_set:
+  - sar_drop_db
+  - ndwi
+  - rainfall_mm_72h
+  - glofas_return_period
+  - floodplain_distance_m
+label_source: reviewed_event_library
+split_strategy: event_based
+random_seed: 42

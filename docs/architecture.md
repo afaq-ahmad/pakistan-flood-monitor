@@ -58,6 +58,7 @@ Machine confidence, analyst review state, publish/suppress decision, revision hi
 - `exposure_results`
 - `alert_log`
 - `model_versions`
+- `review_queue_events`
 - `validation_samples`
 
 Design rule: separate raw observations, intermediate masks, candidate detections, reviewed detections, and published alerts.
@@ -77,3 +78,9 @@ Use weighted confidence with evidence from sensor anomaly, protected-side locati
 
 ## 7) MVP deployment preference
 Prefer one strong VM or two low-cost nodes (DB/storage + worker/API). Keep operational stack simple: Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.
+
+
+## 8) Serving and MLOps posture
+- Inference runs inside batch processing for MVP; outputs are persisted and then served by API.
+- No separate real-time ML inference service is required early.
+- Minimal MLOps assets include model registry metadata, snapshot versioning, config + thresholds, evaluation archive, reproducible training script, and rollback reference.
