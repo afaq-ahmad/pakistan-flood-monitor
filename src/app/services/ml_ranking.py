@@ -132,25 +132,44 @@ class ClassicalCandidateRanker:
         if not rows:
             raise ValueError("No training rows were loaded from the candidate snapshot.")
 
-        labels = _extract_labels(rows=rows, target=target)
-        if len(set(labels.tolist())) < 2:
+        split = _event_based_split(rows=rows)
+        train_rows = split["train"]
+        test_rows = split["test"]
+        if not train_rows or not test_rows:
+            raise ValueError("Event-based split requires at least one train and one test event.")
+
+        train_labels = _extract_labels(rows=train_rows, target=target)
+        if len(set(train_labels.tolist())) < 2:
             raise ValueError("Training labels need both positive and negative examples.")
 
-        feature_columns = _feature_columns_for_target(target=target, sample_row=rows[0])
-        matrix = _rows_to_matrix(rows=rows, feature_columns=feature_columns)
+        test_labels = _extract_labels(rows=test_rows, target=target)
+        if len(set(test_labels.tolist())) < 2:
+            raise ValueError("Test labels need both positive and negative examples for evaluation.")
+
+        feature_columns = _feature_columns_for_target(target=target, sample_row=train_rows[0])
+        train_matrix = _rows_to_matrix(rows=train_rows, feature_columns=feature_columns)
+        test_matrix = _rows_to_matrix(rows=test_rows, feature_columns=feature_columns)
 
         params = {"solver": "liblinear", "max_iter": 400, "class_weight": "balanced"}
         if hyperparameters:
             params.update(hyperparameters)
 
         estimator = LogisticRegression(**params)
-        estimator.fit(matrix, labels)
-        probabilities = estimator.predict_proba(matrix)[:, 1]
+        estimator.fit(train_matrix, train_labels)
 
-        deployment_threshold = _select_threshold(labels=labels, probabilities=probabilities)
-        metrics = _evaluate(labels=labels, probabilities=probabilities, threshold=deployment_threshold)
+        train_probabilities = estimator.predict_proba(train_matrix)[:, 1]
+        deployment_threshold = _select_threshold(labels=train_labels, probabilities=train_probabilities)
 
-        rules_baseline = _evaluate_rules_baseline(rows=rows, labels=labels, target=target)
+        test_probabilities = estimator.predict_proba(test_matrix)[:, 1]
+        metrics = _evaluate(
+            rows=test_rows,
+            labels=test_labels,
+            probabilities=test_probabilities,
+            threshold=deployment_threshold,
+            positive_on_alert=target != "false_positive_suppression",
+        )
+
+        rules_baseline = _evaluate_rules_baseline(rows=test_rows, labels=test_labels, target=target)
 
         model_id = f"{target}-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid4().hex[:8]}"
         record = TrainingRunRecord(
@@ -184,7 +203,7 @@ def _feature_columns_for_target(*, target: RankingTarget, sample_row: dict[str, 
         key
         for key, value in sample_row.items()
         if (
-            key not in {"snapshot_id", "candidate_id", "candidate_kind", "extracted_at"}
+            key not in {"snapshot_id", "candidate_id", "candidate_kind", "source_event_id", "extracted_at"}
             and not key.startswith("label_")
             and value is not None
             and isinstance(value, (int, float))
@@ -215,13 +234,70 @@ def _extract_labels(*, rows: list[dict[str, Any]], target: RankingTarget) -> np.
     return np.asarray(values, dtype=np.int64)
 
 
-def _evaluate(*, labels: np.ndarray, probabilities: np.ndarray, threshold: float) -> dict[str, float]:
+def _evaluate(
+    *,
+    rows: list[dict[str, Any]],
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+    threshold: float,
+    positive_on_alert: bool,
+) -> dict[str, float]:
     predictions = (probabilities >= threshold).astype(int)
+    tp = int(np.sum((predictions == 1) & (labels == 1)))
+    fp = int(np.sum((predictions == 1) & (labels == 0)))
+    fn = int(np.sum((predictions == 0) & (labels == 1)))
+
+    precision = float(tp / (tp + fp)) if (tp + fp) > 0 else 0.0
+    recall = float(tp / (tp + fn)) if (tp + fn) > 0 else 0.0
+    denom = precision + recall
+    f1 = float((2 * precision * recall) / denom) if denom > 0 else 0.0
+
+    iou_by_event = _event_iou(rows=rows, labels=labels, predictions=predictions)
+    alert_acceptance_rate = precision if positive_on_alert else recall
+    false_alarm_rate = float(fp / (tp + fp)) if (tp + fp) > 0 else 0.0
+    top_k_precision = _top_k_breach_review_precision(rows=rows, labels=labels, probabilities=probabilities)
+
     return {
         "roc_auc": float(roc_auc_score(labels, probabilities)),
         "average_precision": float(average_precision_score(labels, probabilities)),
-        "f1": float(f1_score(labels, predictions)),
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "iou": iou_by_event,
+        "alert_acceptance_rate": alert_acceptance_rate,
+        "false_alarm_rate": false_alarm_rate,
+        "top_k_breach_review_precision": top_k_precision,
     }
+
+
+def _event_iou(*, rows: list[dict[str, Any]], labels: np.ndarray, predictions: np.ndarray) -> float:
+    event_scores: list[float] = []
+    grouped: dict[str, list[int]] = {}
+    for idx, row in enumerate(rows):
+        event_id = str(row.get("source_event_id") or f"row-{idx}")
+        grouped.setdefault(event_id, []).append(idx)
+
+    for indices in grouped.values():
+        event_labels = labels[indices]
+        event_predictions = predictions[indices]
+        intersection = int(np.sum((event_labels == 1) & (event_predictions == 1)))
+        union = int(np.sum((event_labels == 1) | (event_predictions == 1)))
+        if union == 0:
+            continue
+        event_scores.append(float(intersection / union))
+
+    return float(np.mean(event_scores)) if event_scores else 0.0
+
+
+def _top_k_breach_review_precision(*, rows: list[dict[str, Any]], labels: np.ndarray, probabilities: np.ndarray, k: int = 5) -> float:
+    breach_indices = [idx for idx, row in enumerate(rows) if str(row.get("candidate_kind", "")).lower() == "breach"]
+    if not breach_indices:
+        return 0.0
+
+    ranked_indices = sorted(breach_indices, key=lambda idx: float(probabilities[idx]), reverse=True)
+    selected = ranked_indices[: min(k, len(ranked_indices))]
+    positives = int(np.sum(labels[selected] == 1))
+    return float(positives / len(selected)) if selected else 0.0
 
 
 def _select_threshold(*, labels: np.ndarray, probabilities: np.ndarray) -> float:
@@ -242,6 +318,30 @@ def _select_threshold(*, labels: np.ndarray, probabilities: np.ndarray) -> float
     return best_threshold
 
 
+def _event_based_split(*, rows: list[dict[str, Any]], test_fraction: float = 0.25) -> dict[str, list[dict[str, Any]]]:
+    event_to_rows: dict[str, list[dict[str, Any]]] = {}
+    for idx, row in enumerate(rows):
+        event_id = str(row.get("source_event_id") or f"event-{idx}")
+        event_to_rows.setdefault(event_id, []).append(row)
+
+    event_ids = sorted(event_to_rows.keys())
+    if len(event_ids) < 2:
+        raise ValueError("Need at least two distinct events for event-based train/test split.")
+
+    n_test_events = max(1, int(round(len(event_ids) * test_fraction)))
+    if n_test_events >= len(event_ids):
+        n_test_events = len(event_ids) - 1
+
+    test_event_ids = set(event_ids[-n_test_events:])
+    train_rows: list[dict[str, Any]] = []
+    test_rows: list[dict[str, Any]] = []
+    for event_id in event_ids:
+        bucket = test_rows if event_id in test_event_ids else train_rows
+        bucket.extend(event_to_rows[event_id])
+
+    return {"train": train_rows, "test": test_rows}
+
+
 def _evaluate_rules_baseline(
     *,
     rows: list[dict[str, Any]],
@@ -254,4 +354,10 @@ def _evaluate_rules_baseline(
 
     baseline_probabilities = np.asarray([float(row.get(baseline_key, 0.0) or 0.0) for row in rows], dtype=np.float64)
     threshold = _select_threshold(labels=labels, probabilities=baseline_probabilities)
-    return _evaluate(labels=labels, probabilities=baseline_probabilities, threshold=threshold)
+    return _evaluate(
+        rows=rows,
+        labels=labels,
+        probabilities=baseline_probabilities,
+        threshold=threshold,
+        positive_on_alert=target != "false_positive_suppression",
+    )

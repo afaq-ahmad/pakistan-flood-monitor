@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.services.ml_features import (
     BaselineContextFeatures,
+    BreachGeometryFeatures,
     CandidateLabelLink,
     FeatureSnapshotStore,
     HydrometFeatures,
@@ -52,44 +53,52 @@ def test_classical_ranker_trains_from_candidate_snapshot_and_registers_metadata(
 
     snapshot_id = snapshots.create_snapshot(feature_schema_version="v2", created_by="ml-ranking")
     rows = []
-    for index in range(8):
-        final_class = "flood" if index < 4 else "non_flood"
-        review_outcome = "accepted" if index < 6 else "false_alarm"
-        row = build_candidate_feature_row(
-            snapshot_id=snapshot_id,
-            candidate_id=f"flood-{index}",
-            candidate_kind="flood",
-            rules_flood_confidence=0.75 if index < 4 else 0.22,
-            label=CandidateLabelLink(
-                candidate_id=f"flood-{index}",
+    for event_idx in range(4):
+        source_event_id = f"event-{event_idx}"
+        for cand_idx in range(4):
+            is_positive = cand_idx < 2
+            candidate_index = event_idx * 4 + cand_idx
+            row = build_candidate_feature_row(
+                snapshot_id=snapshot_id,
+                candidate_id=f"flood-{candidate_index}",
                 candidate_kind="flood",
-                review_outcome=review_outcome,
-                final_class=final_class,
-                label_quality_tier=3,
-                reviewed_at=datetime.fromisoformat("2026-03-10T11:00:00+00:00"),
-            ),
-            **_shared_feature_kwargs(),
-        )
-        if final_class != "flood":
-            row.sar = SARFeatures(mean_drop_db=0.3, min_drop_db=0.1, p90_drop_db=0.6, coherence_loss=0.05)
-            row.optical = OpticalSupportFeatures(
-                support_score=0.18,
-                supported_fraction=0.14,
-                obscured_fraction=0.19,
-                observable_fraction=0.81,
+                source_event_id=source_event_id,
+                rules_flood_confidence=0.75 if is_positive else 0.22,
+                label=CandidateLabelLink(
+                    candidate_id=f"flood-{candidate_index}",
+                    candidate_kind="flood",
+                    review_outcome="accepted" if is_positive else "false_alarm",
+                    final_class="flood" if is_positive else "non_flood",
+                    label_quality_tier=3,
+                    reviewed_at=datetime.fromisoformat("2026-03-10T11:00:00+00:00"),
+                ),
+                **_shared_feature_kwargs(),
             )
-            row.hydromet = HydrometFeatures(
-                rainfall_mm_72h=12.0,
-                rainfall_anomaly_z=0.1,
-                glofas_return_period=1.2,
-                upstream_discharge_anomaly=0.05,
-            )
-        rows.append(row)
+            if not is_positive:
+                row.sar = SARFeatures(mean_drop_db=0.3, min_drop_db=0.1, p90_drop_db=0.6, coherence_loss=0.05)
+                row.optical = OpticalSupportFeatures(
+                    support_score=0.18,
+                    supported_fraction=0.14,
+                    obscured_fraction=0.19,
+                    observable_fraction=0.81,
+                )
+                row.hydromet = HydrometFeatures(
+                    rainfall_mm_72h=12.0,
+                    rainfall_anomaly_z=0.1,
+                    glofas_return_period=1.2,
+                    upstream_discharge_anomaly=0.05,
+                )
+            rows.append(row)
 
     snapshots.persist_feature_rows(snapshot_id=snapshot_id, rows=rows)
     model = ranker.train(snapshot_id=snapshot_id, target="flood_confidence", feature_set_version="v2")
 
     assert model.metrics["f1"] >= 0.6
+    assert model.metrics["precision"] >= 0.5
+    assert model.metrics["recall"] >= 0.6
+    assert "iou" in model.metrics
+    assert "alert_acceptance_rate" in model.metrics
+    assert "false_alarm_rate" in model.metrics
     assert model.rules_baseline_metrics is not None
 
     registry_files = list((tmp_path / "registry").glob("*.json"))
@@ -107,24 +116,26 @@ def test_false_positive_suppression_target_uses_review_outcome_labels(tmp_path) 
 
     snapshot_id = snapshots.create_snapshot(feature_schema_version="v2", created_by="ml-ranking")
     rows = []
-    for index in range(6):
-        is_false_alarm = index % 2 == 0
-        row = build_candidate_feature_row(
-            snapshot_id=snapshot_id,
-            candidate_id=f"cand-{index}",
-            candidate_kind="flood",
-            rules_flood_confidence=0.85 if not is_false_alarm else 0.25,
-            label=CandidateLabelLink(
-                candidate_id=f"cand-{index}",
+    for event_idx in range(3):
+        for index in range(4):
+            is_false_alarm = index % 2 == 0
+            row = build_candidate_feature_row(
+                snapshot_id=snapshot_id,
+                candidate_id=f"cand-{event_idx}-{index}",
                 candidate_kind="flood",
-                review_outcome="false_alarm" if is_false_alarm else "accepted",
-                final_class="flood" if not is_false_alarm else "non_flood",
-                label_quality_tier=2,
-                reviewed_at=datetime.fromisoformat("2026-03-10T11:00:00+00:00"),
-            ),
-            **_shared_feature_kwargs(),
-        )
-        rows.append(row)
+                source_event_id=f"event-{event_idx}",
+                rules_flood_confidence=0.85 if not is_false_alarm else 0.25,
+                label=CandidateLabelLink(
+                    candidate_id=f"cand-{event_idx}-{index}",
+                    candidate_kind="flood",
+                    review_outcome="false_alarm" if is_false_alarm else "accepted",
+                    final_class="flood" if not is_false_alarm else "non_flood",
+                    label_quality_tier=2,
+                    reviewed_at=datetime.fromisoformat("2026-03-10T11:00:00+00:00"),
+                ),
+                **_shared_feature_kwargs(),
+            )
+            rows.append(row)
 
     snapshots.persist_feature_rows(snapshot_id=snapshot_id, rows=rows)
     model = ranker.train(snapshot_id=snapshot_id, target="false_positive_suppression", feature_set_version="v2")
@@ -133,3 +144,46 @@ def test_false_positive_suppression_target_uses_review_outcome_labels(tmp_path) 
     ranked = model.rank_rows(training_rows)
     assert len(ranked) == len(training_rows)
     assert ranked[0].score >= ranked[-1].score
+
+
+def test_breach_ranking_reports_top_k_breach_review_precision(tmp_path) -> None:
+    snapshots = FeatureSnapshotStore(tmp_path / "snapshots")
+    metadata = ModelMetadataRegistry(tmp_path / "registry")
+    ranker = ClassicalCandidateRanker(snapshot_store=snapshots, metadata_registry=metadata)
+
+    snapshot_id = snapshots.create_snapshot(feature_schema_version="v2", created_by="ml-ranking")
+    rows = []
+    for event_idx in range(4):
+        for index in range(3):
+            positive = index < 2
+            base_kwargs = _shared_feature_kwargs()
+            if not positive:
+                base_kwargs["sar"] = SARFeatures(mean_drop_db=0.2, min_drop_db=0.1, p90_drop_db=0.4, coherence_loss=0.03)
+            row = build_candidate_feature_row(
+                snapshot_id=snapshot_id,
+                candidate_id=f"breach-{event_idx}-{index}",
+                candidate_kind="breach",
+                source_event_id=f"event-{event_idx}",
+                breach_geometry=BreachGeometryFeatures(
+                    protected_side_ratio=0.8 if positive else 0.1,
+                    distance_to_embankment_m=120.0 if positive else 1200.0,
+                    expansion_away_from_levee_score=0.7 if positive else 0.1,
+                    split_merge_complexity=0.6 if positive else 0.2,
+                ),
+                rules_breach_confidence=0.82 if positive else 0.2,
+                label=CandidateLabelLink(
+                    candidate_id=f"breach-{event_idx}-{index}",
+                    candidate_kind="breach",
+                    review_outcome="accepted" if positive else "false_alarm",
+                    final_class="breach" if positive else "non_flood",
+                    label_quality_tier=3,
+                    reviewed_at=datetime.fromisoformat("2026-03-10T11:00:00+00:00"),
+                ),
+                **base_kwargs,
+            )
+            rows.append(row)
+
+    snapshots.persist_feature_rows(snapshot_id=snapshot_id, rows=rows)
+    model = ranker.train(snapshot_id=snapshot_id, target="breach_confidence", feature_set_version="v2")
+
+    assert model.metrics["top_k_breach_review_precision"] >= 0.5
