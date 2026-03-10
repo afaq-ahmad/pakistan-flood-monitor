@@ -30,20 +30,24 @@ The MVP is designed to:
 - Kubernetes before proven scale bottlenecks
 
 ## 3) Architecture layers
-### Layer A — source acquisition
-Core sources: Sentinel-1 GRD, Sentinel-2 L2A, Landsat/HLS, IMERG, GloFAS, Copernicus DEM, JRC GSW.
+### Layer A — monitoring
+Discovers and ingests Sentinel-1, optical support imagery, rainfall, forecast, DEM, and static masks.
 
-### Layer B — spatial partitioning
-Operate corridor AOIs, embankment zones, districts, and critical-asset overlays (not whole-country rasters).
+### Layer B — analytics
+Computes flood anomalies, breach suspicion, confidence scoring, and exposure summaries.
 
-### Layer C — baseline reference products
-Permanent/seasonal water masks, centerline + corridor buffers, protected-side zones, terrain masks, exposure baselines.
+### Layer C — delivery
+Stores reviewed events, serves APIs, powers dashboard/map layers, and emits alert-ready outputs.
 
-### Layer D — event detection engine
-Trigger scoring, new-water detection, plausibility filtering, protected-side anomaly detection, object ranking.
+### Operational decomposition in Python modules
+The implementation is modular (not one large script) and organized around five responsibilities:
+- fetch metadata and source data,
+- preprocess raster/vector inputs,
+- compute detections and confidence,
+- manage review and publication state,
+- expose outputs through APIs and map services.
 
-### Layer E — review and publishing
-Machine confidence, analyst review state, publish/suppress decision, revision history, archive traceability.
+### Supporting implementation views
 
 ## 4) Core data model (recommended)
 - `aoi_corridors`
