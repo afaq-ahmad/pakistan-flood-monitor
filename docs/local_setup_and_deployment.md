@@ -71,16 +71,119 @@ export HYDROMET_TOKEN="<your-hydromet-token>"
 
 > Recommendation: keep secrets out of committed `.env.*` files. Use environment variables, secret manager injection, or CI/CD secret mapping.
 
-## 4) Database setup
+## 4) Database setup (PostgreSQL + PostGIS)
 
-1. Create database and enable PostGIS.
-2. Set `DATABASE_DSN` in `.env.local`.
-3. Run migrations (if your workflow uses Alembic migrations for schema updates).
+The application stores corridor metadata, events, exposure results, and workflow state in PostgreSQL. Spatial columns/functions require the PostGIS extension.
 
-Example DSN (already shown in local template):
+### 4.1 Install PostgreSQL + PostGIS
+
+Use one of the options below depending on your local environment.
+
+#### Option A: Ubuntu/Debian packages
+
+```bash
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib postgis
+```
+
+> If you have multiple PostgreSQL versions installed, confirm the matching PostGIS package is present (for example `postgresql-15-postgis-3`).
+
+#### Option B: macOS (Homebrew)
+
+```bash
+brew install postgresql@16 postgis
+brew services start postgresql@16
+```
+
+If your shell PATH does not already include the Homebrew Postgres binaries, add it:
+
+```bash
+echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Option C: Docker (recommended if you do not want a host install)
+
+```bash
+docker run --name flood-monitor-postgis \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=flood_monitor \
+  -p 5432:5432 \
+  -d postgis/postgis:16-3.4
+```
+
+### 4.2 Create role/database and enable extension
+
+If you used package installs (Option A/B), create database resources:
+
+```bash
+sudo -u postgres psql <<'SQL'
+CREATE ROLE flood_user WITH LOGIN PASSWORD 'flood_password';
+CREATE DATABASE flood_monitor OWNER flood_user;
+\c flood_monitor
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
+SQL
+```
+
+For Docker Option C, connect and enable extensions:
+
+```bash
+docker exec -it flood-monitor-postgis psql -U postgres -d flood_monitor -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+docker exec -it flood-monitor-postgis psql -U postgres -d flood_monitor -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+```
+
+### 4.3 Verify PostGIS is active
+
+Run:
+
+```bash
+psql -h localhost -U postgres -d flood_monitor -c "SELECT PostGIS_Full_Version();"
+```
+
+Expected result: one row containing PostGIS version/build details. If this fails with `function postgis_full_version() does not exist`, extension creation did not complete successfully.
+
+### 4.4 Configure `DATABASE_DSN`
+
+Set `DATABASE_DSN` in `.env.local`.
+
+Examples:
 
 ```text
-postgresql+psycopg://postgres:postgres@localhost:5432/flood_monitor
+# local role/password example
+DATABASE_DSN=postgresql+psycopg://flood_user:flood_password@localhost:5432/flood_monitor
+
+# docker quickstart example from Option C
+DATABASE_DSN=postgresql+psycopg://postgres:postgres@localhost:5432/flood_monitor
+```
+
+### 4.5 Apply schema migrations
+
+From repository root:
+
+```bash
+alembic -c src/app/db/alembic.ini upgrade head
+```
+
+If your environment cannot locate `alembic`, run through the virtual environment:
+
+```bash
+python -m alembic -c src/app/db/alembic.ini upgrade head
+```
+
+### 4.6 Quick DB health checks
+
+After migrations, confirm expected tables exist:
+
+```bash
+psql -h localhost -U postgres -d flood_monitor -c "\dt"
+```
+
+Optional: confirm at least one geometry-capable call works:
+
+```bash
+psql -h localhost -U postgres -d flood_monitor -c "SELECT ST_AsText(ST_Point(73.0479, 33.6844));"
 ```
 
 ## 5) Run locally
