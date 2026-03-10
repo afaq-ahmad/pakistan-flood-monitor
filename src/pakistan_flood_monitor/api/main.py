@@ -12,6 +12,7 @@ from app.services.observability import metrics_registry
 
 from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
+from pakistan_flood_monitor.services.gis_qa import publication_gate
 
 app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
@@ -35,6 +36,8 @@ class ReviewEventRequest(BaseModel):
     analyst_confidence: float | None = None
     notes: str = ""
     reviewed_geometry: dict[str, Any] | None = None
+    label_metadata: dict[str, Any] | None = None
+    mapping_rules: dict[str, Any] | None = None
 
 
 class ThresholdRegistrationRequest(BaseModel):
@@ -147,6 +150,7 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
         "analyst_confidence": review_event["analyst_confidence"],
         "confidence_bucket": _confidence_bucket(review_event["machine_confidence"]),
         "source_scenes": review_event["source_scenes"],
+        "district_overlays": [review_event["aoi"]],
         "notes": review_event["notes"],
         "timestamps": {
             "detected_at": detection["timestamp"],
@@ -617,6 +621,22 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
         event["notes"] = payload.notes
     if payload.reviewed_geometry:
         event["geometry"] = payload.reviewed_geometry
+    if payload.label_metadata:
+        event["label_metadata"] = payload.label_metadata
+    if payload.mapping_rules:
+        event["mapping_rules"] = payload.mapping_rules
+
+    if payload.reviewed_geometry and (not payload.label_metadata or not payload.mapping_rules):
+        raise HTTPException(
+            status_code=400,
+            detail="reviewed_geometry requires both label_metadata and mapping_rules.",
+        )
+
+    qa_result = publication_gate(event)
+    if payload.action in {"published", "publish"} and not qa_result.passed:
+        raise HTTPException(status_code=400, detail={"qa_failed": qa_result.errors})
+    if qa_result.normalized_geometry:
+        event["geometry"] = qa_result.normalized_geometry
 
     _upsert_historical_event_from_event(event)
     historical_record = HistoricalEventRecord.model_validate(historical_event_library[event_id])
@@ -637,6 +657,8 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
             "old_status": old_status,
             "new_status": event["status"],
             "notes": payload.notes,
+            "qa_passed": qa_result.passed,
+            "qa_errors": qa_result.errors,
         }
     )
     _audit_privileged_action(
@@ -651,7 +673,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
         metrics_registry.increment("product.analyst_hours_saved_proxy", 0.75)
     if payload.action in {"reject", "false_alarm"}:
         metrics_registry.increment("product.false_alarms")
-    return {"status": "review_updated", "event": event}
+    return {"status": "review_updated", "event": event, "qa": {"passed": qa_result.passed, "errors": qa_result.errors}}
 
 
 @internal_router.get("/admin/review-audit", dependencies=[Depends(_require_role("admin", "analyst"))])

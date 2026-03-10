@@ -40,6 +40,28 @@ def _analyst_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {ANALYST_TOKEN}"}
 
 
+def _gis_review_payload(action: str, actor: str, notes: str) -> dict:
+    return {
+        "action": action,
+        "actor": actor,
+        "notes": notes,
+        "label_metadata": {
+            "label_type": "flood_extent",
+            "label_tier": "tier_1",
+            "analyst": actor,
+            "date": "2026-01-01T00:00:00+00:00",
+            "notes": notes,
+            "uncertainty": 0.2,
+        },
+        "mapping_rules": {
+            "river_inclusion_exclusion": "include main channel, exclude permanent water",
+            "cloud_limitation_notes": "no cloud obstruction in SAR context",
+            "disconnected_pool_handling": "retain disconnected pools above threshold area",
+            "certainty_class": "high",
+        },
+    }
+
+
 def test_monitoring_and_event_endpoints() -> None:
     _reset_state()
     client = TestClient(app)
@@ -50,7 +72,7 @@ def test_monitoring_and_event_endpoints() -> None:
 
     review_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "published", "actor": "analyst-1", "notes": "approved for public"},
+        json=_gis_review_payload("published", "analyst-1", "approved for public"),
         headers=_analyst_headers(),
     )
     assert review_response.status_code == 200
@@ -65,7 +87,7 @@ def test_monitoring_and_event_endpoints() -> None:
 
     republish_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "published", "actor": "analyst-1", "notes": "approved for public"},
+        json=_gis_review_payload("published", "analyst-1", "approved for public"),
         headers=_analyst_headers(),
     )
     assert republish_response.status_code == 200
@@ -241,3 +263,20 @@ def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
 
     metrics_after_reject = client.get("/internal/monitoring/metrics", headers=_analyst_headers()).json()
     assert metrics_after_reject["product_metrics"]["false_alarms"] >= 1
+
+
+def test_publish_requires_qa_and_sop_fields() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    publish_response = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "published", "actor": "analyst-1", "notes": "attempt publish"},
+        headers=_analyst_headers(),
+    )
+
+    assert publish_response.status_code == 400
+    assert "qa_failed" in publish_response.json()["detail"]
