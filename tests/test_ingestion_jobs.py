@@ -10,7 +10,12 @@ from app.services.hydromet import (
     SequenceRainfallProvider,
     StaticGloFASProvider,
 )
-from app.services.ingestion import InMemorySceneRepository, InMemoryTaskQueue, STACDiscoveryService
+from app.services.ingestion import (
+    InMemorySceneRepository,
+    InMemoryTaskQueue,
+    OpticalSceneDiscoveryService,
+    STACDiscoveryService,
+)
 from app.services.reference_sync import ReferenceSyncJob, ReferenceSyncSuite
 
 
@@ -112,3 +117,23 @@ def test_reference_sync_is_versioned_and_idempotent(tmp_path) -> None:
     assert first.output_path.exists()
     assert first.changed is True
     assert second.changed is False
+
+
+
+def test_optical_discovery_service_recognizes_secondary_sensors() -> None:
+    base = STACDiscoveryService(
+        providers=[],
+        scene_repository=InMemorySceneRepository(),
+        task_queue=InMemoryTaskQueue(),
+    )
+    optical = OpticalSceneDiscoveryService(base)
+
+    item = {
+        "id": "S2A_1",
+        "collection": "sentinel-2",
+        "geometry": _square(70.1, 30.1, 70.9, 30.9),
+        "properties": {"datetime": "2026-01-09T06:00:00Z"},
+        "assets": {},
+    }
+    normalized = base._normalize_item("provider", item)
+    assert optical.is_optical_scene(normalized) is True

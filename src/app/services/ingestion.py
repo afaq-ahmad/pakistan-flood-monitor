@@ -183,6 +183,36 @@ class STACDiscoveryService:
         )
 
 
+class OpticalSceneDiscoveryService:
+    """Corridor-aware optical discovery as a non-blocking enrichment feed."""
+
+    _OPTICAL_SENSORS = ("sentinel-2", "landsat", "hls")
+
+    def __init__(self, discovery_service: STACDiscoveryService) -> None:
+        self._discovery_service = discovery_service
+
+    def discover(
+        self,
+        *,
+        corridor_id: str,
+        corridor_geometry: dict,
+        start_time: datetime,
+        end_time: datetime,
+        now: datetime | None = None,
+    ) -> SceneDiscoverySummary:
+        return self._discovery_service.discover(
+            corridor_id=corridor_id,
+            corridor_geometry=corridor_geometry,
+            start_time=start_time,
+            end_time=end_time,
+            now=now,
+        )
+
+    def is_optical_scene(self, scene: NormalizedScene) -> bool:
+        sensor = scene.sensor.lower()
+        return any(marker in sensor for marker in self._OPTICAL_SENSORS)
+
+
 class InMemorySceneRepository:
     def __init__(self) -> None:
         self._rows: list[dict] = []

@@ -7,7 +7,12 @@ import numpy as np
 import rasterio
 from rasterio.transform import from_origin
 
-from app.services.preprocessing import Sentinel1Preprocessor, Sentinel1SceneCandidate
+from app.services.preprocessing import (
+    OpticalPreprocessor,
+    OpticalSceneCandidate,
+    Sentinel1Preprocessor,
+    Sentinel1SceneCandidate,
+)
 from app.services.sar_baseline import RollingSarBaselineService
 
 
@@ -128,3 +133,72 @@ def test_rolling_baseline_groups_builds_and_versions_outputs(tmp_path: Path) -> 
     assert vv_result.baseline_version == "v1"
     assert "S1A_3" in vv_result.excluded_scene_ids
     assert vv_result.output_rasters["median"].exists()
+
+
+
+def test_optical_preprocessing_masks_clouds_and_produces_indices(tmp_path: Path) -> None:
+    corridor = {
+        "type": "Polygon",
+        "coordinates": [[[70.0, 30.0], [70.0, 30.2], [70.2, 30.2], [70.2, 30.0], [70.0, 30.0]]],
+    }
+    preprocessor = OpticalPreprocessor(corridor_geometry=corridor, working_crs="EPSG:3857", resolution_meters=500)
+
+    green = tmp_path / "green.tif"
+    nir = tmp_path / "nir.tif"
+    swir1 = tmp_path / "swir1.tif"
+    swir2 = tmp_path / "swir2.tif"
+
+    base = np.ones((32, 32), dtype=np.float32) * 0.2
+    _write_raster(green, base)
+    _write_raster(nir, base * 0.5)
+    _write_raster(swir1, base * 0.3)
+    _write_raster(swir2, base * 0.25)
+
+    prepared = preprocessor.preprocess_scene(
+        scene_id="S2_001",
+        corridor_id="indus-1",
+        acquisition_time=datetime(2024, 7, 1),
+        sensor="sentinel-2",
+        asset_paths={"green": green, "nir": nir, "swir1": swir1, "swir2": swir2},
+        output_dir=tmp_path / "prepared_optical",
+    )
+
+    assert prepared.index_paths["ndwi"].exists()
+    assert prepared.index_paths["mndwi"].exists()
+    assert prepared.index_paths["awei"].exists()
+    assert prepared.optical_water_confidence_path.exists()
+    assert 0.0 <= prepared.stats["valid_fraction"] <= 1.0
+
+
+def test_optical_asset_plan_is_corridor_aware() -> None:
+    corridor = {
+        "type": "Polygon",
+        "coordinates": [[[70.0, 30.0], [70.0, 30.5], [70.5, 30.5], [70.5, 30.0], [70.0, 30.0]]],
+    }
+    preprocessor = OpticalPreprocessor(corridor_geometry=corridor, working_crs="EPSG:3857", resolution_meters=250)
+
+    plans = preprocessor.build_asset_retrieval_plan(
+        [
+            OpticalSceneCandidate(
+                scene_id="optical-ok",
+                corridor_id="c1",
+                geometry=corridor,
+                assets={"green": "x", "nir": "x", "swir1": "x", "swir2": "x"},
+                sensor="sentinel-2",
+                cloud_cover=15,
+            ),
+            OpticalSceneCandidate(
+                scene_id="optical-cloudy",
+                corridor_id="c1",
+                geometry=corridor,
+                assets={"green": "x", "nir": "x", "swir1": "x", "swir2": "x"},
+                sensor="sentinel-2",
+                cloud_cover=99,
+            ),
+        ],
+        max_cloud_cover=80,
+    )
+
+    assert plans[0].accepted is True
+    assert plans[1].accepted is False
+    assert plans[1].reason == "cloud_cover_above_threshold"
