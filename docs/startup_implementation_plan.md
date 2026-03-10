@@ -134,3 +134,12 @@ When available, a hydrologist should support:
 11. Compute exposure overlays.
 12. Update API/dashboard outputs.
 13. Archive outputs, model metadata, and metrics.
+
+
+## Step 17 implementation details (rules stable -> ML ranking)
+17.1 is implemented as a feature-snapshot workflow for reproducible classical ML ranking training:
+- **17.1.1 Feature tables:** each candidate feature row stores SAR, optical support, terrain, hydromet, baseline-context, and (for breach candidates) breach-specific geometric features.
+- **17.1.2 Frozen snapshots:** training references immutable snapshot folders with a manifest and separated flood/breach feature tables.
+- **17.1.3 Label linkage:** each row carries review outcome, final class, and label quality tier so filters can enforce label quality constraints for training.
+
+This preserves the roadmap order: rules-first operations remain primary, classical ML ranking is trained from frozen feature tables, and deep learning remains deferred until the readiness checklist is met.
