@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from app.schemas.dashboard import DashboardViewResponse, SnapshotRecord, SnapshotRequest
+from app.schemas.dashboard import DashboardViewResponse, ReviewDashboardResponse, SnapshotRecord, SnapshotRequest
 from app.services.dashboard import dashboard_service
 
 router = APIRouter()
@@ -21,6 +23,27 @@ def analytics_summary() -> dict[str, int]:
 @router.get("/dashboard/views/{corridor_id}", response_model=DashboardViewResponse)
 def dashboard_view(corridor_id: str) -> dict:
     return dashboard_service.dashboard_view(corridor_id)
+
+
+@router.get("/dashboard/review", response_model=ReviewDashboardResponse)
+def review_dashboard(
+    corridor_id: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+    event_class: str | None = Query(default=None, alias="class"),
+    review_status: str | None = None,
+    breach_suspicion_min: float | None = Query(default=None, ge=0.0, le=1.0),
+    confidence_band: str | None = Query(default=None, pattern="^(low|medium|high)$"),
+) -> dict:
+    return dashboard_service.review_dashboard(
+        corridor_id=corridor_id,
+        date_from=date_from,
+        date_to=date_to,
+        event_class=event_class,
+        review_status=review_status,
+        breach_suspicion_min=breach_suspicion_min,
+        confidence_band=confidence_band,
+    )
 
 
 @router.get("/map/events")

@@ -8,6 +8,8 @@ from pathlib import Path
 
 from shapely.geometry import LineString, MultiPolygon, Polygon, mapping
 
+from app.services.review import review_service
+
 
 @dataclass
 class DashboardEvent:
@@ -67,6 +69,14 @@ class DashboardService:
         self._snapshot_dir = Path(".cache/dashboard_snapshots")
         self._snapshot_dir.mkdir(parents=True, exist_ok=True)
 
+    @staticmethod
+    def _confidence_band(confidence: float) -> str:
+        if confidence < 0.5:
+            return "low"
+        if confidence < 0.75:
+            return "medium"
+        return "high"
+
     def list_events(self, corridor_id: str | None = None) -> list[DashboardEvent]:
         if corridor_id is None:
             return list(self._events)
@@ -96,6 +106,85 @@ class DashboardService:
                 }
                 for event in recent_events
             ],
+        }
+
+    def review_dashboard(
+        self,
+        *,
+        corridor_id: str | None = None,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
+        event_class: str | None = None,
+        review_status: str | None = None,
+        breach_suspicion_min: float | None = None,
+        confidence_band: str | None = None,
+    ) -> dict:
+        items = review_service.list_queue(
+            corridor_id=corridor_id,
+            candidate_class=event_class,
+            review_status=review_status,
+            detected_after=date_from,
+            detected_before=date_to,
+            breach_suspicion_min=breach_suspicion_min,
+            confidence_band=confidence_band,
+        )
+
+        queue = [
+            {
+                "candidate_id": item.candidate.candidate_id,
+                "corridor_id": item.candidate.corridor_id,
+                "district": item.candidate.district,
+                "detected_at": item.candidate.detected_at,
+                "review_status": item.status,
+                "event_class": item.candidate_class,
+                "confidence": round(item.candidate.confidence, 3),
+                "confidence_band": self._confidence_band(item.candidate.confidence),
+                "breach_suspicion": round(item.candidate.breach_suspicion, 3),
+                "analyst_confidence": item.analyst_confidence,
+                "context_links": {
+                    "before_sar": item.candidate.before_sar_url,
+                    "after_sar": item.candidate.after_sar_url,
+                    "anomaly_mask": f"/analytics/map/events?corridor_id={item.candidate.corridor_id}",
+                    "flood_candidates": f"/admin/review/{item.candidate.candidate_id}",
+                    "embankments": f"/analytics/map/corridors?corridor_id={item.candidate.corridor_id}",
+                    "seasonal_permanent_water": item.candidate.baseline_overlay_url,
+                    "districts": f"/analytics/map/events?corridor_id={item.candidate.corridor_id}",
+                    "optical_support": item.candidate.optical_support_url,
+                },
+            }
+            for item in items
+        ]
+
+        return {
+            "generated_at": datetime.now(UTC),
+            "layer_toggles": {
+                "previous_sar": True,
+                "current_sar": True,
+                "anomaly_mask": True,
+                "flood_candidate_polygons": True,
+                "embankments": True,
+                "seasonal_permanent_water": True,
+                "districts": True,
+                "optical_support": False,
+            },
+            "action_controls": {
+                "accept_reject": True,
+                "class_selection": ["flood", "breach", "ponding", "artifact"],
+                "note_entry": True,
+                "confidence_adjustment": {"min": 0.0, "max": 1.0, "step": 0.05},
+                "publish_action": True,
+            },
+            "applied_filters": {
+                "corridor": corridor_id,
+                "date_from": date_from,
+                "date_to": date_to,
+                "event_class": event_class,
+                "review_status": review_status,
+                "breach_suspicion_min": breach_suspicion_min,
+                "confidence_band": confidence_band,
+            },
+            "queue_size": len(queue),
+            "queue": queue,
         }
 
     def map_ready_event_layer(self, corridor_id: str | None = None, simplify_tolerance: float = 0.005) -> dict:
