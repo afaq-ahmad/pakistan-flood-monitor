@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AlertLevel(str, Enum):
@@ -21,6 +21,20 @@ class BreachCategory(str, Enum):
     likely_overflow = "likely_overflow"
     likely_embankment_failure = "likely_embankment_failure"
     uncertain_anomaly = "uncertain_anomaly"
+
+
+class EventClass(str, Enum):
+    flood = "flood"
+    likely_overflow = "likely_overflow"
+    possible_breach = "possible_breach"
+    uncertain = "uncertain"
+    false_positive = "false_positive"
+
+
+class EventDecision(str, Enum):
+    accept = "accept"
+    modify = "modify"
+    reject = "reject"
 
 
 class AOI(BaseModel):
@@ -84,6 +98,28 @@ class AlertSummary(BaseModel):
     summary: str
 
 
+class ModelVersion(BaseModel):
+    model_id: str
+    training_data_snapshot_version: str
+    training_config_path: str
+    threshold_file_path: str
+    evaluation_report_path: str
+    reproducible_training_script: str
+    rollback_model_id: str | None = None
+
+
+class ReviewQueueEvent(BaseModel):
+    event_id: str
+    run_id: str
+    aoi: str
+    event_class: EventClass
+    machine_confidence: float
+    analyst_confidence: float | None = None
+    decision: EventDecision | None = None
+    notes: str = ""
+    source_scenes: List[str] = Field(default_factory=list)
+
+
 class HistoricalEventRecord(BaseModel):
     event_id: str
     aoi: str
@@ -98,6 +134,8 @@ class MVPOutputs(BaseModel):
     breach_suspicion_layer: BreachSuspicionLayer
     asset_exposure_report: AssetExposureReport
     alert_feed_item: AlertSummary
+    model_version: ModelVersion
+    review_queue_event: ReviewQueueEvent
     historical_event_dashboard: List[HistoricalEventRecord]
 
 
