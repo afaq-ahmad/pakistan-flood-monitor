@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
 
+from app.services.observability import log_failure, log_structured, metrics_registry
+
 from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.core.detection import DetectionFeatures, FloodDetector
 from pakistan_flood_monitor.core.exposure import ExposureAnalyzer
@@ -157,101 +159,137 @@ class FloodMonitoringPipeline:
         )
 
     def run_daily(self, aoi_name: str) -> ProcessingReport:
+        run_id = str(uuid4())
+        started = datetime.utcnow()
+        checkpoint = "validate_aoi"
         if not self._pilot_corridor_enabled(aoi_name):
             raise ValueError(f"AOI '{aoi_name}' is outside configured pilot corridors")
 
-        today = datetime.utcnow().date()
-        self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
-        self.catalog.fetch_supporting_layers(aoi_name)
+        try:
+            today = datetime.utcnow().date()
+            checkpoint = "fetch_inputs"
+            self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
+            self.catalog.fetch_supporting_layers(aoi_name)
 
-        features = DetectionFeatures(
-            sar_drop_db=3.0,
-            ndwi=0.31,
-            rainfall_mm_72h=120,
-            glofas_return_period=5.2,
-            floodplain_distance_m=850,
-        )
-
-        should_process, trigger_reason = self.triggers.should_process(
-            TriggerInputs(
-                rainfall_mm_72h=features.rainfall_mm_72h,
-                glofas_return_period=features.glofas_return_period,
-                seasonal_anomaly_score=0.66,
+            features = DetectionFeatures(
+                sar_drop_db=3.0,
+                ndwi=0.31,
+                rainfall_mm_72h=120,
+                glofas_return_period=5.2,
+                floodplain_distance_m=850,
             )
-        )
 
-        run_id = str(uuid4())
-        if not should_process:
-            detection = FloodDetectionResult(
-                aoi=aoi_name,
-                timestamp=datetime.utcnow(),
-                flood_probability=0.0,
-                flood_area_km2=0.0,
-                breach_risk_score=0.0,
-                alert_level=AlertLevel.watch,
-                confidence_score=0.0,
-                review_status=ReviewStatus.machine_only,
-                indicators={"event_trigger": 0.0},
+            checkpoint = "event_trigger"
+            should_process, trigger_reason = self.triggers.should_process(
+                TriggerInputs(
+                    rainfall_mm_72h=features.rainfall_mm_72h,
+                    glofas_return_period=features.glofas_return_period,
+                    seasonal_anomaly_score=0.66,
+                )
             )
-            exposure = self.exposure.estimate(0.0)
-            return ProcessingReport(
+
+            if not should_process:
+                detection = FloodDetectionResult(
+                    aoi=aoi_name,
+                    timestamp=datetime.utcnow(),
+                    flood_probability=0.0,
+                    flood_area_km2=0.0,
+                    breach_risk_score=0.0,
+                    alert_level=AlertLevel.watch,
+                    confidence_score=0.0,
+                    review_status=ReviewStatus.machine_only,
+                    indicators={"event_trigger": 0.0},
+                )
+                exposure = self.exposure.estimate(0.0)
+                report = ProcessingReport(
+                    run_id=run_id,
+                    source_sensors=["imerg", "glofas"],
+                    detections=[detection],
+                    exposure={aoi_name: exposure},
+                    trigger_reason=trigger_reason,
+                    published_outputs=self._build_outputs(
+                        run_id,
+                        aoi_name,
+                        ReviewStatus.machine_only,
+                        AlertLevel.watch,
+                        0.0,
+                        0.0,
+                        ["imerg", "glofas"],
+                        exposure.model_dump(),
+                    ),
+                )
+            else:
+                flood_probability = self.detector.rule_based_probability(features)
+                breach_risk = self.detector.detect_breach_risk(expansion_rate=0.62, embankment_side_water=0.7)
+                flood_area_km2 = round(25 + flood_probability * 70, 2)
+                confidence_score = self.alerts.confidence(flood_probability, breach_risk)
+                alert_level = self.alerts.classify(flood_probability, breach_risk)
+                review_status = self.alerts.review_status(confidence_score)
+
+                detection = FloodDetectionResult(
+                    aoi=aoi_name,
+                    timestamp=datetime.utcnow(),
+                    flood_probability=flood_probability,
+                    flood_area_km2=flood_area_km2,
+                    breach_risk_score=breach_risk,
+                    alert_level=alert_level,
+                    confidence_score=confidence_score,
+                    review_status=review_status,
+                    indicators={
+                        "sar_drop_db": features.sar_drop_db,
+                        "ndwi": features.ndwi,
+                        "rainfall_mm_72h": features.rainfall_mm_72h,
+                        "glofas_return_period": features.glofas_return_period,
+                    },
+                )
+                source_sensors = ["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"]
+                exposure = self.exposure.estimate(flood_area_km2)
+                report = ProcessingReport(
+                    run_id=run_id,
+                    source_sensors=source_sensors,
+                    detections=[detection],
+                    exposure={aoi_name: exposure},
+                    trigger_reason=trigger_reason,
+                    published_outputs=self._build_outputs(
+                        run_id,
+                        aoi_name,
+                        review_status,
+                        alert_level,
+                        confidence_score,
+                        breach_risk,
+                        source_sensors,
+                        exposure.model_dump(),
+                    ),
+                )
+
+            delay_hours = max(0.0, (datetime.utcnow() - detection.timestamp).total_seconds() / 3600)
+            metrics_registry.increment("product.alerts_produced")
+            metrics_registry.increment("product.exposure_outputs_delivered")
+            metrics_registry.observe_latency_ms("product.scene_to_alert_delay_ms", delay_hours * 3600 * 1000)
+            metrics_registry.increment("pipeline.alerts_published")
+            log_structured(
+                "pipeline_run",
                 run_id=run_id,
-                source_sensors=["imerg", "glofas"],
-                detections=[detection],
-                exposure={aoi_name: exposure},
-                trigger_reason=trigger_reason,
-                published_outputs=self._build_outputs(
-                    run_id,
-                    aoi_name,
-                    ReviewStatus.machine_only,
-                    AlertLevel.watch,
-                    0.0,
-                    0.0,
-                    ["imerg", "glofas"],
-                    exposure.model_dump(),
-                ),
+                corridor_id=aoi_name,
+                scene_id=report.source_sensors[0],
+                task_type="run_daily",
+                duration_ms=(datetime.utcnow() - started).total_seconds() * 1000,
+                success=True,
+                output_paths=[f"event://{report.published_outputs.review_queue_event.event_id}"],
             )
-
-        flood_probability = self.detector.rule_based_probability(features)
-        breach_risk = self.detector.detect_breach_risk(expansion_rate=0.62, embankment_side_water=0.7)
-        flood_area_km2 = round(25 + flood_probability * 70, 2)
-        confidence_score = self.alerts.confidence(flood_probability, breach_risk)
-        alert_level = self.alerts.classify(flood_probability, breach_risk)
-        review_status = self.alerts.review_status(confidence_score)
-
-        detection = FloodDetectionResult(
-            aoi=aoi_name,
-            timestamp=datetime.utcnow(),
-            flood_probability=flood_probability,
-            flood_area_km2=flood_area_km2,
-            breach_risk_score=breach_risk,
-            alert_level=alert_level,
-            confidence_score=confidence_score,
-            review_status=review_status,
-            indicators={
-                "sar_drop_db": features.sar_drop_db,
-                "ndwi": features.ndwi,
-                "rainfall_mm_72h": features.rainfall_mm_72h,
-                "glofas_return_period": features.glofas_return_period,
-            },
-        )
-
-        source_sensors = ["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"]
-        exposure = self.exposure.estimate(flood_area_km2)
-        return ProcessingReport(
-            run_id=run_id,
-            source_sensors=source_sensors,
-            detections=[detection],
-            exposure={aoi_name: exposure},
-            trigger_reason=trigger_reason,
-            published_outputs=self._build_outputs(
-                run_id,
-                aoi_name,
-                review_status,
-                alert_level,
-                confidence_score,
-                breach_risk,
-                source_sensors,
-                exposure.model_dump(),
-            ),
-        )
+            return report
+        except Exception as exc:
+            log_failure(
+                "pipeline_run",
+                error=exc,
+                run_id=run_id,
+                corridor_id=aoi_name,
+                scene_id=None,
+                task_type="run_daily",
+                pipeline_stage="pipeline_runner",
+                input_identifiers={"aoi_name": aoi_name},
+                last_completed_checkpoint=checkpoint,
+                duration_ms=(datetime.utcnow() - started).total_seconds() * 1000,
+                output_paths=[],
+            )
+            raise

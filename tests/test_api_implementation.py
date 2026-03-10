@@ -109,3 +109,35 @@ def test_admin_and_registry_endpoints() -> None:
     reprocess_response = client.post("/admin/reprocess-scene?aoi_name=Chenab-Middle")
     assert reprocess_response.status_code == 200
     assert reprocess_response.json()["history_depth"] == 2
+
+
+def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get("/run/Indus-Lower")
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    accept_response = client.post(
+        f"/admin/review-event?event_id={event_id}",
+        json={"action": "accept", "actor": "analyst-2", "notes": "confirmed"},
+    )
+    assert accept_response.status_code == 200
+
+    metrics_response = client.get("/monitoring/metrics")
+    assert metrics_response.status_code == 200
+    payload = metrics_response.json()
+    assert payload["pipeline_metrics"]["alerts_published"] >= 1
+    assert payload["ops_metrics"]["queue_backlog"] >= 1
+    assert payload["product_metrics"]["alerts_produced"] >= 1
+    assert payload["product_metrics"]["alerts_confirmed"] >= 1
+
+    reject_response = client.post(
+        f"/admin/review-event?event_id={event_id}",
+        json={"action": "false_alarm", "actor": "analyst-2", "notes": "qa false alarm"},
+    )
+    assert reject_response.status_code == 200
+
+    metrics_after_reject = client.get("/monitoring/metrics").json()
+    assert metrics_after_reject["product_metrics"]["false_alarms"] >= 1
