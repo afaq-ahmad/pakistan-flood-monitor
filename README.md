@@ -47,19 +47,25 @@ No national wall-to-wall daily runs, no public mobile app, no hydrodynamic simul
 - GIS analyst review is mission-critical for event acceptance, event-class labeling, and QA confidence.
 
 ## Repository structure
-- `src/pakistan_flood_monitor/data/` dataset connectors and metadata
-- `src/pakistan_flood_monitor/core/` detection and exposure logic
-- `src/pakistan_flood_monitor/pipeline/` daily orchestration
-- `src/pakistan_flood_monitor/services/` trigger and alert scoring services
-- `src/pakistan_flood_monitor/api/` FastAPI endpoints
-- `docs/` architecture and implementation plan
+- `src/app/config/` typed settings, environment loading, and threshold-file loading
+- `src/app/db/` SQLAlchemy session setup, spatial helpers, and Alembic migration scaffolding
+- `src/app/models/` ORM tables for AOIs, ingestion state, candidates, events, reviews, and provenance
+- `src/app/schemas/` API contracts separated from ORM models
+- `src/app/services/` reusable domain logic components
+- `src/app/pipelines/` runnable workflow entrypoints for each monitoring stage
+- `src/app/api/` FastAPI application and domain routers (monitoring, events, analytics, admin, health)
+- `src/app/workers/` background worker entrypoints (cron/Prefect wrappers)
+- `src/app/utils/` pure utility helpers
+- `config/thresholds/` runtime YAML threshold and weighting files
+- `tests/`, `infra/`, `docs/`, and `data_contracts/` for validation, deployment, design, and schema contracts
+- `docs/storage_layout.md` storage conventions, naming policy, formats, and run manifests
 
 ## Quick start
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
-uvicorn pakistan_flood_monitor.api.main:app --reload
+uvicorn app.api.main:app --reload
 ```
 
 Run a sample daily pipeline:

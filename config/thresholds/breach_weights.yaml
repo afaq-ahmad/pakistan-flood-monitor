@@ -1,0 +1,6 @@
+breach_weights:
+  proximity_to_embankment: 0.45
+  anomaly_persistence: 0.35
+  hydromet_signal: 0.20
+review_thresholds:
+  breach_alert_min_score: 0.68
