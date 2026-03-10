@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 import os
+from threading import Lock
+import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi.responses import PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
@@ -24,10 +27,39 @@ threshold_registry: list[dict[str, Any]] = []
 model_registry: list[dict[str, Any]] = []
 retraining_decisions: list[dict[str, Any]] = []
 privileged_audit_log: list[dict[str, Any]] = []
+state_lock = Lock()
 
 public_router = APIRouter(prefix="/public", tags=["public"])
 internal_router = APIRouter(prefix="/internal", tags=["internal"])
 security_scheme = HTTPBearer(auto_error=False)
+
+
+class RateLimiter:
+    def __init__(self) -> None:
+        self._lock = Lock()
+        self._requests: dict[tuple[str, str], list[float]] = {}
+
+    def allow(self, identity: str, path: str, limit: int, window_seconds: int) -> bool:
+        if limit <= 0:
+            return True
+        now = time.time()
+        window_start = now - window_seconds
+        key = (identity, path)
+        with self._lock:
+            current = [stamp for stamp in self._requests.get(key, []) if stamp >= window_start]
+            if len(current) >= limit:
+                self._requests[key] = current
+                return False
+            current.append(now)
+            self._requests[key] = current
+            return True
+
+    def reset(self) -> None:
+        with self._lock:
+            self._requests.clear()
+
+
+rate_limiter = RateLimiter()
 
 
 class ReviewEventRequest(BaseModel):
@@ -181,10 +213,11 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
 
 def _record_run(report: dict[str, Any]) -> None:
     corridor = report["detections"][0]["aoi"]
-    run_history.setdefault(corridor, []).append(report)
-    event = _event_record_from_run(report)
-    event_store[event["event_id"]] = event
-    _upsert_historical_event_from_event(event)
+    with state_lock:
+        run_history.setdefault(corridor, []).append(report)
+        event = _event_record_from_run(report)
+        event_store[event["event_id"]] = event
+        _upsert_historical_event_from_event(event)
     metrics_registry.increment("pipeline.alerts_published")
     metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
 
@@ -309,6 +342,66 @@ def _resolve_role(token: str) -> str | None:
     if analyst_token and token == analyst_token:
         return "analyst"
     return None
+
+
+def _assert_actor_matches_role(role: str, actor: str) -> None:
+    expected_prefix = f"{role}-"
+    if not actor.startswith(expected_prefix):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Actor '{actor}' is not allowed for role '{role}'. Use actor IDs prefixed with '{expected_prefix}'.",
+        )
+
+
+def _runtime_state_snapshot() -> dict[str, Any]:
+    with state_lock:
+        return {
+            "run_history": run_history,
+            "event_store": event_store,
+            "historical_event_library": historical_event_library,
+            "review_audit_log": review_audit_log,
+            "threshold_registry": threshold_registry,
+            "model_registry": model_registry,
+            "retraining_decisions": retraining_decisions,
+            "privileged_audit_log": privileged_audit_log,
+        }
+
+
+def _restore_runtime_state(payload: dict[str, Any]) -> None:
+    with state_lock:
+        run_history.clear()
+        run_history.update(payload.get("run_history", {}))
+        event_store.clear()
+        event_store.update(payload.get("event_store", {}))
+        historical_event_library.clear()
+        historical_event_library.update(payload.get("historical_event_library", {}))
+        review_audit_log.clear()
+        review_audit_log.extend(payload.get("review_audit_log", []))
+        threshold_registry.clear()
+        threshold_registry.extend(payload.get("threshold_registry", []))
+        model_registry.clear()
+        model_registry.extend(payload.get("model_registry", []))
+        retraining_decisions.clear()
+        retraining_decisions.extend(payload.get("retraining_decisions", []))
+        privileged_audit_log.clear()
+        privileged_audit_log.extend(payload.get("privileged_audit_log", []))
+
+
+@app.middleware("http")
+async def enforce_rate_limit(request: Request, call_next):
+    if not request.url.path.startswith("/internal"):
+        return await call_next(request)
+
+    limit = int(os.getenv("FLOOD_MONITOR_RATE_LIMIT_REQUESTS", "60"))
+    window_seconds = int(os.getenv("FLOOD_MONITOR_RATE_LIMIT_WINDOW_SECONDS", "60"))
+    identity = request.headers.get("Authorization", request.client.host if request.client else "anonymous")
+    if not rate_limiter.allow(identity=identity, path=request.url.path, limit=limit, window_seconds=window_seconds):
+        return PlainTextResponse(
+            "Rate limit exceeded for internal API. Retry later.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            headers={"Retry-After": str(window_seconds)},
+        )
+    return await call_next(request)
 
 
 def _require_role(*allowed_roles: str):
@@ -608,8 +701,9 @@ def admin_reprocess_scene(aoi_name: str) -> dict:
     }
 
 
-@internal_router.post("/admin/review-event", dependencies=[Depends(_require_role("admin", "analyst"))])
-def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
+@internal_router.post("/admin/review-event")
+def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = Depends(_require_role("admin", "analyst"))) -> dict:
+    _assert_actor_matches_role(role, payload.actor)
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
@@ -702,8 +796,9 @@ def admin_get_historical_event(event_id: str) -> dict[str, Any]:
     return HistoricalEventRecord.model_validate(record).model_dump()
 
 
-@internal_router.post("/admin/register-threshold", dependencies=[Depends(_require_role("admin"))])
-def register_threshold(payload: ThresholdRegistrationRequest) -> dict[str, Any]:
+@internal_router.post("/admin/register-threshold")
+def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
+    _assert_actor_matches_role(role, payload.actor)
     record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
     threshold_registry.append(record)
     _audit_privileged_action(
@@ -716,8 +811,9 @@ def register_threshold(payload: ThresholdRegistrationRequest) -> dict[str, Any]:
     return {"status": "registered", "threshold": record}
 
 
-@internal_router.post("/admin/register-model", dependencies=[Depends(_require_role("admin"))])
-def register_model(payload: ModelRegistrationRequest) -> dict[str, Any]:
+@internal_router.post("/admin/register-model")
+def register_model(payload: ModelRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
+    _assert_actor_matches_role(role, payload.actor)
     record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
     model_registry.append(record)
     _audit_privileged_action(
@@ -732,8 +828,9 @@ def register_model(payload: ModelRegistrationRequest) -> dict[str, Any]:
 
 
 
-@internal_router.post("/admin/evaluate-retraining", dependencies=[Depends(_require_role("admin"))])
-def evaluate_retraining(payload: RetrainingTriggerRequest) -> dict[str, Any]:
+@internal_router.post("/admin/evaluate-retraining")
+def evaluate_retraining(payload: RetrainingTriggerRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
+    _assert_actor_matches_role(role, payload.actor)
     decision = _evaluate_retraining_trigger(payload)
     record = payload.model_dump() | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
     retraining_decisions.append(record)
@@ -749,6 +846,43 @@ def evaluate_retraining(payload: RetrainingTriggerRequest) -> dict[str, Any]:
 @internal_router.get("/admin/privileged-audit", dependencies=[Depends(_require_role("admin"))])
 def privileged_audit() -> list[dict[str, Any]]:
     return privileged_audit_log
+
+
+@internal_router.get("/monitoring/metrics/prometheus", dependencies=[Depends(_require_role("admin", "analyst"))])
+def monitoring_metrics_prometheus() -> PlainTextResponse:
+    snapshot = metrics_registry.snapshot()
+    lines: list[str] = []
+    for key, value in snapshot.counters.items():
+        metric = key.replace(".", "_") + "_total"
+        lines.append(f"# TYPE {metric} counter")
+        lines.append(f"{metric} {value}")
+    for key, value in snapshot.gauges.items():
+        metric = key.replace(".", "_")
+        lines.append(f"# TYPE {metric} gauge")
+        lines.append(f"{metric} {value}")
+    for key, summary in snapshot.latencies_ms.items():
+        metric = key.replace(".", "_")
+        lines.append(f"# TYPE {metric}_avg_ms gauge")
+        lines.append(f"{metric}_avg_ms {summary.get('avg_ms', 0.0)}")
+        lines.append(f"# TYPE {metric}_p95_ms gauge")
+        lines.append(f"{metric}_p95_ms {summary.get('p95_ms', 0.0)}")
+    return PlainTextResponse("\n".join(lines) + "\n", media_type="text/plain; version=0.0.4")
+
+
+@internal_router.get("/admin/state/export", dependencies=[Depends(_require_role("admin"))])
+def export_runtime_state() -> dict[str, Any]:
+    return {"exported_at": datetime.now(UTC).isoformat(), "state": _runtime_state_snapshot()}
+
+
+@internal_router.post("/admin/state/restore", dependencies=[Depends(_require_role("admin"))])
+def restore_runtime_state(payload: dict[str, Any]) -> dict[str, Any]:
+    _restore_runtime_state(payload.get("state", {}))
+    return {
+        "status": "restored",
+        "corridors": len(run_history),
+        "events": len(event_store),
+        "audit_records": len(review_audit_log),
+    }
 
 
 app.include_router(public_router)
