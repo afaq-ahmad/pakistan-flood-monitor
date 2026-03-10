@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.services.observability import metrics_registry
 
@@ -20,6 +20,7 @@ event_store: dict[str, dict[str, Any]] = {}
 review_audit_log: list[dict[str, Any]] = []
 threshold_registry: list[dict[str, Any]] = []
 model_registry: list[dict[str, Any]] = []
+retraining_decisions: list[dict[str, Any]] = []
 privileged_audit_log: list[dict[str, Any]] = []
 
 public_router = APIRouter(prefix="/public", tags=["public"])
@@ -39,15 +40,42 @@ class ThresholdRegistrationRequest(BaseModel):
     threshold_name: str
     file_path: str
     version: str
+    threshold_values: dict[str, float] = Field(default_factory=dict)
+    linked_model_id: str | None = None
     actor: str
     notes: str = ""
 
 
+
+
+class RetrainingTriggerRequest(BaseModel):
+    model_id: str
+    label_quality_gain: float
+    drift_score: float
+    feature_schema_changed: bool = False
+    actor: str
+    notes: str = ""
+
+
+def _evaluate_retraining_trigger(payload: RetrainingTriggerRequest) -> dict[str, Any]:
+    reasons: list[str] = []
+    if payload.label_quality_gain >= 0.1:
+        reasons.append("label_quality_improved")
+    if payload.drift_score >= 0.2:
+        reasons.append("data_drift_detected")
+    if payload.feature_schema_changed:
+        reasons.append("sensor_or_feature_changed")
+    return {"should_retrain": bool(reasons), "reasons": reasons}
+
 class ModelRegistrationRequest(BaseModel):
     model_id: str
+    model_type: str
     training_data_snapshot_version: str
     training_config_path: str
     evaluation_report_path: str
+    validation_metrics: dict[str, float] = Field(default_factory=dict)
+    deployment_status: str = "candidate"
+    rollback_parent_model_id: str | None = None
     actor: str
     notes: str = ""
 
@@ -501,6 +529,22 @@ def register_model(payload: ModelRegistrationRequest) -> dict[str, Any]:
     )
     return {"status": "registered", "model": record}
 
+
+
+
+@internal_router.post("/admin/evaluate-retraining", dependencies=[Depends(_require_role("admin"))])
+def evaluate_retraining(payload: RetrainingTriggerRequest) -> dict[str, Any]:
+    decision = _evaluate_retraining_trigger(payload)
+    record = payload.model_dump() | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
+    retraining_decisions.append(record)
+    _audit_privileged_action(
+        actor=payload.actor,
+        action="retraining_evaluated",
+        resource_type="model",
+        resource_id=payload.model_id,
+        details=decision,
+    )
+    return {"status": "evaluated", "decision": record}
 
 @internal_router.get("/admin/privileged-audit", dependencies=[Depends(_require_role("admin"))])
 def privileged_audit() -> list[dict[str, Any]]:

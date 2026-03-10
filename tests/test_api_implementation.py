@@ -7,6 +7,7 @@ from pakistan_flood_monitor.api.main import (
     event_store,
     model_registry,
     privileged_audit_log,
+    retraining_decisions,
     review_audit_log,
     run_history,
     threshold_registry,
@@ -24,6 +25,7 @@ def _reset_state() -> None:
     privileged_audit_log.clear()
     threshold_registry.clear()
     model_registry.clear()
+    retraining_decisions.clear()
     os.environ["FLOOD_MONITOR_ADMIN_TOKEN"] = ADMIN_TOKEN
     os.environ["FLOOD_MONITOR_ANALYST_TOKEN"] = ANALYST_TOKEN
 
@@ -142,10 +144,14 @@ def test_admin_and_registry_endpoints() -> None:
         "/internal/admin/register-model",
         json={
             "model_id": "rules-v2",
+            "model_type": "logistic_regression",
             "training_data_snapshot_version": "snapshot-2024-10",
             "training_config_path": "configs/training_config.yaml",
             "evaluation_report_path": "reports/evaluation/rules_v1.md",
             "actor": "mlops",
+            "validation_metrics": {"f1": 0.81},
+            "deployment_status": "active",
+            "rollback_parent_model_id": "rules-v1",
             "notes": "uplifted ranking",
         },
         headers=_admin_headers(),
@@ -156,9 +162,25 @@ def test_admin_and_registry_endpoints() -> None:
     assert reprocess_response.status_code == 200
     assert reprocess_response.json()["history_depth"] == 2
 
+    retraining_response = client.post(
+        "/internal/admin/evaluate-retraining",
+        json={
+            "model_id": "rules-v2",
+            "label_quality_gain": 0.12,
+            "drift_score": 0.05,
+            "feature_schema_changed": False,
+            "actor": "mlops",
+            "notes": "better labels, no drift",
+        },
+        headers=_admin_headers(),
+    )
+    assert retraining_response.status_code == 200
+    assert retraining_response.json()["decision"]["should_retrain"] is True
+    assert "label_quality_improved" in retraining_response.json()["decision"]["reasons"]
+
     privileged_audit_response = client.get("/internal/admin/privileged-audit", headers=_admin_headers())
     assert privileged_audit_response.status_code == 200
-    assert len(privileged_audit_response.json()) >= 3
+    assert len(privileged_audit_response.json()) >= 4
 
 
 def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
