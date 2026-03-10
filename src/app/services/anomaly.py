@@ -293,6 +293,13 @@ class FloodAnomalyDetector:
             hydromet_mean = self._safe_component_nanmean(component, hydromet_stress)
             persistence_score = float(((1.0 if has_predecessor else 0.0) + (1.0 if has_successor else 0.0)) / 2.0)
 
+            change_direction_relative_to_levee = self._change_direction_relative_to_levee(
+                component=component,
+                previous_candidates=previous_candidates,
+                embankment_distance=embankment_distance,
+            )
+            inland_propagation_direction = max(0.0, change_direction_relative_to_levee)
+
             confidence = score_flood_candidate_confidence(
                 mean_anomaly_score=mean_score,
                 slope_mean=slope_mean,
@@ -301,6 +308,10 @@ class FloodAnomalyDetector:
                 seasonal_overlap_ratio=seasonal_overlap,
                 hydromet_stress_score=hydromet_mean,
                 persistence_score=persistence_score,
+                rainfall_24h_mm=hydromet_mean * 100.0,
+                rainfall_72h_mm=hydromet_mean * 180.0,
+                forecast_discharge_percentile=hydromet_mean,
+                inland_propagation_direction=inland_propagation_direction,
             )
 
             keep = area_pixels >= self._config.min_object_pixels and compactness >= self._config.min_compactness
@@ -314,12 +325,6 @@ class FloodAnomalyDetector:
             expansion_speed = self._estimate_expansion_speed(area_pixels, overlap_prev)
             split_merge_complexity = min(1.0, max(0, overlap_prev - 1) * 0.5 + max(0, overlap_next - 1) * 0.5)
 
-            change_direction_relative_to_levee = self._change_direction_relative_to_levee(
-                component=component,
-                previous_candidates=previous_candidates,
-                embankment_distance=embankment_distance,
-            )
-            inland_propagation_direction = max(0.0, change_direction_relative_to_levee)
             protected_side_ratio = self._protected_side_ratio(component, embankment_distance, relative_elevation)
             side_of_embankment = "protected" if protected_side_ratio >= 0.5 else "riverward"
             first_appearance_timestamp = "current_scene" if overlap_prev == 0 else "prior_scene"
