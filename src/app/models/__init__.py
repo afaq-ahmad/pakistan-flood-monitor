@@ -11,6 +11,7 @@ from app.models.core import (
     RiverReach,
     SatelliteScene,
     SceneProcessingRun,
+    TaskQueueRecord,
     ValidationSample,
 )
 
@@ -20,6 +21,7 @@ __all__ = [
     "Embankment",
     "SatelliteScene",
     "SceneProcessingRun",
+    "TaskQueueRecord",
     "FloodCandidate",
     "BreachCandidate",
     "FloodEvent",

@@ -29,6 +29,10 @@ def preprocess_sar_pipeline() -> str:
     return "preprocess-sar:started"
 
 
+def task_planner_pipeline() -> str:
+    return "task-planner:started"
+
+
 def detect_flood_pipeline() -> str:
     return "detect-flood:started"
 

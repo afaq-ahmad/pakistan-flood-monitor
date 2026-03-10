@@ -88,5 +88,11 @@ python scripts/run_daily.py
 - `GET /publish/{aoi_name}`
 - `GET /alerts/feed`
 
+## Orchestration discipline (implemented)
+- Planner jobs now build concrete task queue records instead of a single generic run trigger.
+- Task queue records track explicit workflow states: `queued`, `running`, `success`, `failed`, `skipped`, `stale`, and `manual_retry_requested`.
+- Worker execution is idempotent via run hashes derived from scene, corridor, pipeline version, and threshold config version.
+- Failed/partial outputs are cleaned before reruns so long raster jobs can safely resume from a clean checkpoint.
+
 ## Deployment stance
 Use a simple low-cost setup first (single VM or two-node split) with Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.

@@ -105,6 +105,29 @@ class SceneProcessingRun(Base):
     __table_args__ = (Index("ix_scene_processing_runs_status", "status"),)
 
 
+
+
+class TaskQueueRecord(Base):
+    __tablename__ = "task_queue"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    task_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    corridor_id: Mapped[int] = mapped_column(ForeignKey("aoi_corridors.id"), nullable=False)
+    scene_id: Mapped[int | None] = mapped_column(ForeignKey("satellite_scenes.id"), nullable=True)
+    priority_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    rank_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), default="queued", nullable=False)
+    run_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_task_queue_status", "status"),
+        Index("ix_task_queue_corridor_priority", "corridor_id", "priority_score"),
+        Index("ix_task_queue_run_hash", "run_hash"),
+    )
+
+
 class FloodCandidate(Base, ProvenanceMixin):
     __tablename__ = "flood_candidates"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

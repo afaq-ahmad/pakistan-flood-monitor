@@ -3,6 +3,7 @@ from app.services.hydromet import HydrometIngestionJob, compute_hydromet_stress_
 from app.services.ingestion import STACDiscoveryService
 from app.services.reference_sync import ReferenceSyncSuite
 from app.services.scoring import score_flood_confidence
+from app.services.orchestration import IdempotentTaskWorker, TaskPlannerJob
 
 __all__ = [
     "discover_scenes",
@@ -11,4 +12,6 @@ __all__ = [
     "HydrometIngestionJob",
     "compute_hydromet_stress_score",
     "ReferenceSyncSuite",
+    "TaskPlannerJob",
+    "IdempotentTaskWorker",
 ]

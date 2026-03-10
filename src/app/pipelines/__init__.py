@@ -6,6 +6,7 @@ from app.pipelines.workflows import (
     fetch_hydromet_pipeline,
     preprocess_sar_pipeline,
     publish_events_pipeline,
+    task_planner_pipeline,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "detect_breach_pipeline",
     "compute_exposure_pipeline",
     "publish_events_pipeline",
+    "task_planner_pipeline",
 ]
