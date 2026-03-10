@@ -143,3 +143,9 @@ When available, a hydrologist should support:
 - **17.1.3 Label linkage:** each row carries review outcome, final class, and label quality tier so filters can enforce label quality constraints for training.
 
 This preserves the roadmap order: rules-first operations remain primary, classical ML ranking is trained from frozen feature tables, and deep learning remains deferred until the readiness checklist is met.
+
+17.2 is now implemented as **classical ML candidate ranking** before any deep-learning expansion:
+- **17.2.1 Ranking targets:** three independent ranking models are trained for flood candidate confidence, breach candidate confidence, and false-positive suppression.
+- **17.2.2 Rules baseline retained:** rule-based confidence scores remain first-class benchmark signals (`rules_flood_confidence`, `rules_breach_confidence`) and are tracked against ML validation metrics.
+- **17.2.3 Candidate-object training:** training runs consume candidate-level snapshot tables (not full-scene imagery), preserving lower compute cost and stronger explainability.
+- **17.2.4 Model metadata registry:** each training run registers training snapshot ID, feature-set version, hyperparameters, validation metrics, and deployment threshold.

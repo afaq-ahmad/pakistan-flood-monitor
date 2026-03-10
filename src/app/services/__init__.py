@@ -7,6 +7,7 @@ from app.services.orchestration import IdempotentTaskWorker, TaskPlannerJob
 from app.services.preprocessing import Sentinel1Preprocessor
 from app.services.sar_baseline import RollingSarBaselineService
 from app.services.ml_features import FeatureSnapshotStore, build_candidate_feature_row
+from app.services.ml_ranking import ClassicalCandidateRanker, ModelMetadataRegistry
 from app.services.review import AnalystReviewService, review_service
 
 __all__ = [
@@ -23,6 +24,8 @@ __all__ = [
     "RollingSarBaselineService",
     "FeatureSnapshotStore",
     "build_candidate_feature_row",
+    "ClassicalCandidateRanker",
+    "ModelMetadataRegistry",
     "AnalystReviewService",
     "review_service",
 ]

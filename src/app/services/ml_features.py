@@ -80,6 +80,8 @@ class CandidateFeatureRow:
     baseline: BaselineContextFeatures
     breach_geometry: BreachGeometryFeatures | None
     extracted_at: datetime
+    rules_flood_confidence: float | None = None
+    rules_breach_confidence: float | None = None
     label: CandidateLabelLink | None = None
 
     def to_feature_table_row(self) -> dict[str, Any]:
@@ -107,6 +109,8 @@ class CandidateFeatureRow:
             "baseline_seasonal_overlap_ratio": self.baseline.seasonal_overlap_ratio,
             "baseline_persistence_score": self.baseline.persistence_score,
             "baseline_historical_water_occurrence": self.baseline.historical_water_occurrence,
+            "rules_flood_confidence": self.rules_flood_confidence,
+            "rules_breach_confidence": self.rules_breach_confidence,
             "label_review_outcome": None,
             "label_final_class": None,
             "label_quality_tier": None,
@@ -226,6 +230,8 @@ def build_candidate_feature_row(
     hydromet: HydrometFeatures,
     baseline: BaselineContextFeatures,
     breach_geometry: BreachGeometryFeatures | None = None,
+    rules_flood_confidence: float | None = None,
+    rules_breach_confidence: float | None = None,
     label: CandidateLabelLink | None = None,
 ) -> CandidateFeatureRow:
     if candidate_kind == "flood" and breach_geometry is not None:
@@ -243,6 +249,8 @@ def build_candidate_feature_row(
         hydromet=hydromet,
         baseline=baseline,
         breach_geometry=breach_geometry,
+        rules_flood_confidence=rules_flood_confidence,
+        rules_breach_confidence=rules_breach_confidence,
         label=label,
         extracted_at=datetime.now(UTC),
     )
