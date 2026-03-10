@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from pakistan_flood_monitor.api.main import (
     app,
     event_store,
+    historical_event_library,
     model_registry,
     privileged_audit_log,
     retraining_decisions,
@@ -21,6 +22,7 @@ ANALYST_TOKEN = "test-analyst-token"
 def _reset_state() -> None:
     run_history.clear()
     event_store.clear()
+    historical_event_library.clear()
     review_audit_log.clear()
     privileged_audit_log.clear()
     threshold_registry.clear()
@@ -95,6 +97,17 @@ def test_monitoring_and_event_endpoints() -> None:
     confidence_response = client.get(f"/public/events/{event_id}/confidence")
     assert confidence_response.status_code == 200
     assert "confidence_breakdown" in confidence_response.json()
+
+    public_historical_catalog = client.get("/public/historical-events")
+    assert public_historical_catalog.status_code == 200
+    assert any(item["event_id"] == event_id for item in public_historical_catalog.json())
+
+    public_historical_record = client.get(f"/public/historical-events/{event_id}")
+    assert public_historical_record.status_code == 200
+    payload = public_historical_record.json()
+    assert "catalog" in payload
+    assert "assets" in payload
+    assert payload["catalog"]["label_quality_score"] >= 0.8
 
 
 def test_admin_and_registry_endpoints() -> None:
@@ -181,6 +194,19 @@ def test_admin_and_registry_endpoints() -> None:
     privileged_audit_response = client.get("/internal/admin/privileged-audit", headers=_admin_headers())
     assert privileged_audit_response.status_code == 200
     assert len(privileged_audit_response.json()) >= 4
+
+    historical_admin_response = client.get("/internal/admin/historical-events", headers=_analyst_headers())
+    assert historical_admin_response.status_code == 200
+    assert any(item["event_id"] == event_id for item in historical_admin_response.json())
+
+    export_response = client.get(
+        "/internal/admin/historical-events/export?min_label_quality=0.8",
+        headers=_analyst_headers(),
+    )
+    assert export_response.status_code == 200
+    export_payload = export_response.json()
+    assert export_payload["manifest"]["schema_version"] == "historical-event-library-v1"
+    assert any(item["event_id"] == event_id for item in export_payload["events"])
 
 
 def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:

@@ -17,6 +17,7 @@ app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
 run_history: dict[str, list[dict[str, Any]]] = {}
 event_store: dict[str, dict[str, Any]] = {}
+historical_event_library: dict[str, dict[str, Any]] = {}
 review_audit_log: list[dict[str, Any]] = []
 threshold_registry: list[dict[str, Any]] = []
 model_registry: list[dict[str, Any]] = []
@@ -55,6 +56,41 @@ class RetrainingTriggerRequest(BaseModel):
     feature_schema_changed: bool = False
     actor: str
     notes: str = ""
+
+
+class HistoricalDateRange(BaseModel):
+    start: datetime
+    end: datetime
+
+
+class HistoricalEventCatalogRecord(BaseModel):
+    event_name: str
+    corridor_reach: str
+    date_range: HistoricalDateRange
+    peak_date: datetime
+    source_scenes: list[str] = Field(default_factory=list)
+    rainfall_context: dict[str, float | str] = Field(default_factory=dict)
+    forecast_context: dict[str, float | str] = Field(default_factory=dict)
+    known_embankment_notes: str = ""
+    label_quality_score: float = Field(default=0.4, ge=0.0, le=1.0)
+
+
+class HistoricalEventAssets(BaseModel):
+    reviewed_polygons: list[str] = Field(default_factory=list)
+    source_rasters: list[str] = Field(default_factory=list)
+    screenshots: list[str] = Field(default_factory=list)
+    analyst_notes: list[str] = Field(default_factory=list)
+    partner_references: list[str] = Field(default_factory=list)
+
+
+class HistoricalEventRecord(BaseModel):
+    event_id: str
+    run_id: str
+    catalog: HistoricalEventCatalogRecord
+    assets: HistoricalEventAssets
+    status: str
+    created_at: str
+    updated_at: str
 
 
 def _evaluate_retraining_trigger(payload: RetrainingTriggerRequest) -> dict[str, Any]:
@@ -144,6 +180,7 @@ def _record_run(report: dict[str, Any]) -> None:
     run_history.setdefault(corridor, []).append(report)
     event = _event_record_from_run(report)
     event_store[event["event_id"]] = event
+    _upsert_historical_event_from_event(event)
     metrics_registry.increment("pipeline.alerts_published")
     metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
 
@@ -154,6 +191,89 @@ def _all_events() -> list[dict[str, Any]]:
 
 def _event_by_id(event_id: str) -> dict[str, Any] | None:
     return event_store.get(event_id)
+
+
+def _upsert_historical_event_from_event(event: dict[str, Any]) -> None:
+    existing = historical_event_library.get(event["event_id"])
+    detected_at = event["timestamps"]["detected_at"]
+    now_iso = datetime.now(UTC).isoformat()
+    rainfall = event["confidence_breakdown"]["flood_probability"]
+    forecast = event["confidence_breakdown"]["breach_risk"]
+
+    if existing is None:
+        event_record = HistoricalEventRecord(
+            event_id=event["event_id"],
+            run_id=event["run_id"],
+            status=event["status"],
+            created_at=now_iso,
+            updated_at=now_iso,
+            catalog=HistoricalEventCatalogRecord(
+                event_name=f"{event['aoi']} {event['event_class']} event",
+                corridor_reach=event["aoi"],
+                date_range=HistoricalDateRange(start=detected_at, end=detected_at),
+                peak_date=detected_at,
+                source_scenes=event["source_scenes"],
+                rainfall_context={"rainfall_signal": rainfall},
+                forecast_context={"forecast_signal": forecast},
+                known_embankment_notes="No embankment notes captured yet.",
+                label_quality_score=0.4,
+            ),
+            assets=HistoricalEventAssets(
+                reviewed_polygons=[],
+                source_rasters=[f"derived/{event['aoi']}/{event['run_id']}/flood_mask.tif"],
+                screenshots=[],
+                analyst_notes=[event.get("notes", "")],
+                partner_references=[],
+            ),
+        )
+    else:
+        event_record = HistoricalEventRecord.model_validate(existing)
+        event_record.status = event["status"]
+        event_record.updated_at = now_iso
+        event_record.catalog.source_scenes = event["source_scenes"]
+        event_record.assets.source_rasters = [f"derived/{event['aoi']}/{event['run_id']}/flood_mask.tif"]
+        if event.get("notes"):
+            event_record.assets.analyst_notes.append(event["notes"])
+
+    historical_event_library[event["event_id"]] = event_record.model_dump()
+
+
+def _training_export_package(*, min_label_quality: float, include_pending: bool) -> dict[str, Any]:
+    records = [HistoricalEventRecord.model_validate(item) for item in historical_event_library.values()]
+    if not include_pending:
+        records = [r for r in records if r.status in {"accept", "published"}]
+    records = [r for r in records if r.catalog.label_quality_score >= min_label_quality]
+
+    return {
+        "manifest": {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "record_count": len(records),
+            "min_label_quality": min_label_quality,
+            "include_pending": include_pending,
+            "schema_version": "historical-event-library-v1",
+        },
+        "events": [
+            {
+                "event_id": record.event_id,
+                "event_name": record.catalog.event_name,
+                "corridor_reach": record.catalog.corridor_reach,
+                "date_range": record.catalog.date_range.model_dump(),
+                "peak_date": record.catalog.peak_date,
+                "source_scenes": record.catalog.source_scenes,
+                "rainfall_context": record.catalog.rainfall_context,
+                "forecast_context": record.catalog.forecast_context,
+                "known_embankment_notes": record.catalog.known_embankment_notes,
+                "label_quality_score": record.catalog.label_quality_score,
+                "reviewed_polygons": record.assets.reviewed_polygons,
+                "source_rasters": record.assets.source_rasters,
+                "screenshots": record.assets.screenshots,
+                "analyst_notes": record.assets.analyst_notes,
+                "partner_references": record.assets.partner_references,
+                "status": record.status,
+            }
+            for record in records
+        ],
+    }
 
 
 def _confidence_bucket(score_percent: float) -> str:
@@ -370,6 +490,33 @@ def get_event_historical(event_id: str) -> dict[str, Any]:
     return {"event_id": event_id, "event_area_trend": trend, "candidate_persistence_hours": event["candidate_persistence_hours"]}
 
 
+@public_router.get("/historical-events")
+def list_historical_events(corridor_reach: str | None = Query(default=None)) -> list[dict[str, Any]]:
+    records = [HistoricalEventRecord.model_validate(item) for item in historical_event_library.values()]
+    if corridor_reach:
+        records = [record for record in records if record.catalog.corridor_reach == corridor_reach]
+    return [
+        {
+            "event_id": record.event_id,
+            "event_name": record.catalog.event_name,
+            "corridor_reach": record.catalog.corridor_reach,
+            "peak_date": record.catalog.peak_date,
+            "label_quality_score": record.catalog.label_quality_score,
+            "status": record.status,
+        }
+        for record in records
+    ]
+
+
+@public_router.get("/historical-events/{event_id}")
+def get_historical_event(event_id: str) -> dict[str, Any]:
+    record = historical_event_library.get(event_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Historical event not found.")
+    parsed = HistoricalEventRecord.model_validate(record)
+    return parsed.model_dump()
+
+
 @public_router.get("/events/{event_id}/confidence")
 def get_event_confidence(event_id: str) -> dict[str, Any]:
     event = _event_by_id(event_id)
@@ -471,6 +618,16 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
     if payload.reviewed_geometry:
         event["geometry"] = payload.reviewed_geometry
 
+    _upsert_historical_event_from_event(event)
+    historical_record = HistoricalEventRecord.model_validate(historical_event_library[event_id])
+    historical_record.catalog.label_quality_score = max(historical_record.catalog.label_quality_score, 0.85)
+    if payload.reviewed_geometry:
+        historical_record.assets.reviewed_polygons = [f"published/{event['aoi']}/{event_id}/reviewed_extent.geojson"]
+    if payload.notes:
+        historical_record.assets.analyst_notes.append(payload.notes)
+    historical_record.updated_at = datetime.now(UTC).isoformat()
+    historical_event_library[event_id] = historical_record.model_dump()
+
     review_audit_log.append(
         {
             "event_id": event_id,
@@ -500,6 +657,27 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
 @internal_router.get("/admin/review-audit", dependencies=[Depends(_require_role("admin", "analyst"))])
 def admin_review_audit() -> list[dict[str, Any]]:
     return review_audit_log
+
+
+@internal_router.get("/admin/historical-events", dependencies=[Depends(_require_role("admin", "analyst"))])
+def admin_list_historical_events() -> list[dict[str, Any]]:
+    return [HistoricalEventRecord.model_validate(item).model_dump() for item in historical_event_library.values()]
+
+
+@internal_router.get("/admin/historical-events/export", dependencies=[Depends(_require_role("admin", "analyst"))])
+def admin_export_historical_events(
+    min_label_quality: float = Query(default=0.8, ge=0.0, le=1.0),
+    include_pending: bool = Query(default=False),
+) -> dict[str, Any]:
+    return _training_export_package(min_label_quality=min_label_quality, include_pending=include_pending)
+
+
+@internal_router.get("/admin/historical-events/{event_id}", dependencies=[Depends(_require_role("admin", "analyst"))])
+def admin_get_historical_event(event_id: str) -> dict[str, Any]:
+    record = historical_event_library.get(event_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Historical event not found.")
+    return HistoricalEventRecord.model_validate(record).model_dump()
 
 
 @internal_router.post("/admin/register-threshold", dependencies=[Depends(_require_role("admin"))])
