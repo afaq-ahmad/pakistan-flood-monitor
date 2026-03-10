@@ -50,6 +50,250 @@ class PreparedSarScene:
     processing_metadata: dict[str, str | float | bool | list[str]]
 
 
+@dataclass(slots=True)
+class OpticalSceneCandidate:
+    scene_id: str
+    corridor_id: str
+    geometry: dict
+    assets: Mapping[str, str]
+    sensor: str
+    cloud_cover: float | None = None
+
+
+@dataclass(slots=True)
+class PreparedOpticalScene:
+    scene_id: str
+    corridor_id: str
+    acquisition_time: datetime
+    sensor: str
+    index_paths: dict[str, Path]
+    mask_path: Path
+    optical_water_confidence_path: Path
+    stats: dict[str, float]
+
+
+class OpticalPreprocessor:
+    """Secondary optical preprocessing for opportunistic flood confirmation."""
+
+    def __init__(
+        self,
+        *,
+        corridor_geometry: dict,
+        working_crs: str,
+        resolution_meters: float,
+        clip_buffer_meters: float = 300.0,
+    ) -> None:
+        self._corridor = gpd.GeoDataFrame([{"geometry": shape(corridor_geometry)}], crs="EPSG:4326")
+        self._working_crs = working_crs
+        self._resolution = resolution_meters
+        self._clip_buffer_meters = clip_buffer_meters
+        self._grid_transform, self._grid_width, self._grid_height = self._build_corridor_grid()
+
+    def build_asset_retrieval_plan(
+        self,
+        candidates: Iterable[OpticalSceneCandidate],
+        *,
+        min_overlap_ratio: float = 0.05,
+        max_cloud_cover: float = 85.0,
+    ) -> list[AssetRetrievalPlan]:
+        corridor_geom = self._corridor.geometry.iloc[0]
+        plans: list[AssetRetrievalPlan] = []
+
+        for candidate in candidates:
+            scene_geom = shape(candidate.geometry)
+            overlap = corridor_geom.intersection(scene_geom)
+            overlap_ratio = 0.0 if corridor_geom.area == 0 else float(overlap.area / corridor_geom.area)
+            selected_assets = self._extract_optical_assets(candidate.assets)
+
+            if overlap_ratio < min_overlap_ratio:
+                accepted = False
+                reason = "aoi_overlap_below_threshold"
+            elif candidate.cloud_cover is not None and candidate.cloud_cover > max_cloud_cover:
+                accepted = False
+                reason = "cloud_cover_above_threshold"
+                selected_assets = {}
+            elif set(selected_assets) != {"green", "nir", "swir1", "swir2"}:
+                accepted = False
+                reason = "missing_required_optical_bands"
+                selected_assets = {}
+            else:
+                accepted = True
+                reason = "accepted"
+
+            plans.append(
+                AssetRetrievalPlan(
+                    scene_id=candidate.scene_id,
+                    corridor_id=candidate.corridor_id,
+                    selected_assets=selected_assets,
+                    overlap_ratio=overlap_ratio,
+                    accepted=accepted,
+                    reason=reason,
+                )
+            )
+
+        return plans
+
+    def preprocess_scene(
+        self,
+        *,
+        scene_id: str,
+        corridor_id: str,
+        acquisition_time: datetime,
+        sensor: str,
+        asset_paths: Mapping[str, str | Path],
+        output_dir: str | Path,
+    ) -> PreparedOpticalScene:
+        out_dir = Path(output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        normalized = self._extract_optical_assets(asset_paths)
+        required = ["green", "nir", "swir1", "swir2"]
+        if any(band not in normalized for band in required):
+            missing = [band for band in required if band not in normalized]
+            raise ValueError(f"missing required optical bands: {missing}")
+
+        arrays: dict[str, np.ndarray] = {}
+        corridor_projected = self._corridor.to_crs(self._working_crs)
+        corridor_geom = corridor_projected.geometry.iloc[0]
+
+        for band, src_path in normalized.items():
+            with rasterio.open(src_path) as src:
+                clip_geometry = corridor_projected.to_crs(src.crs)
+                buffered = clip_geometry.to_crs("EPSG:3857")
+                buffered["geometry"] = buffered.geometry.buffer(self._clip_buffer_meters)
+                buffered = buffered.to_crs(src.crs)
+
+                clipped, clipped_transform = mask(src, buffered.geometry, crop=True)
+                clipped_array = clipped[0].astype(np.float32)
+                if src.nodata is not None:
+                    clipped_array = np.where(clipped_array == src.nodata, np.nan, clipped_array)
+
+                aligned = np.full((self._grid_height, self._grid_width), np.nan, dtype=np.float32)
+                reproject(
+                    source=clipped_array,
+                    destination=aligned,
+                    src_transform=clipped_transform,
+                    src_crs=src.crs,
+                    dst_transform=self._grid_transform,
+                    dst_crs=self._working_crs,
+                    resampling=Resampling.bilinear,
+                    dst_nodata=np.nan,
+                )
+                arrays[band] = aligned
+
+        cloud_mask = self._compute_cloud_shadow_mask(arrays["green"], arrays["nir"], arrays["swir1"], arrays["swir2"])
+        corridor_mask = geometry_mask(
+            [corridor_geom],
+            out_shape=(self._grid_height, self._grid_width),
+            transform=self._grid_transform,
+            invert=True,
+        )
+        valid_mask = np.logical_and(corridor_mask, ~cloud_mask)
+
+        ndwi = self._safe_index(arrays["green"], arrays["nir"])
+        mndwi = self._safe_index(arrays["green"], arrays["swir1"])
+        awei = 4 * (arrays["green"] - arrays["swir1"]) - (0.25 * arrays["nir"] + 2.75 * arrays["swir2"])
+
+        for idx in (ndwi, mndwi, awei):
+            idx[~valid_mask] = np.nan
+
+        optical_confidence = self._optical_water_confidence(ndwi, mndwi, awei)
+        optical_confidence[~valid_mask] = np.nan
+
+        index_paths: dict[str, Path] = {}
+        for name, arr in {"ndwi": ndwi, "mndwi": mndwi, "awei": awei}.items():
+            path = out_dir / f"{scene_id}_{name}.tif"
+            self._write_array(path, arr)
+            index_paths[name] = path
+
+        mask_path = out_dir / f"{scene_id}_cloud_shadow_mask.tif"
+        self._write_array(mask_path, cloud_mask.astype(np.float32))
+        confidence_path = out_dir / f"{scene_id}_optical_water_confidence.tif"
+        self._write_array(confidence_path, optical_confidence.astype(np.float32))
+
+        total_corridor = int(corridor_mask.sum())
+        valid_observable = int(valid_mask.sum())
+        cloud_obscured = int(np.logical_and(corridor_mask, cloud_mask).sum())
+
+        stats = {
+            "valid_fraction": 0.0 if total_corridor == 0 else valid_observable / total_corridor,
+            "cloud_shadow_fraction": 0.0 if total_corridor == 0 else cloud_obscured / total_corridor,
+            "mean_optical_water_confidence": float(np.nanmean(optical_confidence)) if valid_observable else 0.0,
+        }
+
+        return PreparedOpticalScene(
+            scene_id=scene_id,
+            corridor_id=corridor_id,
+            acquisition_time=acquisition_time,
+            sensor=sensor,
+            index_paths=index_paths,
+            mask_path=mask_path,
+            optical_water_confidence_path=confidence_path,
+            stats=stats,
+        )
+
+    @staticmethod
+    def _extract_optical_assets(assets: Mapping[str, str | Path]) -> dict[str, str]:
+        selected: dict[str, str] = {}
+        aliases = {
+            "green": ["green", "b03", "band3"],
+            "nir": ["nir", "b08", "band8"],
+            "swir1": ["swir1", "b11", "band11", "b6", "band6"],
+            "swir2": ["swir2", "b12", "band12", "b7", "band7"],
+        }
+        for name, href in assets.items():
+            key = str(name).lower()
+            for canonical, tokens in aliases.items():
+                if canonical not in selected and any(token in key for token in tokens):
+                    selected[canonical] = str(href)
+        return selected
+
+    @staticmethod
+    def _safe_index(numerator: np.ndarray, denominator_part: np.ndarray) -> np.ndarray:
+        denom = numerator + denominator_part
+        out = np.full(numerator.shape, np.nan, dtype=np.float32)
+        valid = np.abs(denom) > 1e-6
+        out[valid] = (numerator[valid] - denominator_part[valid]) / denom[valid]
+        return out
+
+    @staticmethod
+    def _compute_cloud_shadow_mask(green: np.ndarray, nir: np.ndarray, swir1: np.ndarray, swir2: np.ndarray) -> np.ndarray:
+        bright_cloud = (green > 0.22) & (nir > 0.25) & (swir1 > 0.2)
+        shadow_like = (nir < 0.08) & (swir1 < 0.08) & (swir2 < 0.08)
+        invalid = np.isnan(green) | np.isnan(nir) | np.isnan(swir1) | np.isnan(swir2)
+        return bright_cloud | shadow_like | invalid
+
+    @staticmethod
+    def _optical_water_confidence(ndwi: np.ndarray, mndwi: np.ndarray, awei: np.ndarray) -> np.ndarray:
+        ndwi_score = np.clip((ndwi + 0.2) / 0.7, 0.0, 1.0)
+        mndwi_score = np.clip((mndwi + 0.2) / 0.7, 0.0, 1.0)
+        awei_score = np.clip((awei + 0.5) / 2.5, 0.0, 1.0)
+        return (0.35 * ndwi_score + 0.4 * mndwi_score + 0.25 * awei_score).astype(np.float32)
+
+    def _write_array(self, path: Path, array: np.ndarray) -> None:
+        profile = {
+            "driver": "GTiff",
+            "height": self._grid_height,
+            "width": self._grid_width,
+            "count": 1,
+            "dtype": "float32",
+            "crs": self._working_crs,
+            "transform": self._grid_transform,
+            "nodata": np.nan,
+        }
+        with rasterio.open(path, "w", **profile) as dst:
+            dst.write(array.astype(np.float32), 1)
+
+    def _build_corridor_grid(self) -> tuple[rasterio.Affine, int, int]:
+        projected = self._corridor.to_crs(self._working_crs)
+        buffered = projected.geometry.buffer(self._clip_buffer_meters)
+        minx, miny, maxx, maxy = buffered.total_bounds
+        width = max(1, int(np.ceil((maxx - minx) / self._resolution)))
+        height = max(1, int(np.ceil((maxy - miny) / self._resolution)))
+        transform = from_origin(minx, maxy, self._resolution, self._resolution)
+        return transform, width, height
+
+
 class Sentinel1Preprocessor:
     """Corridor-first Sentinel-1 preprocessing pipeline.
 

@@ -4,6 +4,53 @@ from dataclasses import dataclass
 from typing import Any
 
 
+@dataclass(slots=True)
+class OpticalSupportMetrics:
+    supported_fraction: float
+    obscured_fraction: float
+    uncertain_fraction: float
+    observable_fraction: float
+    optical_support_score: float
+
+
+def compute_optical_candidate_support(
+    *,
+    candidate_mask,
+    optical_water_confidence,
+    optical_valid_mask,
+    support_threshold: float = 0.55,
+    uncertain_threshold: float = 0.35,
+) -> OpticalSupportMetrics:
+    candidate = candidate_mask.astype(bool)
+    total = int(candidate.sum())
+    if total == 0:
+        return OpticalSupportMetrics(0.0, 0.0, 0.0, 0.0, 0.5)
+
+    valid = optical_valid_mask.astype(bool) & candidate
+    obscured = (~optical_valid_mask.astype(bool)) & candidate
+
+    supported = valid & (optical_water_confidence >= support_threshold)
+    uncertain = valid & (optical_water_confidence >= uncertain_threshold) & (optical_water_confidence < support_threshold)
+
+    supported_fraction = float(supported.sum() / total)
+    obscured_fraction = float(obscured.sum() / total)
+    uncertain_fraction = float(uncertain.sum() / total)
+    observable_fraction = float(valid.sum() / total)
+
+    if observable_fraction < 0.15:
+        optical_support_score = 0.5
+    else:
+        score_raw = (supported_fraction / max(observable_fraction, 1e-6)) - (uncertain_fraction / max(observable_fraction, 1e-6)) * 0.3
+        optical_support_score = max(0.0, min(1.0, (score_raw + 0.15) / 1.15))
+
+    return OpticalSupportMetrics(
+        supported_fraction=supported_fraction,
+        obscured_fraction=obscured_fraction,
+        uncertain_fraction=uncertain_fraction,
+        observable_fraction=observable_fraction,
+        optical_support_score=optical_support_score,
+    )
+
 def score_flood_confidence(raw_score: float, hydromet_weight: float = 0.2) -> float:
     return max(0.0, min(1.0, raw_score * (1 - hydromet_weight) + hydromet_weight))
 
@@ -16,6 +63,7 @@ class FloodCandidateScoreConfig:
     hydromet_weight: float = 0.1
     novelty_weight: float = 0.1
     persistence_weight: float = 0.1
+    optical_weight: float = 0.1
     analyst_review_threshold: float = 0.65
     monitor_only_threshold: float = 0.25
 
@@ -29,6 +77,8 @@ def score_flood_candidate_confidence(
     seasonal_overlap_ratio: float,
     hydromet_stress_score: float,
     persistence_score: float,
+    optical_support_score: float | None = None,
+    optical_observable_fraction: float = 0.0,
     config: FloodCandidateScoreConfig | None = None,
 ) -> dict[str, Any]:
     """Explainable additive confidence model for analyst-facing candidate triage."""
@@ -44,6 +94,8 @@ def score_flood_candidate_confidence(
     river_reasonableness = max(0.0, min(1.0, 1.0 - (distance_to_river_m / 20000.0)))
     seasonal_novelty = max(0.0, min(1.0, 1.0 - seasonal_overlap_ratio))
 
+    optical_component = 0.5 if optical_support_score is None else max(0.0, min(1.0, optical_support_score))
+
     components = {
         "sar_anomaly_strength": max(0.0, min(1.0, mean_anomaly_score)),
         "terrain_plausibility": terrain_plausibility,
@@ -51,6 +103,7 @@ def score_flood_candidate_confidence(
         "hydromet_stress_support": max(0.0, min(1.0, hydromet_stress_score)),
         "seasonal_water_novelty": seasonal_novelty,
         "persistence_support": max(0.0, min(1.0, persistence_score)),
+        "optical_support": optical_component,
     }
 
     weighted_score = (
@@ -61,6 +114,8 @@ def score_flood_candidate_confidence(
         + components["seasonal_water_novelty"] * cfg.novelty_weight
         + components["persistence_support"] * cfg.persistence_weight
     )
+    if optical_observable_fraction > 0.15:
+        weighted_score += (components["optical_support"] - 0.5) * cfg.optical_weight
     confidence = max(0.0, min(1.0, weighted_score))
 
     if confidence >= cfg.analyst_review_threshold:
@@ -81,5 +136,6 @@ def score_flood_candidate_confidence(
             "hydromet_stress_support": cfg.hydromet_weight,
             "seasonal_water_novelty": cfg.novelty_weight,
             "persistence_support": cfg.persistence_weight,
+            "optical_support": cfg.optical_weight if optical_observable_fraction > 0.15 else 0.0,
         },
     }
