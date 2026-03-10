@@ -4,6 +4,8 @@ from app.services.ingestion import STACDiscoveryService
 from app.services.reference_sync import ReferenceSyncSuite
 from app.services.scoring import score_flood_confidence
 from app.services.orchestration import IdempotentTaskWorker, TaskPlannerJob
+from app.services.preprocessing import Sentinel1Preprocessor
+from app.services.sar_baseline import RollingSarBaselineService
 
 __all__ = [
     "discover_scenes",
@@ -14,4 +16,6 @@ __all__ = [
     "ReferenceSyncSuite",
     "TaskPlannerJob",
     "IdempotentTaskWorker",
+    "Sentinel1Preprocessor",
+    "RollingSarBaselineService",
 ]
