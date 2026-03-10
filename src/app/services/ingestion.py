@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Iterable, Protocol
 
 from shapely.geometry import shape
+
+from app.services.observability import log_failure, log_structured, metrics_registry
 
 
 @dataclass(slots=True)
@@ -94,39 +96,100 @@ class STACDiscoveryService:
         inserted = 0
         queued = 0
         skipped = 0
-        now = now or datetime.utcnow()
+        failure_count = 0
+        now = now or datetime.now(UTC)
 
         corridor_shape = shape(corridor_geometry)
+        run_id = f"discover-{corridor_id}-{int(now.timestamp())}"
+        end_timing = metrics_registry.time_block("pipeline.processing_latency_ms")
 
         for provider in self._providers:
             for item in provider.search(corridor_geometry, start_time, end_time):
                 discovered += 1
-                scene = self._normalize_item(provider.name, item)
-                intersection_area_sqkm = self._intersection_area_sqkm(corridor_shape, shape(scene.geometry))
+                metrics_registry.increment("pipeline.discovery_count")
+                checkpoint = "normalize_item"
+                scene_id = str(item.get("id") or item.get("properties", {}).get("scene_id") or "unknown")
+                started = datetime.now(UTC)
+                try:
+                    scene = self._normalize_item(provider.name, item)
+                    checkpoint = "intersection_filter"
+                    intersection_area_sqkm = self._intersection_area_sqkm(corridor_shape, shape(scene.geometry))
 
-                if self._should_skip(
-                    corridor_id=corridor_id,
-                    scene=scene,
-                    intersection_area_sqkm=intersection_area_sqkm,
-                    now=now,
-                ):
-                    skipped += 1
-                    continue
+                    if self._should_skip(
+                        corridor_id=corridor_id,
+                        scene=scene,
+                        intersection_area_sqkm=intersection_area_sqkm,
+                        now=now,
+                    ):
+                        skipped += 1
+                        continue
 
-                scene_row_id = self._scene_repository.insert_scene(corridor_id, scene, intersection_area_sqkm)
-                inserted += 1
-                self._task_queue.enqueue(
-                    "scene-processing-candidate",
-                    {
-                        "scene_row_id": scene_row_id,
-                        "scene_id": scene.scene_id,
-                        "sensor": scene.sensor,
-                        "corridor_id": corridor_id,
-                        "acquisition_time": scene.acquisition_time.isoformat(),
-                    },
-                )
-                queued += 1
+                    checkpoint = "persist_scene"
+                    scene_row_id = self._scene_repository.insert_scene(corridor_id, scene, intersection_area_sqkm)
+                    inserted += 1
+                    checkpoint = "enqueue_candidate"
+                    self._task_queue.enqueue(
+                        "scene-processing-candidate",
+                        {
+                            "scene_row_id": scene_row_id,
+                            "scene_id": scene.scene_id,
+                            "sensor": scene.sensor,
+                            "corridor_id": corridor_id,
+                            "acquisition_time": scene.acquisition_time.isoformat(),
+                        },
+                    )
+                    queued += 1
+                    metrics_registry.increment("pipeline.candidates_created")
+                    log_structured(
+                        "scene_discovery_item",
+                        run_id=run_id,
+                        corridor_id=corridor_id,
+                        scene_id=scene.scene_id,
+                        task_type="discover_scene",
+                        provider=provider.name,
+                        duration_ms=(datetime.now(UTC) - started).total_seconds() * 1000,
+                        success=True,
+                        output_paths=[f"queue://scene-processing-candidate/{scene_row_id}"],
+                    )
+                except Exception as exc:
+                    failure_count += 1
+                    metrics_registry.increment("pipeline.download_failures")
+                    log_failure(
+                        "scene_discovery_item",
+                        error=exc,
+                        run_id=run_id,
+                        corridor_id=corridor_id,
+                        scene_id=scene_id,
+                        task_type="discover_scene",
+                        pipeline_stage="discovery",
+                        last_completed_checkpoint=checkpoint,
+                        input_identifiers={"provider": provider.name, "scene_id": scene_id},
+                        duration_ms=(datetime.now(UTC) - started).total_seconds() * 1000,
+                        output_paths=[],
+                    )
 
+        total_latency = end_timing()
+        metrics_registry.increment("pipeline.aois_processed")
+        metrics_registry.observe_latency_ms("ops.response_latency_ms", total_latency)
+        metrics_registry.set_gauge("ops.queue_backlog", float(len(getattr(self._task_queue, "tasks", []))))
+        metrics_registry.set_gauge("ops.stale_job_count", 0.0)
+        metrics_registry.update_disk_usage(".")
+
+        log_structured(
+            "scene_discovery_summary",
+            run_id=run_id,
+            corridor_id=corridor_id,
+            scene_id=None,
+            task_type="discover_scene_batch",
+            duration_ms=total_latency,
+            success=failure_count == 0,
+            discovered=discovered,
+            inserted=inserted,
+            queued=queued,
+            skipped=skipped,
+            failures=failure_count,
+            output_paths=["queue://scene-processing-candidate"],
+        )
         return SceneDiscoverySummary(discovered=discovered, inserted=inserted, queued=queued, skipped=skipped)
 
     def _normalize_item(self, provider: str, item: dict) -> NormalizedScene:

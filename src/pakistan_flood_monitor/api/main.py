@@ -6,6 +6,8 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
+from app.services.observability import metrics_registry
+
 from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
 
@@ -107,6 +109,8 @@ def _record_run(report: dict[str, Any]) -> None:
     run_history.setdefault(corridor, []).append(report)
     event = _event_record_from_run(report)
     event_store[event["event_id"]] = event
+    metrics_registry.increment("pipeline.alerts_published")
+    metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
 
 
 def _all_events() -> list[dict[str, Any]]:
@@ -127,8 +131,9 @@ def _confidence_bucket(score_percent: float) -> str:
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict[str, str | float]:
+    metrics_registry.set_gauge("ops.api_uptime", 1.0)
+    return {"status": "ok", "api_uptime": 1.0}
 
 
 @app.get("/run/{aoi_name}")
@@ -324,6 +329,40 @@ def breach_candidates() -> list[dict]:
     return items
 
 
+
+
+@app.get("/monitoring/metrics")
+def monitoring_metrics() -> dict[str, Any]:
+    snapshot = metrics_registry.snapshot()
+    return {
+        "pipeline_metrics": {
+            "discovery_count": snapshot.counters.get("pipeline.discovery_count", 0.0),
+            "download_failures": snapshot.counters.get("pipeline.download_failures", 0.0),
+            "aois_processed": snapshot.counters.get("pipeline.aois_processed", 0.0),
+            "candidates_created": snapshot.counters.get("pipeline.candidates_created", 0.0),
+            "alerts_published": snapshot.counters.get("pipeline.alerts_published", 0.0),
+            "processing_latency": snapshot.latencies_ms.get("pipeline.processing_latency_ms", {}),
+        },
+        "ops_metrics": {
+            "disk_usage": {
+                "total_bytes": snapshot.gauges.get("ops.disk.total_bytes", 0.0),
+                "used_bytes": snapshot.gauges.get("ops.disk.used_bytes", 0.0),
+                "free_bytes": snapshot.gauges.get("ops.disk.free_bytes", 0.0),
+            },
+            "queue_backlog": snapshot.gauges.get("ops.queue_backlog", 0.0),
+            "api_uptime": snapshot.gauges.get("ops.api_uptime", 0.0),
+            "response_latency": snapshot.latencies_ms.get("ops.response_latency_ms", {}),
+            "stale_job_count": snapshot.gauges.get("ops.stale_job_count", 0.0),
+        },
+        "product_metrics": {
+            "alerts_produced": snapshot.counters.get("product.alerts_produced", 0.0),
+            "alerts_confirmed": snapshot.counters.get("product.alerts_confirmed", 0.0),
+            "false_alarms": snapshot.counters.get("product.false_alarms", 0.0),
+            "scene_to_alert_delay": snapshot.latencies_ms.get("product.scene_to_alert_delay_ms", {}),
+            "analyst_hours_saved_proxy": snapshot.counters.get("product.analyst_hours_saved_proxy", 0.0),
+            "exposure_outputs_delivered": snapshot.counters.get("product.exposure_outputs_delivered", 0.0),
+        },
+    }
 @app.post("/admin/reprocess-scene")
 def admin_reprocess_scene(aoi_name: str) -> dict:
     report = pipeline.run_daily(aoi_name).model_dump()
@@ -361,6 +400,11 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest) -> dict:
             "notes": payload.notes,
         }
     )
+    if payload.action in {"accept", "published"}:
+        metrics_registry.increment("product.alerts_confirmed")
+        metrics_registry.increment("product.analyst_hours_saved_proxy", 0.75)
+    if payload.action in {"reject", "false_alarm"}:
+        metrics_registry.increment("product.false_alarms")
     return {"status": "review_updated", "event": event}
 
 

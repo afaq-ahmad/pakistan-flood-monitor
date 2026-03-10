@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from typing import Protocol
 
+from app.services.observability import log_failure, log_structured, metrics_registry
 
 TASK_PREPROCESS_S1 = "preprocess_s1_scene"
 TASK_PREPROCESS_OPTICAL = "preprocess_optical_scene"
@@ -244,22 +245,64 @@ class IdempotentTaskWorker:
 
     def execute(self, *, signature: RunSignature, expected_outputs: list[str], processor) -> str:
         run_hash = signature.run_hash
+        start = datetime.now(UTC)
+        checkpoint = "load_previous_state"
         previous_success = self._run_state_repository.get_successful(run_hash)
         if previous_success and self._output_store.outputs_exist(expected_outputs):
+            metrics_registry.increment("ops.jobs_skipped")
+            log_structured(
+                "idempotent_worker",
+                run_id=run_hash,
+                corridor_id=signature.corridor_id,
+                scene_id=signature.scene_id,
+                task_type="idempotent_execute",
+                duration_ms=(datetime.now(UTC) - start).total_seconds() * 1000,
+                success=True,
+                status=TASK_STATUS_SKIPPED,
+                output_paths=expected_outputs,
+            )
             return TASK_STATUS_SKIPPED
 
+        checkpoint = "cleanup_partial_outputs"
         if not previous_success and self._output_store.outputs_exist(expected_outputs):
             self._output_store.remove_partial_outputs(expected_outputs)
 
+        checkpoint = "execute_processor"
         self._run_state_repository.save(run_hash, {"status": TASK_STATUS_RUNNING, "outputs": expected_outputs})
         try:
             processor()
-        except Exception:
+        except Exception as exc:
             self._output_store.remove_partial_outputs(expected_outputs)
             self._run_state_repository.save(run_hash, {"status": TASK_STATUS_FAILED, "outputs": expected_outputs})
+            metrics_registry.increment("ops.job_failures")
+            log_failure(
+                "idempotent_worker",
+                error=exc,
+                run_id=run_hash,
+                corridor_id=signature.corridor_id,
+                scene_id=signature.scene_id,
+                task_type="idempotent_execute",
+                pipeline_stage="task_worker",
+                input_identifiers={"scene_id": signature.scene_id, "corridor_id": signature.corridor_id},
+                last_completed_checkpoint=checkpoint,
+                duration_ms=(datetime.now(UTC) - start).total_seconds() * 1000,
+                output_paths=expected_outputs,
+            )
             raise
 
         self._run_state_repository.save(run_hash, {"status": TASK_STATUS_SUCCESS, "outputs": expected_outputs})
+        metrics_registry.increment("ops.jobs_succeeded")
+        log_structured(
+            "idempotent_worker",
+            run_id=run_hash,
+            corridor_id=signature.corridor_id,
+            scene_id=signature.scene_id,
+            task_type="idempotent_execute",
+            duration_ms=(datetime.now(UTC) - start).total_seconds() * 1000,
+            success=True,
+            status=TASK_STATUS_SUCCESS,
+            output_paths=expected_outputs,
+        )
         return TASK_STATUS_SUCCESS
 
 
