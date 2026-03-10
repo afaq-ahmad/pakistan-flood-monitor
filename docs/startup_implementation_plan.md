@@ -1,5 +1,18 @@
 # Startup Implementation Plan (Operational MVP)
 
+## System framing
+Build the MVP as a three-layer pipeline:
+- **Monitoring layer** for discovery and ingestion of Sentinel-1, optical support imagery, rainfall, forecast, DEM, and static masks.
+- **Analytics layer** for flood anomalies, breach suspicion, confidence scoring, and exposure summaries.
+- **Delivery layer** for reviewed event persistence, API services, dashboard/map outputs, and alert-ready products.
+
+Implementation must remain modular (not one monolithic script), with modules focused on:
+1. metadata/data fetching,
+2. raster/vector preprocessing,
+3. detection computation,
+4. review/publication state management,
+5. API and map-service output exposure.
+
 ## Engineering sequence
 1. AOI/corridor and metadata schema
 2. Scene discovery service (metadata-first, deduplicated)

@@ -2,6 +2,23 @@
 
 Satellite-driven MVP for daily corridor flood monitoring, flood anomaly mapping, breach suspicion flagging, exposure estimation, and alert publishing.
 
+## What we are building
+The system is implemented as a coordinated pipeline with three concrete layers:
+
+1. **Monitoring layer**
+   - discovers and ingests Sentinel-1, optical support imagery, rainfall, forecast, DEM, and static masks.
+2. **Analytics layer**
+   - computes flood anomalies, breach suspicion, confidence scoring, and exposure summaries.
+3. **Delivery layer**
+   - stores reviewed events, serves APIs, powers dashboard/map outputs, and emits alert-ready products.
+
+In implementation terms, this repository is intentionally modular rather than a single script. Python modules are organized to do five things well:
+- fetch metadata and data,
+- preprocess rasters and vectors,
+- compute detections,
+- manage review and publication state,
+- expose outputs through APIs and map services.
+
 ## MVP capabilities
 - Monitor selected river corridors daily.
 - Pull Sentinel-1 corridor scenes plus IMERG and GloFAS indicators.
