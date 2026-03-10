@@ -104,6 +104,10 @@ def test_flood_anomaly_detector_computes_likelihood_and_candidates(tmp_path: Pat
     assert result.output_rasters["flood_likelihood"].exists()
     assert result.output_rasters["flood_plausibility"].exists()
     assert result.output_rasters["flood_candidates_filtered"].exists()
+    assert result.output_rasters["flood_threshold_mask"].exists()
+    assert result.output_rasters["flood_candidates_cleaned"].exists()
+    assert result.candidate_vector_path is not None
+    assert result.candidate_vector_path.exists()
 
     with rasterio.open(result.output_rasters["flood_likelihood"]) as src:
         likelihood = src.read(1)
@@ -120,6 +124,9 @@ def test_flood_anomaly_detector_computes_likelihood_and_candidates(tmp_path: Pat
     assert result.candidate_features[0]["has_predecessor"] is True
     assert result.candidate_features[0]["has_successor"] is False
     assert result.candidate_features[0]["accepted"] is True
+    assert "confidence_components" in result.candidate_features[0]
+    assert result.candidate_features[0]["confidence_status"] in {"analyst_review", "watchlist", "monitor_only"}
+    assert "district_intersections" in result.candidate_features[0]
 
 
 def test_flood_anomaly_detector_suppresses_tiny_artifact_candidates(tmp_path: Path) -> None:
