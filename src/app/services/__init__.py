@@ -6,6 +6,7 @@ from app.services.scoring import score_flood_candidate_confidence, score_flood_c
 from app.services.orchestration import IdempotentTaskWorker, TaskPlannerJob
 from app.services.preprocessing import Sentinel1Preprocessor
 from app.services.sar_baseline import RollingSarBaselineService
+from app.services.review import AnalystReviewService, review_service
 
 __all__ = [
     "discover_scenes",
@@ -19,4 +20,6 @@ __all__ = [
     "IdempotentTaskWorker",
     "Sentinel1Preprocessor",
     "RollingSarBaselineService",
+    "AnalystReviewService",
+    "review_service",
 ]
