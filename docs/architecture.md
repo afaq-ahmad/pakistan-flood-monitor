@@ -75,10 +75,10 @@ Design rule: separate raw observations, intermediate masks, candidate detections
 ## 6) Breach logic
 Classify candidates as:
 - likely overflow,
-- likely embankment failure,
+- possible breach / protected-side flooding,
 - uncertain anomaly.
 
-Use weighted confidence with evidence from sensor anomaly, protected-side location, embankment proximity, hydromet stress, terrain plausibility, and persistence.
+Use weighted confidence with evidence from sensor anomaly, protected-side location, embankment proximity, growth direction, hydromet stress, terrain plausibility, persistence, and SAR/optical corroboration. Maintain probabilistic language in publications (e.g., "possible breach", "high-confidence protected-side flooding", "likely overflow").
 
 ## 7) MVP deployment preference
 Prefer one strong VM or two low-cost nodes (DB/storage + worker/API). Keep operational stack simple: Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.

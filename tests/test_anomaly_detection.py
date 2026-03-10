@@ -127,6 +127,15 @@ def test_flood_anomaly_detector_computes_likelihood_and_candidates(tmp_path: Pat
     assert "confidence_components" in result.candidate_features[0]
     assert result.candidate_features[0]["confidence_status"] in {"analyst_review", "watchlist", "monitor_only"}
     assert "district_intersections" in result.candidate_features[0]
+    assert "breach_assessment" in result.candidate_features[0]
+    assert result.candidate_features[0]["breach_assessment"] is not None
+    assert "evidence_vector" in result.candidate_features[0]["breach_assessment"]
+    assert result.candidate_features[0]["breach_assessment"]["published_terminology"] in {
+        "possible breach",
+        "high-confidence protected-side flooding",
+        "likely overflow",
+        "uncertain anomaly",
+    }
 
 
 def test_flood_anomaly_detector_suppresses_tiny_artifact_candidates(tmp_path: Path) -> None:
