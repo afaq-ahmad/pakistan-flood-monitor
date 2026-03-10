@@ -161,3 +161,10 @@ This preserves the roadmap order: rules-first operations remain primary, classic
 - **17.4.1 Model registry table:** `model_versions` now stores `model_id`, `model_type`, `training_snapshot_version`, validation `metrics`, `deployment_status`, and `rollback_parent_model_id` for explicit rollback lineage.
 - **17.4.2 Threshold registry:** `threshold_versions` is versioned independently from model artifacts so threshold promotions/rollbacks can happen without changing model binaries.
 - **17.4.3 Retraining triggers:** retraining decisions are explicitly evaluated and logged in `retraining_decisions` only when label quality improves materially, drift crosses threshold, or sensors/features change; calendar-based retraining is intentionally excluded.
+
+
+## Step 20 implementation details (hydrology support)
+20.1 is implemented as a **hydrologic plausibility overlay** that improves confidence calibration without introducing a full hydrodynamic simulator:
+- **20.1.1 Reach-specific threshold tables:** corridor/reach rainfall (24h/72h) and discharge watch/warning/critical thresholds are represented as explicit per-reach tables with sensible defaults/fallback.
+- **20.1.2 Plausibility functions:** candidate-level plausibility now combines rainfall sufficiency, elevated forecast state, terrain allowance, and timing consistency; it also models overtopping signal and inland-propagation penalty.
+- **20.1.3 Confidence integration:** flood confidence includes a dedicated hydrologic plausibility component so physically implausible anomalies are down-ranked while hydrologically coherent overflow/overtopping patterns are preserved.

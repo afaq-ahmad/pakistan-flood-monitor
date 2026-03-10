@@ -9,6 +9,7 @@ from app.services.hydromet import (
     InMemoryHydrometRepository,
     SequenceRainfallProvider,
     StaticGloFASProvider,
+    get_reach_hydrology_thresholds,
 )
 from app.services.ingestion import (
     InMemorySceneRepository,
@@ -137,3 +138,11 @@ def test_optical_discovery_service_recognizes_secondary_sensors() -> None:
     }
     normalized = base._normalize_item("provider", item)
     assert optical.is_optical_scene(normalized) is True
+
+
+def test_reach_specific_hydrology_thresholds_have_fallback() -> None:
+    lower = get_reach_hydrology_thresholds("indus-lower")
+    unknown = get_reach_hydrology_thresholds("unknown-reach")
+
+    assert lower.rainfall_warning_24h_mm < unknown.rainfall_warning_24h_mm
+    assert 0.0 < unknown.discharge_warning_percentile < 1.0

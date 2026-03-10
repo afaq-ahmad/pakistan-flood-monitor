@@ -20,6 +20,83 @@ class HydrometSummary:
     stress_score: float
 
 
+@dataclass(frozen=True, slots=True)
+class ReachHydrologyThresholds:
+    rainfall_watch_24h_mm: float
+    rainfall_warning_24h_mm: float
+    rainfall_critical_24h_mm: float
+    rainfall_watch_72h_mm: float
+    rainfall_warning_72h_mm: float
+    rainfall_critical_72h_mm: float
+    discharge_watch_percentile: float
+    discharge_warning_percentile: float
+    discharge_critical_percentile: float
+
+
+DEFAULT_REACH_HYDROLOGY_THRESHOLDS = ReachHydrologyThresholds(
+    rainfall_watch_24h_mm=35.0,
+    rainfall_warning_24h_mm=65.0,
+    rainfall_critical_24h_mm=100.0,
+    rainfall_watch_72h_mm=70.0,
+    rainfall_warning_72h_mm=130.0,
+    rainfall_critical_72h_mm=190.0,
+    discharge_watch_percentile=0.80,
+    discharge_warning_percentile=0.90,
+    discharge_critical_percentile=0.97,
+)
+
+
+REACH_HYDROLOGY_THRESHOLDS: dict[str, ReachHydrologyThresholds] = {
+    "indus-lower": ReachHydrologyThresholds(
+        rainfall_watch_24h_mm=30.0,
+        rainfall_warning_24h_mm=55.0,
+        rainfall_critical_24h_mm=85.0,
+        rainfall_watch_72h_mm=60.0,
+        rainfall_warning_72h_mm=110.0,
+        rainfall_critical_72h_mm=165.0,
+        discharge_watch_percentile=0.78,
+        discharge_warning_percentile=0.88,
+        discharge_critical_percentile=0.96,
+    ),
+    "indus-mid": ReachHydrologyThresholds(
+        rainfall_watch_24h_mm=35.0,
+        rainfall_warning_24h_mm=65.0,
+        rainfall_critical_24h_mm=100.0,
+        rainfall_watch_72h_mm=70.0,
+        rainfall_warning_72h_mm=130.0,
+        rainfall_critical_72h_mm=190.0,
+        discharge_watch_percentile=0.80,
+        discharge_warning_percentile=0.90,
+        discharge_critical_percentile=0.97,
+    ),
+    "indus-upper": ReachHydrologyThresholds(
+        rainfall_watch_24h_mm=45.0,
+        rainfall_warning_24h_mm=75.0,
+        rainfall_critical_24h_mm=120.0,
+        rainfall_watch_72h_mm=90.0,
+        rainfall_warning_72h_mm=155.0,
+        rainfall_critical_72h_mm=230.0,
+        discharge_watch_percentile=0.82,
+        discharge_warning_percentile=0.91,
+        discharge_critical_percentile=0.975,
+    ),
+}
+
+
+def get_reach_hydrology_thresholds(corridor_reach: str | None) -> ReachHydrologyThresholds:
+    if not corridor_reach:
+        return DEFAULT_REACH_HYDROLOGY_THRESHOLDS
+
+    normalized = corridor_reach.strip().lower()
+    if normalized in REACH_HYDROLOGY_THRESHOLDS:
+        return REACH_HYDROLOGY_THRESHOLDS[normalized]
+
+    for key, value in REACH_HYDROLOGY_THRESHOLDS.items():
+        if normalized.startswith(key):
+            return value
+    return DEFAULT_REACH_HYDROLOGY_THRESHOLDS
+
+
 class RainfallProvider(Protocol):
     def fetch(self, corridor_geometry: dict, start_time: datetime, end_time: datetime) -> Iterable[float]:
         ...

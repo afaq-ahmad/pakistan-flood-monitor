@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from app.services.hydromet import get_reach_hydrology_thresholds
+
 
 @dataclass(slots=True)
 class OpticalSupportMetrics:
@@ -11,6 +13,17 @@ class OpticalSupportMetrics:
     uncertain_fraction: float
     observable_fraction: float
     optical_support_score: float
+
+
+@dataclass(slots=True)
+class HydrologicPlausibilityResult:
+    plausibility_score: float
+    rainfall_sufficiency: float
+    forecast_elevation: float
+    terrain_allowance: float
+    timing_consistency: float
+    inland_penalty: float
+    overtopping_signal: float
 
 
 def compute_optical_candidate_support(
@@ -51,6 +64,7 @@ def compute_optical_candidate_support(
         optical_support_score=optical_support_score,
     )
 
+
 def score_flood_confidence(raw_score: float, hydromet_weight: float = 0.2) -> float:
     return max(0.0, min(1.0, raw_score * (1 - hydromet_weight) + hydromet_weight))
 
@@ -64,6 +78,7 @@ class FloodCandidateScoreConfig:
     novelty_weight: float = 0.1
     persistence_weight: float = 0.1
     optical_weight: float = 0.1
+    plausibility_weight: float = 0.18
     analyst_review_threshold: float = 0.65
     monitor_only_threshold: float = 0.25
 
@@ -83,6 +98,75 @@ class BreachCandidateScoreConfig:
 
 def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, value))
+
+
+def _piecewise_threshold_score(value: float, watch: float, warning: float, critical: float) -> float:
+    value = max(0.0, value)
+    if value <= watch:
+        return _clamp01(0.5 * (value / max(watch, 1e-6)))
+    if value <= warning:
+        return _clamp01(0.5 + 0.25 * ((value - watch) / max(warning - watch, 1e-6)))
+    if value <= critical:
+        return _clamp01(0.75 + 0.25 * ((value - warning) / max(critical - warning, 1e-6)))
+    return 1.0
+
+
+def compute_hydrologic_plausibility(
+    *,
+    corridor_reach: str | None,
+    rainfall_24h_mm: float | None,
+    rainfall_72h_mm: float | None,
+    forecast_discharge_percentile: float | None,
+    terrain_plausibility: float,
+    persistence_score: float,
+    inland_propagation_direction: float,
+) -> HydrologicPlausibilityResult:
+    thresholds = get_reach_hydrology_thresholds(corridor_reach)
+
+    rain24 = _piecewise_threshold_score(
+        float(rainfall_24h_mm or 0.0),
+        thresholds.rainfall_watch_24h_mm,
+        thresholds.rainfall_warning_24h_mm,
+        thresholds.rainfall_critical_24h_mm,
+    )
+    rain72 = _piecewise_threshold_score(
+        float(rainfall_72h_mm or 0.0),
+        thresholds.rainfall_watch_72h_mm,
+        thresholds.rainfall_warning_72h_mm,
+        thresholds.rainfall_critical_72h_mm,
+    )
+    rainfall_sufficiency = _clamp01(0.45 * rain24 + 0.55 * rain72)
+
+    forecast_elevation = _piecewise_threshold_score(
+        float(forecast_discharge_percentile or 0.0),
+        thresholds.discharge_watch_percentile,
+        thresholds.discharge_warning_percentile,
+        thresholds.discharge_critical_percentile,
+    )
+    terrain_allowance = _clamp01(terrain_plausibility)
+    timing_consistency = _clamp01(0.65 * persistence_score + 0.35 * max(rainfall_sufficiency, forecast_elevation))
+
+    inland_penalty = _clamp01(inland_propagation_direction * max(0.0, 0.7 - max(rainfall_sufficiency, forecast_elevation)))
+    overtopping_signal = _clamp01((1.0 - inland_propagation_direction) * max(rainfall_sufficiency, forecast_elevation))
+
+    plausibility_score = _clamp01(
+        0.30 * rainfall_sufficiency
+        + 0.25 * forecast_elevation
+        + 0.20 * terrain_allowance
+        + 0.15 * timing_consistency
+        + 0.10 * overtopping_signal
+        - 0.20 * inland_penalty
+    )
+
+    return HydrologicPlausibilityResult(
+        plausibility_score=plausibility_score,
+        rainfall_sufficiency=rainfall_sufficiency,
+        forecast_elevation=forecast_elevation,
+        terrain_allowance=terrain_allowance,
+        timing_consistency=timing_consistency,
+        inland_penalty=inland_penalty,
+        overtopping_signal=overtopping_signal,
+    )
 
 
 def _bucketize_breach_confidence(confidence_100: float) -> str:
@@ -136,6 +220,11 @@ def score_flood_candidate_confidence(
     seasonal_overlap_ratio: float,
     hydromet_stress_score: float,
     persistence_score: float,
+    corridor_reach: str | None = None,
+    rainfall_24h_mm: float | None = None,
+    rainfall_72h_mm: float | None = None,
+    forecast_discharge_percentile: float | None = None,
+    inland_propagation_direction: float = 0.0,
     optical_support_score: float | None = None,
     optical_observable_fraction: float = 0.0,
     config: FloodCandidateScoreConfig | None = None,
@@ -153,6 +242,16 @@ def score_flood_candidate_confidence(
     river_reasonableness = max(0.0, min(1.0, 1.0 - (distance_to_river_m / 20000.0)))
     seasonal_novelty = max(0.0, min(1.0, 1.0 - seasonal_overlap_ratio))
 
+    hydrologic_plausibility = compute_hydrologic_plausibility(
+        corridor_reach=corridor_reach,
+        rainfall_24h_mm=rainfall_24h_mm,
+        rainfall_72h_mm=rainfall_72h_mm,
+        forecast_discharge_percentile=forecast_discharge_percentile,
+        terrain_plausibility=terrain_plausibility,
+        persistence_score=persistence_score,
+        inland_propagation_direction=inland_propagation_direction,
+    )
+
     optical_component = 0.5 if optical_support_score is None else max(0.0, min(1.0, optical_support_score))
 
     components = {
@@ -162,6 +261,7 @@ def score_flood_candidate_confidence(
         "hydromet_stress_support": max(0.0, min(1.0, hydromet_stress_score)),
         "seasonal_water_novelty": seasonal_novelty,
         "persistence_support": max(0.0, min(1.0, persistence_score)),
+        "hydrologic_plausibility": hydrologic_plausibility.plausibility_score,
         "optical_support": optical_component,
     }
 
@@ -172,6 +272,7 @@ def score_flood_candidate_confidence(
         + components["hydromet_stress_support"] * cfg.hydromet_weight
         + components["seasonal_water_novelty"] * cfg.novelty_weight
         + components["persistence_support"] * cfg.persistence_weight
+        + components["hydrologic_plausibility"] * cfg.plausibility_weight
     )
     if optical_observable_fraction > 0.15:
         weighted_score += (components["optical_support"] - 0.5) * cfg.optical_weight
@@ -188,6 +289,15 @@ def score_flood_candidate_confidence(
         "confidence": confidence,
         "status": status,
         "components": components,
+        "hydrologic_plausibility": {
+            "plausibility_score": hydrologic_plausibility.plausibility_score,
+            "rainfall_sufficiency": hydrologic_plausibility.rainfall_sufficiency,
+            "forecast_elevation": hydrologic_plausibility.forecast_elevation,
+            "terrain_allowance": hydrologic_plausibility.terrain_allowance,
+            "timing_consistency": hydrologic_plausibility.timing_consistency,
+            "inland_penalty": hydrologic_plausibility.inland_penalty,
+            "overtopping_signal": hydrologic_plausibility.overtopping_signal,
+        },
         "weights": {
             "sar_anomaly_strength": cfg.anomaly_weight,
             "terrain_plausibility": cfg.terrain_weight,
@@ -195,6 +305,7 @@ def score_flood_candidate_confidence(
             "hydromet_stress_support": cfg.hydromet_weight,
             "seasonal_water_novelty": cfg.novelty_weight,
             "persistence_support": cfg.persistence_weight,
+            "hydrologic_plausibility": cfg.plausibility_weight,
             "optical_support": cfg.optical_weight if optical_observable_fraction > 0.15 else 0.0,
         },
     }

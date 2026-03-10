@@ -1,6 +1,11 @@
 import numpy as np
 
-from app.services.scoring import compute_optical_candidate_support, score_breach_candidate, score_flood_candidate_confidence
+from app.services.scoring import (
+    compute_hydrologic_plausibility,
+    compute_optical_candidate_support,
+    score_breach_candidate,
+    score_flood_candidate_confidence,
+)
 
 
 def test_score_flood_candidate_confidence_returns_explainable_breakdown() -> None:
@@ -12,6 +17,10 @@ def test_score_flood_candidate_confidence_returns_explainable_breakdown() -> Non
         seasonal_overlap_ratio=0.1,
         hydromet_stress_score=0.8,
         persistence_score=1.0,
+        corridor_reach="indus-mid",
+        rainfall_24h_mm=70.0,
+        rainfall_72h_mm=140.0,
+        forecast_discharge_percentile=0.92,
     )
 
     assert 0.0 <= result["confidence"] <= 1.0
@@ -23,9 +32,11 @@ def test_score_flood_candidate_confidence_returns_explainable_breakdown() -> Non
         "hydromet_stress_support",
         "seasonal_water_novelty",
         "persistence_support",
+        "hydrologic_plausibility",
         "optical_support",
     }
     assert set(result["weights"].keys()) == set(result["components"].keys())
+    assert "hydrologic_plausibility" in result
 
 
 def test_score_flood_candidate_confidence_assigns_monitor_only_when_low_signal() -> None:
@@ -37,11 +48,38 @@ def test_score_flood_candidate_confidence_assigns_monitor_only_when_low_signal()
         seasonal_overlap_ratio=1.0,
         hydromet_stress_score=0.0,
         persistence_score=0.0,
+        rainfall_24h_mm=0.0,
+        rainfall_72h_mm=0.0,
+        forecast_discharge_percentile=0.1,
+        inland_propagation_direction=1.0,
     )
 
     assert result["confidence"] < 0.25
     assert result["status"] == "monitor_only"
 
+
+def test_hydrologic_plausibility_penalizes_inland_propagation_without_support() -> None:
+    plausible = compute_hydrologic_plausibility(
+        corridor_reach="indus-lower",
+        rainfall_24h_mm=80.0,
+        rainfall_72h_mm=155.0,
+        forecast_discharge_percentile=0.95,
+        terrain_plausibility=0.9,
+        persistence_score=0.8,
+        inland_propagation_direction=0.1,
+    )
+    implausible = compute_hydrologic_plausibility(
+        corridor_reach="indus-lower",
+        rainfall_24h_mm=5.0,
+        rainfall_72h_mm=12.0,
+        forecast_discharge_percentile=0.25,
+        terrain_plausibility=0.9,
+        persistence_score=0.8,
+        inland_propagation_direction=0.95,
+    )
+
+    assert plausible.plausibility_score > implausible.plausibility_score
+    assert plausible.overtopping_signal > implausible.overtopping_signal
 
 
 def test_optical_support_is_non_blocking_nudge() -> None:
