@@ -11,6 +11,12 @@ class AlertLevel(str, Enum):
     critical = "critical"
 
 
+class ReviewStatus(str, Enum):
+    machine_only = "machine_only"
+    analyst_review_required = "analyst_review_required"
+    analyst_validated = "analyst_validated"
+
+
 class AOI(BaseModel):
     name: str
     district: str
@@ -24,6 +30,8 @@ class FloodDetectionResult(BaseModel):
     flood_area_km2: float
     breach_risk_score: float
     alert_level: AlertLevel
+    confidence_score: float
+    review_status: ReviewStatus
     indicators: Dict[str, float]
 
 
@@ -40,3 +48,4 @@ class ProcessingReport(BaseModel):
     source_sensors: List[str]
     detections: List[FloodDetectionResult]
     exposure: Dict[str, ExposureStats]
+    trigger_reason: str

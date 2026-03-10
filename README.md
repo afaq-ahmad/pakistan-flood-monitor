@@ -3,10 +3,10 @@
 Satellite-driven framework for near-real-time flood detection, river breach early warning, flood extent mapping, and exposure analysis across Pakistan.
 
 ## What this project includes
-- **Operational architecture** across ingestion, preprocessing, analytics, and delivery.
-- **Python package scaffold** for flood detection and alerting workflows.
+- **Startup-focused MVP architecture** across monitoring, analytics, and delivery.
+- **Pilot-corridor-first operations** to control cost and latency.
 - **Rule-based phase-1 engine** with pathways to ML and deep-learning upgrades.
-- **FastAPI service** for triggering and serving flood analysis outputs.
+- **FastAPI service** for triggering and serving flood analysis outputs with confidence and review status.
 
 ## Data ecosystem
 ### Primary EO sources
@@ -24,11 +24,11 @@ Satellite-driven framework for near-real-time flood detection, river breach earl
 ## Repository structure
 - `src/pakistan_flood_monitor/data/` dataset connectors and metadata models
 - `src/pakistan_flood_monitor/core/` preprocessing, flood detection, exposure analytics
-- `src/pakistan_flood_monitor/pipeline/` end-to-end daily orchestration
-- `src/pakistan_flood_monitor/services/` alert-level classification logic
+- `src/pakistan_flood_monitor/pipeline/` event-driven daily orchestration
+- `src/pakistan_flood_monitor/services/` alerts and trigger logic
 - `src/pakistan_flood_monitor/api/` FastAPI endpoints
 - `configs/` alert thresholds and operational settings
-- `docs/` architecture and delivery blueprint
+- `docs/` architecture and startup implementation blueprint
 - `scripts/` local command-line runners
 
 ## Alert levels
@@ -51,20 +51,25 @@ python scripts/run_daily.py
 
 ## API endpoints
 - `GET /health` → service heartbeat
-- `GET /run/{aoi_name}` → run a daily flood workflow for an AOI and return detection/exposure report
+- `GET /run/{aoi_name}` → run daily flood workflow for a configured pilot AOI and return detection/exposure report
 
 ## Methodology summary
-1. Download and preprocess SAR/optical data.
-2. Build baseline behavior and detect anomalies.
-3. Fuse SAR + optical + hydro-meteorological indicators.
-4. Generate flood masks and area statistics.
-5. Estimate exposed population and infrastructure.
-6. Trigger alert levels based on confidence and breach risk.
+1. Detect event triggers (rainfall / forecast / anomaly) to avoid wasteful processing.
+2. Download and preprocess SAR/optical data for pilot corridors.
+3. Build baseline behavior and detect anomalies.
+4. Fuse SAR + optical + hydro-meteorological indicators.
+5. Generate flood masks and area statistics.
+6. Estimate exposed population and infrastructure.
+7. Trigger alert levels with confidence scores and review status.
 
 ## ML roadmap
 - **Phase 1**: rule-based thresholds (implemented scaffold)
 - **Phase 2**: RandomForest/XGBoost/LightGBM classifiers
 - **Phase 3**: U-Net/U-Net++/DeepLabV3+ segmentation
+
+## Planning docs
+- `docs/startup_implementation_plan.md` (expanded startup and operating model)
+- `docs/architecture.md` (technical architecture summary)
 
 ## Deployment target
 Containerized microservices with PostGIS, object storage, REST APIs, orchestration (Prefect/Airflow), and optional GPU training services.
