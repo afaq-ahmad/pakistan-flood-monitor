@@ -1,0 +1,10 @@
+thresholds:
+  sar_drop_db: 2.5
+  ndwi: 0.2
+  warning_confidence: 0.55
+  critical_confidence: 0.75
+
+alert_levels:
+  watch: "Forecast or rainfall signals suggest possible flooding"
+  warning: "Satellite anomalies indicate water expansion"
+  critical: "Confirmed inundation or probable embankment breach"

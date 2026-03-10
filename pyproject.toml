@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pakistan-flood-monitor"
+version = "0.1.0"
+description = "Satellite-driven Pakistan river flood monitoring and breach detection framework"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Flood Intelligence Team"}]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.27",
+  "pydantic>=2.6",
+  "numpy>=1.26",
+  "xarray>=2024.1",
+  "rasterio>=1.3",
+  "geopandas>=0.14",
+  "shapely>=2.0",
+  "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+ml = ["xgboost>=2.0", "lightgbm>=4.3"]
+dl = ["torch>=2.2", "segmentation-models-pytorch>=0.3"]
+workflow = ["prefect>=2.16", "dask>=2024.2"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
