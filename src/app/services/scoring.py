@@ -68,6 +68,19 @@ class FloodCandidateScoreConfig:
     monitor_only_threshold: float = 0.25
 
 
+@dataclass(slots=True)
+class BreachCandidateScoreConfig:
+    protected_side_weight: float = 0.22
+    embankment_proximity_weight: float = 0.2
+    away_from_levee_expansion_weight: float = 0.16
+    sudden_appearance_weight: float = 0.12
+    hydromet_support_weight: float = 0.12
+    terrain_plausibility_weight: float = 0.1
+    persistence_weight: float = 0.08
+    splitting_merging_penalty_weight: float = 0.08
+    breach_alert_min_score: float = 0.68
+
+
 def score_flood_candidate_confidence(
     *,
     mean_anomaly_score: float,
@@ -138,4 +151,63 @@ def score_flood_candidate_confidence(
             "persistence_support": cfg.persistence_weight,
             "optical_support": cfg.optical_weight if optical_observable_fraction > 0.15 else 0.0,
         },
+    }
+
+
+def score_breach_candidate(
+    *,
+    protected_side_ratio: float,
+    distance_to_embankment_m: float,
+    expansion_away_from_levee_score: float,
+    sudden_emergence_score: float,
+    hydromet_support_score: float,
+    terrain_plausibility_score: float,
+    persistence_score: float,
+    split_merge_complexity: float,
+    config: BreachCandidateScoreConfig | None = None,
+) -> dict[str, Any]:
+    """Second-stage breach scorer that operates on accepted flood candidates only."""
+    cfg = config or BreachCandidateScoreConfig()
+
+    embankment_proximity = max(0.0, min(1.0, 1.0 - (distance_to_embankment_m / 5000.0)))
+    split_merge_penalty = max(0.0, min(1.0, split_merge_complexity))
+
+    components = {
+        "protected_side_flooding": max(0.0, min(1.0, protected_side_ratio)),
+        "embankment_proximity": embankment_proximity,
+        "expansion_away_from_levee": max(0.0, min(1.0, expansion_away_from_levee_score)),
+        "sudden_appearance": max(0.0, min(1.0, sudden_emergence_score)),
+        "hydromet_support": max(0.0, min(1.0, hydromet_support_score)),
+        "terrain_plausibility": max(0.0, min(1.0, terrain_plausibility_score)),
+        "persistence": max(0.0, min(1.0, persistence_score)),
+        "split_merge_penalty": split_merge_penalty,
+    }
+
+    score = (
+        components["protected_side_flooding"] * cfg.protected_side_weight
+        + components["embankment_proximity"] * cfg.embankment_proximity_weight
+        + components["expansion_away_from_levee"] * cfg.away_from_levee_expansion_weight
+        + components["sudden_appearance"] * cfg.sudden_appearance_weight
+        + components["hydromet_support"] * cfg.hydromet_support_weight
+        + components["terrain_plausibility"] * cfg.terrain_plausibility_weight
+        + components["persistence"] * cfg.persistence_weight
+        - components["split_merge_penalty"] * cfg.splitting_merging_penalty_weight
+    )
+    breach_score = max(0.0, min(1.0, score))
+
+    return {
+        "breach_score": breach_score,
+        "is_breach_candidate": breach_score >= cfg.breach_alert_min_score,
+        "components": components,
+        "weights": {
+            "protected_side_flooding": cfg.protected_side_weight,
+            "embankment_proximity": cfg.embankment_proximity_weight,
+            "expansion_away_from_levee": cfg.away_from_levee_expansion_weight,
+            "sudden_appearance": cfg.sudden_appearance_weight,
+            "hydromet_support": cfg.hydromet_support_weight,
+            "terrain_plausibility": cfg.terrain_plausibility_weight,
+            "persistence": cfg.persistence_weight,
+            "split_merge_penalty": cfg.splitting_merging_penalty_weight,
+        },
+        "alert_threshold": cfg.breach_alert_min_score,
     }

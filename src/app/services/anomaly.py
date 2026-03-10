@@ -11,7 +11,7 @@ import rasterio
 from rasterio.features import shapes
 from shapely.geometry import shape
 
-from app.services.scoring import score_flood_candidate_confidence
+from app.services.scoring import score_breach_candidate, score_flood_candidate_confidence
 
 
 @dataclass(slots=True)
@@ -270,6 +270,8 @@ class FloodAnomalyDetector:
         hydromet_stress: np.ndarray,
     ) -> tuple[np.ndarray, list[dict[str, Any]]]:
         labeled_objects = self._connected_components(initial_candidates)
+        previous_components = self._connected_components(previous_candidates > 0)
+        next_components = self._connected_components(next_candidates > 0)
         filtered = np.zeros_like(initial_candidates, dtype=bool)
         features: list[dict[str, Any]] = []
 
@@ -306,6 +308,36 @@ class FloodAnomalyDetector:
                 for r, c in component:
                     filtered[r, c] = True
 
+            overlap_prev = self._count_component_overlaps(component, previous_components)
+            overlap_next = self._count_component_overlaps(component, next_components)
+            sudden_emergence = 1.0 if overlap_prev == 0 else max(0.0, 1.0 - min(1.0, overlap_prev / 3.0))
+            expansion_speed = self._estimate_expansion_speed(area_pixels, overlap_prev)
+            split_merge_complexity = min(1.0, max(0, overlap_prev - 1) * 0.5 + max(0, overlap_next - 1) * 0.5)
+
+            change_direction_relative_to_levee = self._change_direction_relative_to_levee(
+                component=component,
+                previous_candidates=previous_candidates,
+                embankment_distance=embankment_distance,
+            )
+            inland_propagation_direction = max(0.0, change_direction_relative_to_levee)
+            protected_side_ratio = self._protected_side_ratio(component, embankment_distance, relative_elevation)
+            side_of_embankment = "protected" if protected_side_ratio >= 0.5 else "riverward"
+            first_appearance_timestamp = "current_scene" if overlap_prev == 0 else "prior_scene"
+            terrain_plausibility = confidence["components"]["terrain_plausibility"]
+
+            breach_assessment = None
+            if keep:
+                breach_assessment = score_breach_candidate(
+                    protected_side_ratio=protected_side_ratio,
+                    distance_to_embankment_m=distance_to_embankment,
+                    expansion_away_from_levee_score=inland_propagation_direction,
+                    sudden_emergence_score=sudden_emergence,
+                    hydromet_support_score=hydromet_mean,
+                    terrain_plausibility_score=terrain_plausibility,
+                    persistence_score=persistence_score,
+                    split_merge_complexity=split_merge_complexity,
+                )
+
             features.append(
                 {
                     "candidate_id": f"cand_{idx}",
@@ -318,18 +350,94 @@ class FloodAnomalyDetector:
                     "relative_elevation_mean": relative_elevation_mean,
                     "distance_to_river_m": distance_to_river,
                     "distance_to_embankment_m": distance_to_embankment,
+                    "side_of_embankment": side_of_embankment,
+                    "first_appearance_timestamp": first_appearance_timestamp,
+                    "change_direction_relative_to_levee": change_direction_relative_to_levee,
+                    "inland_propagation_direction": inland_propagation_direction,
+                    "expansion_speed": expansion_speed,
+                    "sudden_emergence": sudden_emergence,
+                    "split_merge_complexity": split_merge_complexity,
                     "seasonal_water_overlap_ratio": seasonal_overlap,
                     "district_intersections": district_intersections,
                     "has_predecessor": has_predecessor,
                     "has_successor": has_successor,
+                    "hydromet_context_score": hydromet_mean,
                     "confidence": confidence["confidence"],
                     "confidence_status": confidence["status"],
                     "confidence_components": confidence["components"],
+                    "breach_assessment": breach_assessment,
                     "accepted": keep,
                 }
             )
 
         return filtered, features
+
+    def _count_component_overlaps(
+        self,
+        component: list[tuple[int, int]],
+        reference_components: list[list[tuple[int, int]]],
+    ) -> int:
+        if not reference_components:
+            return 0
+        component_set = set(component)
+        overlaps = 0
+        for ref in reference_components:
+            if any(pixel in component_set for pixel in ref):
+                overlaps += 1
+        return overlaps
+
+    @staticmethod
+    def _estimate_expansion_speed(area_pixels: int, overlap_prev: int) -> float:
+        baseline = max(1.0, float(overlap_prev))
+        return float(max(0.0, min(5.0, area_pixels / baseline)))
+
+    def _change_direction_relative_to_levee(
+        self,
+        *,
+        component: list[tuple[int, int]],
+        previous_candidates: np.ndarray,
+        embankment_distance: np.ndarray,
+    ) -> float:
+        current_centroid = self._component_centroid(component)
+        prev_pixels = [(r, c) for r, c in component if previous_candidates[r, c] > 0]
+        if prev_pixels:
+            previous_centroid = self._component_centroid(prev_pixels)
+        else:
+            previous_centroid = current_centroid
+        move = np.array([
+            current_centroid[0] - previous_centroid[0],
+            current_centroid[1] - previous_centroid[1],
+        ], dtype=np.float32)
+        grad_y, grad_x = np.gradient(np.nan_to_num(embankment_distance, nan=0.0))
+        r = int(round(current_centroid[0]))
+        c = int(round(current_centroid[1]))
+        r = max(0, min(r, grad_y.shape[0] - 1))
+        c = max(0, min(c, grad_y.shape[1] - 1))
+        levee_normal = np.array([grad_y[r, c], grad_x[r, c]], dtype=np.float32)
+        move_norm = float(np.linalg.norm(move))
+        levee_norm = float(np.linalg.norm(levee_normal))
+        if move_norm == 0.0 or levee_norm == 0.0:
+            return 0.0
+        return float(np.dot(move, levee_normal) / (move_norm * levee_norm))
+
+    @staticmethod
+    def _protected_side_ratio(
+        component: list[tuple[int, int]],
+        embankment_distance: np.ndarray,
+        relative_elevation: np.ndarray,
+    ) -> float:
+        protected_pixels = 0
+        for r, c in component:
+            near_levee = np.isfinite(embankment_distance[r, c]) and embankment_distance[r, c] <= 2000
+            inland_proxy = relative_elevation[r, c] >= 0
+            if near_levee and inland_proxy:
+                protected_pixels += 1
+        return float(protected_pixels / max(1, len(component)))
+
+    @staticmethod
+    def _component_centroid(component: list[tuple[int, int]]) -> tuple[float, float]:
+        coords = np.array(component, dtype=np.float32)
+        return float(coords[:, 0].mean()), float(coords[:, 1].mean())
 
     @staticmethod
     def _connected_components(mask: np.ndarray) -> list[list[tuple[int, int]]]:
