@@ -1,114 +1,280 @@
 # Pakistan River Flood Monitoring and Breach Detection System
 
-Satellite-driven MVP for daily corridor flood monitoring, flood anomaly mapping, breach suspicion flagging, exposure estimation, and alert publishing.
+Satellite-driven MVP for daily river-corridor flood monitoring in Pakistan, with anomaly detection, breach suspicion flagging, exposure estimation, analyst review, and alert publishing.
 
-## What we are building
-The system is implemented as a coordinated pipeline with three concrete layers:
+## Table of contents
+- [Project purpose](#project-purpose)
+- [MVP scope](#mvp-scope)
+- [Architecture at a glance](#architecture-at-a-glance)
+- [Runtime stacks (important)](#runtime-stacks-important)
+- [Repository structure](#repository-structure)
+- [Quick start](#quick-start)
+- [Configuration and environment variables](#configuration-and-environment-variables)
+- [Database and migrations](#database-and-migrations)
+- [Run the APIs](#run-the-apis)
+- [Run pipelines and jobs](#run-pipelines-and-jobs)
+- [Testing](#testing)
+- [Operational guardrails](#operational-guardrails)
+- [Documentation index](#documentation-index)
+- [Out of scope (MVP)](#out-of-scope-mvp)
+- [License](#license)
+
+## Project purpose
+This repository implements a modular flood-monitoring pipeline designed for practical operations in the Pakistan context:
+
+- ingest SAR and hydromet signals,
+- compute flood and breach-related candidate detections,
+- score confidence and estimate exposure,
+- maintain review/publication state,
+- publish operational outputs through APIs and alert feeds.
+
+## MVP scope
+### Core capabilities
+- Daily monitoring of selected river corridors.
+- Sentinel-1 scene discovery/ingestion for AOIs.
+- IMERG rainfall + GloFAS forecast context ingestion.
+- Baseline-aware anomaly detection.
+- Flood candidate polygon generation.
+- Breach suspicion candidate generation and ranking.
+- Asset/district exposure estimation.
+- Event review workflow and alert publication.
+
+### Primary MVP outputs
+1. Flood candidate map.
+2. Confirmed flood extent (after analyst review).
+3. Breach suspicion layer.
+4. Asset exposure report.
+5. Alert feed with confidence scores.
+6. Historical event dashboard records.
+
+## Architecture at a glance
+The system is organized into three implementation layers:
 
 1. **Monitoring layer**
-   - discovers and ingests Sentinel-1, optical support imagery, rainfall, forecast, DEM, and static masks.
+   - Discovery + ingestion of Sentinel-1, optical support, rainfall/forecast, DEM/static masks.
 2. **Analytics layer**
-   - computes flood anomalies, breach suspicion, confidence scoring, and exposure summaries.
+   - Anomaly detection, breach suspicion logic, confidence scoring, exposure summarization.
 3. **Delivery layer**
-   - stores reviewed events, serves APIs, powers dashboard/map outputs, and emits alert-ready products.
+   - Event persistence, review/publication workflow, API outputs, alert-ready products.
 
-In implementation terms, this repository is intentionally modular rather than a single script. Python modules are organized to do five things well:
-- fetch metadata and data,
-- preprocess rasters and vectors,
-- compute detections,
-- manage review and publication state,
-- expose outputs through APIs and map services.
+Detection posture:
+- SAR baseline anomaly is the primary method.
+- Optical indices (NDWI/MNDWI/AWEI) are secondary support when available.
+- Weighted evidence scoring is preferred before adding complex real-time ML serving.
 
-## MVP capabilities
-- Monitor selected river corridors daily.
-- Pull Sentinel-1 corridor scenes plus IMERG and GloFAS indicators.
-- Compare new observations against historical baseline context.
-- Generate flood candidate polygons and breach suspicion candidates.
-- Estimate district/asset exposure.
-- Publish map layers, event tables, alert summaries, and API outputs.
+## Runtime stacks (important)
+This repo intentionally contains **two API stacks**:
 
-## MVP outputs
-1. Flood candidate map
-2. Confirmed flood extent (after analyst review)
-3. Breach suspicion layer
-4. Asset exposure report
-5. Alert feed with confidence score
-6. Historical event dashboard snapshot
+- **Canonical runtime API (production target):**
+  - App: `pakistan_flood_monitor.api.main:app`
+  - Paths: `/internal/*` and `/public/*`
+- **Prototype/dashboard API (non-canonical):**
+  - App: `app.api.main:app`
+  - Used for prototyping/dashboard feature work.
 
-## Out of scope for MVP
-No national wall-to-wall daily runs, no public mobile app, no hydrodynamic simulation stack, no social media streaming, no enterprise IAM multi-tenancy, and no Kubernetes unless scaling bottlenecks are proven.
-
-
-## Operational strategy guardrails
-- MVP inference is batch-first inside the pipeline; no separate model serving platform.
-- Real-time ML inference endpoints are intentionally deferred.
-- Minimal MLOps artifacts are tracked (model metadata, data snapshot version, config, thresholds, evaluation archive, reproducible training script, rollback reference).
-- Segmentation/deep learning is gated by label quality, GPU availability, clear business need, and acceptable deployment complexity.
-- GIS analyst review is mission-critical for event acceptance, event-class labeling, and QA confidence.
+For production integrations, use the canonical runtime API contract in `docs/runtime_api_contract.md`.
 
 ## Repository structure
-- `src/app/config/` typed settings, environment loading, and threshold-file loading
-- `src/app/db/` SQLAlchemy session setup, spatial helpers, and Alembic migration scaffolding
-- `src/app/models/` ORM tables for AOIs, ingestion state, candidates, events, reviews, and provenance
-- `src/app/schemas/` API contracts separated from ORM models
-- `src/app/services/` reusable domain logic components
-- `src/app/pipelines/` runnable workflow entrypoints for each monitoring stage
-- `src/app/api/` FastAPI application and domain routers (monitoring, events, analytics, admin, health)
-- `src/app/workers/` background worker entrypoints (cron/Prefect wrappers)
-- `src/app/utils/` pure utility helpers
-- `config/thresholds/` runtime YAML threshold and weighting files
-- `tests/`, `infra/`, `docs/`, and `data_contracts/` for validation, deployment, design, and schema contracts
-- `docs/storage_layout.md` storage conventions, naming policy, formats, and run manifests
+```text
+src/
+  app/                         # Prototype/dashboard-oriented stack
+    api/                       # FastAPI routers for health/monitoring/events/analytics/admin
+    config/                    # Typed settings + env loading + threshold file loading
+    db/                        # SQLAlchemy + Alembic + spatial helpers
+    models/                    # ORM models
+    schemas/                   # API schema contracts
+    services/                  # Domain logic (ingestion, anomaly, scoring, review, exposure, etc.)
+    pipelines/                 # Workflow entry points
+    workers/                   # cron/Prefect worker entry points
+    utils/                     # Storage, geometry, formats, manifests
+
+  pakistan_flood_monitor/      # Canonical runtime package
+    api/main.py                # Canonical /internal + /public API
+    pipeline/runner.py         # Daily run orchestration interface
+    core/                      # Detection/preprocessing/exposure primitives
+    services/                  # Alerting, QA gate, trigger helpers
+
+config/thresholds/             # Runtime threshold and breach weighting YAML files
+configs/                       # Training/alert config files used by ML/reproducibility stubs
+scripts/                       # Operational and utility job entry points
+docs/                          # Architecture, runbooks, release/readiness docs
+tests/                         # Unit + contract tests
+infra/                         # Reserved IaC/deployment manifests
+```
 
 ## Quick start
+### 1) Create environment and install
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
+```
+
+### 2) Create local storage paths (required)
+```bash
+mkdir -p storage/raw storage/prepared storage/derived storage/published
+```
+
+### 3) Prepare local env file
+By default, `APP_ENV=local` and settings are loaded from `.env.local`.
+
+### 4) Run prototype API quickly
+```bash
 uvicorn app.api.main:app --reload
 ```
 
-Run a sample daily pipeline:
+### 5) Run a sample daily pipeline
 ```bash
 python scripts/run_daily.py
 ```
 
-For full setup and operations guidance (local runbook, environment files, API tokens/sign-in, and deployment steps), see:
+For full local setup (including PostGIS installation and deployment patterns), see `docs/local_setup_and_deployment.md`.
 
+## Configuration and environment variables
+`src/app/config/settings.py` enforces required config at startup.
+
+### Environment selection
+- `APP_ENV=local` -> `.env.local`
+- `APP_ENV=staging` -> `.env.staging`
+- `APP_ENV=prod` -> `.env.prod`
+
+### Required variables (minimum)
+- `DATABASE_DSN`
+- `STORAGE_RAW_ROOT`
+- `STORAGE_PREPARED_ROOT`
+- `STORAGE_DERIVED_ROOT`
+- `STORAGE_PUBLISHED_ROOT`
+- `API_BASE_URL`
+- `FLOOD_THRESHOLDS_PATH`
+- `BREACH_WEIGHTS_PATH`
+- `STAC_ENDPOINT`
+- `HYDROMET_ENDPOINT`
+
+### Optional/high-value variables
+- `STAC_TOKEN`
+- `HYDROMET_TOKEN`
+- `LOG_LEVEL`
+- `ENABLE_PREFECT_WORKERS`
+- `CORRIDOR_BUFFER_METERS`
+- `DEFAULT_CRS`
+
+Startup validation fails if required threshold files or storage directories do not exist.
+
+## Database and migrations
+The project uses PostgreSQL + PostGIS + Alembic.
+
+Apply schema migrations:
+```bash
+alembic -c src/app/db/alembic.ini upgrade head
+```
+
+Alternative:
+```bash
+python -m alembic -c src/app/db/alembic.ini upgrade head
+```
+
+Detailed setup instructions (Ubuntu/macOS/Docker PostGIS options) are documented in:
 - `docs/local_setup_and_deployment.md`
 
-## API endpoints
-- `GET /health`
-- `GET /corridors`
-- `GET /corridors/{id}/status`
-- `GET /corridors/{id}/events`
-- `GET /events/{id}`
-- `GET /events/{id}/exposure`
-- `GET /alerts/latest`
-- `GET /breach-candidates`
-- `POST /admin/reprocess-scene`
-- `POST /admin/review-event`
-- `GET /run/{aoi_name}`
-- `GET /publish/{aoi_name}`
-- `GET /alerts/feed`
+## Run the APIs
+### Prototype/dashboard stack
+```bash
+uvicorn app.api.main:app --reload
+```
 
-## Orchestration discipline (implemented)
-- Planner jobs now build concrete task queue records instead of a single generic run trigger.
-- Task queue records track explicit workflow states: `queued`, `running`, `success`, `failed`, `skipped`, `stale`, and `manual_retry_requested`.
-- Worker execution is idempotent via run hashes derived from scene, corridor, pipeline version, and threshold config version.
-- Failed/partial outputs are cleaned before reruns so long raster jobs can safely resume from a clean checkpoint.
+### Canonical runtime stack
+```bash
+uvicorn pakistan_flood_monitor.api.main:app --reload
+```
 
-## Deployment stance
-Use a simple low-cost setup first (single VM or two-node split) with Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.
+Canonical runtime authentication model:
+- `FLOOD_MONITOR_ADMIN_TOKEN`
+- `FLOOD_MONITOR_ANALYST_TOKEN`
 
+The internal API includes role-based actor-prefix validation and configurable rate limiting (see `docs/runtime_api_contract.md`).
 
-## Canonical runtime API
-Production runtime integrations must target `pakistan_flood_monitor.api.main:app` with `/internal/*` and `/public/*` routes.
+## Run pipelines and jobs
+### Daily pipeline demo
+```bash
+python scripts/run_daily.py
+```
 
-The `app.api.main:app` stack is retained for prototype dashboard features and should not be used as the production source-of-truth API.
+### Scene discovery demo job
+```bash
+python scripts/discover_scenes_job.py
+```
 
-See:
-- `docs/runtime_api_contract.md`
-- `docs/backup_restore_runbook.md`
-- `docs/monitoring_alerts.md`
-- `docs/release_checklist.md`
+### Hydromet ingestion demo job
+```bash
+python scripts/hydromet_ingestion_job.py
+```
+
+### Reference layer sync demo job
+```bash
+python scripts/reference_sync_job.py
+```
+
+### Build corridor derivative assets
+```bash
+python scripts/build_corridor_assets.py \
+  --corridors path/to/corridors.geojson \
+  --output-dir path/to/output
+```
+
+### Build baseline layers
+```bash
+python scripts/build_baseline_layers.py \
+  --corridors path/to/corridors.geojson \
+  --jrc-permanent-water path/to/permanent_water.tif \
+  --seasonal-water path/to/seasonal_water.tif \
+  --dem path/to/dem.tif \
+  --output-dir path/to/output
+```
+
+### Candidate ranker training reproducibility stub
+```bash
+python scripts/train_candidate_ranker.py
+```
+
+## Testing
+Run the test suite:
+```bash
+pytest -q
+```
+
+Recommended targeted checks during development:
+```bash
+pytest tests/test_api_implementation.py -q
+pytest tests/test_orchestration.py -q
+pytest tests/test_review_workflow.py -q
+```
+
+## Operational guardrails
+- Batch-first inference in pipeline jobs for MVP.
+- No separate real-time ML serving platform at this stage.
+- Minimal MLOps artifacts tracked: model metadata, data snapshot version, config/thresholds, evaluation archive, reproducible training path, rollback reference.
+- Analyst review is mission-critical before event acceptance/publication.
+- Keep deployment simple first: Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.
+
+## Documentation index
+- `docs/local_setup_and_deployment.md` — local setup, auth token usage, deployment guidance.
+- `docs/runtime_api_contract.md` — canonical runtime API paths, auth, abuse controls.
+- `docs/architecture.md` — architecture layers, data model, detection strategy.
+- `docs/storage_layout.md` — storage naming conventions and manifests.
+- `docs/monitoring_alerts.md` — observability and alerting guidance.
+- `docs/backup_restore_runbook.md` — backup/restore operations.
+- `docs/release_checklist.md` — release gating checklist.
+- `docs/release_readiness_audit.md` — readiness findings.
+- `docs/dashboard_freshness_lineage.md` — dashboard freshness and lineage expectations.
+- `docs/startup_implementation_plan.md` — implementation planning context.
+
+## Out of scope (MVP)
+- National wall-to-wall daily processing.
+- Public mobile app.
+- Advanced hydrodynamic simulation platform.
+- Enterprise IAM/multi-tenancy.
+- High-cost streaming geospatial stack.
+- Kubernetes adoption before proven scaling bottlenecks.
+
+## License
+This project is distributed under the terms in `LICENSE`.
