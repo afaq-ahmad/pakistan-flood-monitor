@@ -96,3 +96,15 @@ python scripts/run_daily.py
 
 ## Deployment stance
 Use a simple low-cost setup first (single VM or two-node split) with Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.
+
+
+## Canonical runtime API
+Production runtime integrations must target `pakistan_flood_monitor.api.main:app` with `/internal/*` and `/public/*` routes.
+
+The `app.api.main:app` stack is retained for prototype dashboard features and should not be used as the production source-of-truth API.
+
+See:
+- `docs/runtime_api_contract.md`
+- `docs/backup_restore_runbook.md`
+- `docs/monitoring_alerts.md`
+- `docs/release_checklist.md`
