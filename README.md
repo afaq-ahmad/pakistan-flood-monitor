@@ -73,6 +73,10 @@ Run a sample daily pipeline:
 python scripts/run_daily.py
 ```
 
+For full setup and operations guidance (local runbook, environment files, API tokens/sign-in, and deployment steps), see:
+
+- `docs/local_setup_and_deployment.md`
+
 ## API endpoints
 - `GET /health`
 - `GET /corridors`
