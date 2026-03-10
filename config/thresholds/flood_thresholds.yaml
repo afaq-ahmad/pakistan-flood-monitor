@@ -1,0 +1,13 @@
+corridor_thresholds:
+  Indus-Lower:
+    sar_drop_db: 2.6
+    ndwi_min: 0.2
+  Chenab-Middle:
+    sar_drop_db: 2.4
+    ndwi_min: 0.18
+hydromet_thresholds:
+  rainfall_mm_24h: 40
+  flow_percentile: 0.9
+review_thresholds:
+  analyst_review_min_confidence: 0.45
+  publish_min_confidence: 0.72
