@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import geopandas as gpd
 import rasterio
+from rasterio.features import shapes
+from shapely.geometry import shape
+
+from app.services.scoring import score_flood_candidate_confidence
 
 
 @dataclass(slots=True)
@@ -19,6 +25,9 @@ class FloodAnomalyInput:
     slope_raster_path: str | Path | None = None
     relative_elevation_raster_path: str | Path | None = None
     river_distance_raster_path: str | Path | None = None
+    embankment_distance_raster_path: str | Path | None = None
+    district_id_raster_path: str | Path | None = None
+    hydromet_stress_raster_path: str | Path | None = None
     nuisance_mask_path: str | Path | None = None
     previous_candidate_mask_path: str | Path | None = None
     next_candidate_mask_path: str | Path | None = None
@@ -38,6 +47,8 @@ class FloodAnomalyConfig:
     terrain_penalty: float = 0.6
     min_object_pixels: int = 4
     min_compactness: float = 0.015
+    morphology_iterations: int = 1
+    merge_neighbor_pixels: int = 1
     include_permanent_water: bool = False
 
 
@@ -49,6 +60,7 @@ class FloodAnomalyResult:
     candidate_ratio: float
     candidate_features: list[dict[str, Any]]
     output_rasters: dict[str, Path]
+    candidate_vector_path: Path | None = None
 
 
 class FloodAnomalyDetector:
@@ -110,6 +122,11 @@ class FloodAnomalyDetector:
         river_distance = self._load_optional_raster(payload.river_distance_raster_path, fallback=np.zeros_like(vv))
         previous_candidates = self._load_optional_raster(payload.previous_candidate_mask_path, fallback=np.zeros_like(vv))
         next_candidates = self._load_optional_raster(payload.next_candidate_mask_path, fallback=np.zeros_like(vv))
+        embankment_distance = self._load_optional_raster(
+            payload.embankment_distance_raster_path, fallback=np.full_like(vv, np.nan)
+        )
+        district_ids = self._load_optional_raster(payload.district_id_raster_path, fallback=np.zeros_like(vv))
+        hydromet_stress = self._load_optional_raster(payload.hydromet_stress_raster_path, fallback=np.zeros_like(vv))
 
         likelihood = self._flood_likelihood(
             vv_delta=vv_delta,
@@ -130,12 +147,28 @@ class FloodAnomalyDetector:
         )
 
         final_score = np.where(valid_mask, likelihood * plausibility, np.nan).astype(np.float32)
-        initial_candidates = np.logical_and(valid_mask, final_score >= self._config.anomaly_threshold)
+        threshold_mask = self._threshold_mask(final_score, valid_mask)
+        initial_candidates = np.logical_and(valid_mask, threshold_mask > 0)
         filtered_candidates, candidate_features = self._filter_candidates(
             initial_candidates,
             final_score,
             previous_candidates,
             next_candidates,
+            slope,
+            relative_elevation,
+            river_distance,
+            embankment_distance,
+            seasonal_water,
+            district_ids,
+            hydromet_stress,
+        )
+        cleaned_candidates = self._morphological_cleanup(filtered_candidates)
+
+        candidate_vector_path = self._vectorize_candidates(
+            path=out_dir / f"{payload.scene_id}_flood_candidates.parquet",
+            mask=cleaned_candidates,
+            profile=profile,
+            features=candidate_features,
         )
 
         output_rasters = {
@@ -149,13 +182,19 @@ class FloodAnomalyDetector:
             "flood_candidates_filtered": self._write_raster(
                 out_dir / f"{payload.scene_id}_flood_candidates_filtered.tif", filtered_candidates.astype(np.float32), profile
             ),
+            "flood_candidates_cleaned": self._write_raster(
+                out_dir / f"{payload.scene_id}_flood_candidates_cleaned.tif", cleaned_candidates.astype(np.float32), profile
+            ),
+            "flood_threshold_mask": self._write_raster(
+                out_dir / f"{payload.scene_id}_flood_threshold_mask.tif", threshold_mask.astype(np.float32), profile
+            ),
             "valid_analysis_mask": self._write_raster(
                 out_dir / f"{payload.scene_id}_valid_analysis_mask.tif", valid_mask.astype(np.float32), profile
             ),
         }
 
         valid_pixel_count = int(valid_mask.sum())
-        candidate_count = int(filtered_candidates.sum())
+        candidate_count = int(cleaned_candidates.sum())
         candidate_ratio = 0.0 if valid_pixel_count == 0 else candidate_count / valid_pixel_count
 
         return FloodAnomalyResult(
@@ -165,7 +204,29 @@ class FloodAnomalyDetector:
             candidate_ratio=float(candidate_ratio),
             candidate_features=candidate_features,
             output_rasters=output_rasters,
+            candidate_vector_path=candidate_vector_path,
         )
+
+    def _threshold_mask(self, score: np.ndarray, valid_mask: np.ndarray) -> np.ndarray:
+        threshold_mask = np.zeros_like(score, dtype=np.uint8)
+        threshold_mask[valid_mask & (score >= self._config.anomaly_threshold)] = 1
+        threshold_mask[valid_mask & (score >= self._config.strong_evidence_threshold)] = 2
+        return threshold_mask
+
+    def _morphological_cleanup(self, mask: np.ndarray) -> np.ndarray:
+        cleaned = mask.copy()
+        components = self._connected_components(cleaned)
+        for component in components:
+            if len(component) >= self._config.min_object_pixels:
+                continue
+            for row, col in component:
+                cleaned[row, col] = False
+        for _ in range(self._config.morphology_iterations):
+            cleaned = self._binary_close(cleaned)
+        for _ in range(self._config.merge_neighbor_pixels):
+            cleaned = self._binary_dilate(cleaned)
+            cleaned = self._binary_erode(cleaned)
+        return cleaned
 
     def _plausibility_score(
         self,
@@ -200,6 +261,13 @@ class FloodAnomalyDetector:
         final_score: np.ndarray,
         previous_candidates: np.ndarray,
         next_candidates: np.ndarray,
+        slope: np.ndarray,
+        relative_elevation: np.ndarray,
+        river_distance: np.ndarray,
+        embankment_distance: np.ndarray,
+        seasonal_water: np.ndarray,
+        district_ids: np.ndarray,
+        hydromet_stress: np.ndarray,
     ) -> tuple[np.ndarray, list[dict[str, Any]]]:
         labeled_objects = self._connected_components(initial_candidates)
         filtered = np.zeros_like(initial_candidates, dtype=bool)
@@ -209,9 +277,29 @@ class FloodAnomalyDetector:
             area_pixels = len(component)
             perimeter = self._component_perimeter(component, initial_candidates.shape)
             compactness = 0.0 if perimeter == 0 else float(4 * np.pi * area_pixels / (perimeter**2))
+            elongation = self._component_elongation(component)
             has_predecessor = any(previous_candidates[r, c] > 0 for r, c in component)
             has_successor = any(next_candidates[r, c] > 0 for r, c in component)
             mean_score = float(np.nanmean([final_score[r, c] for r, c in component]))
+            slope_mean = float(np.nanmean([slope[r, c] for r, c in component]))
+            relative_elevation_mean = float(np.nanmean([relative_elevation[r, c] for r, c in component]))
+            distance_to_river = self._safe_component_nanmean(component, river_distance)
+            distance_to_embankment = self._safe_component_nanmean(component, embankment_distance)
+            seasonal_overlap = float(np.mean([1.0 if seasonal_water[r, c] > 0 else 0.0 for r, c in component]))
+            district_values = [int(district_ids[r, c]) for r, c in component if district_ids[r, c] > 0]
+            district_intersections = sorted(set(district_values))
+            hydromet_mean = self._safe_component_nanmean(component, hydromet_stress)
+            persistence_score = float(((1.0 if has_predecessor else 0.0) + (1.0 if has_successor else 0.0)) / 2.0)
+
+            confidence = score_flood_candidate_confidence(
+                mean_anomaly_score=mean_score,
+                slope_mean=slope_mean,
+                relative_elevation_mean=relative_elevation_mean,
+                distance_to_river_m=distance_to_river,
+                seasonal_overlap_ratio=seasonal_overlap,
+                hydromet_stress_score=hydromet_mean,
+                persistence_score=persistence_score,
+            )
 
             keep = area_pixels >= self._config.min_object_pixels and compactness >= self._config.min_compactness
             if keep:
@@ -222,10 +310,21 @@ class FloodAnomalyDetector:
                 {
                     "candidate_id": f"cand_{idx}",
                     "area_pixels": area_pixels,
+                    "perimeter_pixels": perimeter,
                     "compactness": compactness,
+                    "elongation": elongation,
                     "mean_score": mean_score,
+                    "slope_mean": slope_mean,
+                    "relative_elevation_mean": relative_elevation_mean,
+                    "distance_to_river_m": distance_to_river,
+                    "distance_to_embankment_m": distance_to_embankment,
+                    "seasonal_water_overlap_ratio": seasonal_overlap,
+                    "district_intersections": district_intersections,
                     "has_predecessor": has_predecessor,
                     "has_successor": has_successor,
+                    "confidence": confidence["confidence"],
+                    "confidence_status": confidence["status"],
+                    "confidence_components": confidence["components"],
                     "accepted": keep,
                 }
             )
@@ -266,6 +365,80 @@ class FloodAnomalyDetector:
                 if rr < 0 or rr >= rows or cc < 0 or cc >= cols or (rr, cc) not in component_set:
                     perimeter += 1
         return perimeter
+
+    @staticmethod
+    def _safe_component_nanmean(component: list[tuple[int, int]], array: np.ndarray, *, default: float = 0.0) -> float:
+        values = np.array([array[r, c] for r, c in component], dtype=np.float32)
+        finite = values[np.isfinite(values)]
+        if finite.size == 0:
+            return default
+        return float(finite.mean())
+
+    @staticmethod
+    def _component_elongation(component: list[tuple[int, int]]) -> float:
+        if len(component) < 3:
+            return 0.0
+        coords = np.array(component, dtype=np.float32)
+        centered = coords - coords.mean(axis=0, keepdims=True)
+        cov = np.cov(centered[:, 0], centered[:, 1])
+        eigvals = np.linalg.eigvals(cov)
+        eigvals = np.sort(np.real(eigvals))
+        if eigvals[-1] <= 0:
+            return 0.0
+        return float(np.sqrt(max(eigvals[-1], 1e-6) / max(eigvals[0], 1e-6)))
+
+    @staticmethod
+    def _binary_dilate(mask: np.ndarray) -> np.ndarray:
+        padded = np.pad(mask.astype(np.uint8), 1, mode="constant")
+        windows = np.lib.stride_tricks.sliding_window_view(padded, (3, 3))
+        return (np.max(windows, axis=(2, 3)) > 0).astype(bool)
+
+    @staticmethod
+    def _binary_erode(mask: np.ndarray) -> np.ndarray:
+        padded = np.pad(mask.astype(np.uint8), 1, mode="constant")
+        windows = np.lib.stride_tricks.sliding_window_view(padded, (3, 3))
+        return (np.min(windows, axis=(2, 3)) > 0).astype(bool)
+
+    def _binary_open(self, mask: np.ndarray) -> np.ndarray:
+        return self._binary_dilate(self._binary_erode(mask))
+
+    def _binary_close(self, mask: np.ndarray) -> np.ndarray:
+        return self._binary_erode(self._binary_dilate(mask))
+
+    def _vectorize_candidates(
+        self,
+        *,
+        path: Path,
+        mask: np.ndarray,
+        profile: dict,
+        features: list[dict[str, Any]],
+    ) -> Path | None:
+        if not features or int(mask.sum()) == 0:
+            return None
+
+        records: list[dict[str, Any]] = []
+        feature_map = {f["candidate_id"]: f for f in features if f.get("accepted")}
+        idx = 1
+        for geom, value in shapes(mask.astype(np.uint8), mask=mask.astype(bool), transform=profile["transform"]):
+            if int(value) != 1:
+                continue
+            candidate_id = f"cand_{idx}"
+            attrs = feature_map.get(candidate_id, {})
+            records.append({**attrs, "candidate_id": candidate_id, "geometry": shape(geom)})
+            idx += 1
+
+        if not records:
+            return None
+
+        gdf = gpd.GeoDataFrame(records, crs=profile.get("crs"))
+        try:
+            gdf.to_parquet(path, index=False)
+            return path
+        except ImportError:
+            fallback_path = path.with_suffix(".geojson")
+            payload = json.loads(gdf.to_json())
+            fallback_path.write_text(json.dumps(payload), encoding="utf-8")
+            return fallback_path
 
     def _build_valid_mask(
         self,
