@@ -1,40 +1,33 @@
 # Pakistan River Flood Monitoring and Breach Detection System
 
-Satellite-driven framework for near-real-time flood detection, river breach early warning, flood extent mapping, and exposure analysis across Pakistan.
+Satellite-driven MVP for daily corridor flood monitoring, flood anomaly mapping, breach suspicion flagging, exposure estimation, and alert publishing.
 
-## What this project includes
-- **Startup-focused MVP architecture** across monitoring, analytics, and delivery.
-- **Pilot-corridor-first operations** to control cost and latency.
-- **Rule-based phase-1 engine** with pathways to ML and deep-learning upgrades.
-- **FastAPI service** for triggering and serving flood analysis outputs with confidence and review status.
+## MVP capabilities
+- Monitor selected river corridors daily.
+- Pull Sentinel-1 corridor scenes plus IMERG and GloFAS indicators.
+- Compare new observations against historical baseline context.
+- Generate flood candidate polygons and breach suspicion candidates.
+- Estimate district/asset exposure.
+- Publish map layers, event tables, alert summaries, and API outputs.
 
-## Data ecosystem
-### Primary EO sources
-- Sentinel-1 SAR (all-weather flood detection)
-- Sentinel-2 optical imagery (water indices and boundary refinement)
-- Landsat 8/9 (historical context)
-- HLS (higher temporal optical harmonization)
+## MVP outputs
+1. Flood candidate map
+2. Confirmed flood extent (after analyst review)
+3. Breach suspicion layer
+4. Asset exposure report
+5. Alert feed with confidence score
+6. Historical event dashboard snapshot
 
-### Supporting layers
-- IMERG rainfall
-- GloFAS river forecasts
-- Copernicus DEM
-- JRC Global Surface Water
+## Out of scope for MVP
+No national wall-to-wall daily runs, no public mobile app, no hydrodynamic simulation stack, no social media streaming, no enterprise IAM multi-tenancy, and no Kubernetes unless scaling bottlenecks are proven.
 
 ## Repository structure
-- `src/pakistan_flood_monitor/data/` dataset connectors and metadata models
-- `src/pakistan_flood_monitor/core/` preprocessing, flood detection, exposure analytics
-- `src/pakistan_flood_monitor/pipeline/` event-driven daily orchestration
-- `src/pakistan_flood_monitor/services/` alerts and trigger logic
+- `src/pakistan_flood_monitor/data/` dataset connectors and metadata
+- `src/pakistan_flood_monitor/core/` detection and exposure logic
+- `src/pakistan_flood_monitor/pipeline/` daily orchestration
+- `src/pakistan_flood_monitor/services/` trigger and alert scoring services
 - `src/pakistan_flood_monitor/api/` FastAPI endpoints
-- `configs/` alert thresholds and operational settings
-- `docs/` architecture and startup implementation blueprint
-- `scripts/` local command-line runners
-
-## Alert levels
-- **Watch**: rainfall or forecast signals indicate potential flooding.
-- **Warning**: satellite anomalies indicate active water expansion.
-- **Critical**: confirmed flooding and/or probable embankment breach.
+- `docs/` architecture and implementation plan
 
 ## Quick start
 ```bash
@@ -44,32 +37,16 @@ pip install -e .
 uvicorn pakistan_flood_monitor.api.main:app --reload
 ```
 
-Run the sample pipeline:
+Run a sample daily pipeline:
 ```bash
 python scripts/run_daily.py
 ```
 
 ## API endpoints
-- `GET /health` → service heartbeat
-- `GET /run/{aoi_name}` → run daily flood workflow for a configured pilot AOI and return detection/exposure report
+- `GET /health`
+- `GET /run/{aoi_name}`
+- `GET /publish/{aoi_name}`
+- `GET /alerts/feed`
 
-## Methodology summary
-1. Detect event triggers (rainfall / forecast / anomaly) to avoid wasteful processing.
-2. Download and preprocess SAR/optical data for pilot corridors.
-3. Build baseline behavior and detect anomalies.
-4. Fuse SAR + optical + hydro-meteorological indicators.
-5. Generate flood masks and area statistics.
-6. Estimate exposed population and infrastructure.
-7. Trigger alert levels with confidence scores and review status.
-
-## ML roadmap
-- **Phase 1**: rule-based thresholds (implemented scaffold)
-- **Phase 2**: RandomForest/XGBoost/LightGBM classifiers
-- **Phase 3**: U-Net/U-Net++/DeepLabV3+ segmentation
-
-## Planning docs
-- `docs/startup_implementation_plan.md` (expanded startup and operating model)
-- `docs/architecture.md` (technical architecture summary)
-
-## Deployment target
-Containerized microservices with PostGIS, object storage, REST APIs, orchestration (Prefect/Airflow), and optional GPU training services.
+## Deployment stance
+Use a simple low-cost setup first (single VM or two-node split) with Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.

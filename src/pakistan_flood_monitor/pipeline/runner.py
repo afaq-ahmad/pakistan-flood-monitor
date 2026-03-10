@@ -7,7 +7,15 @@ from pakistan_flood_monitor.core.exposure import ExposureAnalyzer
 from pakistan_flood_monitor.data.sources import DataCatalog
 from pakistan_flood_monitor.models.schemas import (
     AlertLevel,
+    AlertSummary,
+    AssetExposureReport,
+    BreachCategory,
+    BreachSuspicionLayer,
+    ConfirmedFloodExtent,
+    FloodCandidateMap,
     FloodDetectionResult,
+    HistoricalEventRecord,
+    MVPOutputs,
     ProcessingReport,
     ReviewStatus,
 )
@@ -25,6 +33,66 @@ class FloodMonitoringPipeline:
 
     def _pilot_corridor_enabled(self, aoi_name: str) -> bool:
         return aoi_name in {corridor.name for corridor in settings.pilot_corridors}
+
+    def _build_outputs(
+        self,
+        run_id: str,
+        aoi_name: str,
+        review_status: ReviewStatus,
+        alert_level: AlertLevel,
+        confidence_score: float,
+        exposure_report: dict,
+    ) -> MVPOutputs:
+        polygon_ids = [f"{aoi_name}-candidate-001", f"{aoi_name}-candidate-002"]
+        breach_category = (
+            BreachCategory.likely_embankment_failure
+            if confidence_score >= 0.8
+            else BreachCategory.uncertain_anomaly
+        )
+
+        return MVPOutputs(
+            flood_candidate_map=FloodCandidateMap(aoi=aoi_name, run_id=run_id, polygon_ids=polygon_ids),
+            confirmed_flood_extent=ConfirmedFloodExtent(
+                aoi=aoi_name,
+                run_id=run_id,
+                review_status=review_status,
+                approved_polygon_ids=polygon_ids if review_status == ReviewStatus.analyst_validated else [],
+            ),
+            breach_suspicion_layer=BreachSuspicionLayer(
+                aoi=aoi_name,
+                run_id=run_id,
+                candidate_id=f"{aoi_name}-breach-001",
+                category=breach_category,
+                confidence_score=round(confidence_score * 100, 2),
+            ),
+            asset_exposure_report=AssetExposureReport(
+                aoi=aoi_name,
+                district=aoi_name,
+                asset_class_exposure={
+                    "population": exposure_report["affected_population"],
+                    "cropland_km2": exposure_report["affected_cropland_km2"],
+                    "roads_km": exposure_report["affected_roads_km"],
+                    "schools": exposure_report["affected_schools"],
+                    "hospitals": exposure_report["affected_hospitals"],
+                },
+            ),
+            alert_feed_item=AlertSummary(
+                alert_id=f"alert-{run_id}",
+                aoi=aoi_name,
+                alert_level=alert_level,
+                confidence_score=round(confidence_score * 100, 2),
+                summary=f"{alert_level.value} flood signal for {aoi_name}",
+            ),
+            historical_event_dashboard=[
+                HistoricalEventRecord(
+                    event_id=f"hist-{aoi_name}-2022",
+                    aoi=aoi_name,
+                    peak_date=datetime(2022, 8, 25),
+                    flood_area_km2=135.4,
+                    label_quality_tier=1,
+                )
+            ],
+        )
 
     def run_daily(self, aoi_name: str) -> ProcessingReport:
         if not self._pilot_corridor_enabled(aoi_name):
@@ -50,6 +118,7 @@ class FloodMonitoringPipeline:
             )
         )
 
+        run_id = str(uuid4())
         if not should_process:
             detection = FloodDetectionResult(
                 aoi=aoi_name,
@@ -62,12 +131,21 @@ class FloodMonitoringPipeline:
                 review_status=ReviewStatus.machine_only,
                 indicators={"event_trigger": 0.0},
             )
+            exposure = self.exposure.estimate(0.0)
             return ProcessingReport(
-                run_id=str(uuid4()),
+                run_id=run_id,
                 source_sensors=["imerg", "glofas"],
                 detections=[detection],
-                exposure={aoi_name: self.exposure.estimate(0.0)},
+                exposure={aoi_name: exposure},
                 trigger_reason=trigger_reason,
+                published_outputs=self._build_outputs(
+                    run_id,
+                    aoi_name,
+                    ReviewStatus.machine_only,
+                    AlertLevel.watch,
+                    0.0,
+                    exposure.model_dump(),
+                ),
             )
 
         flood_probability = self.detector.rule_based_probability(features)
@@ -94,10 +172,19 @@ class FloodMonitoringPipeline:
             },
         )
 
+        exposure = self.exposure.estimate(flood_area_km2)
         return ProcessingReport(
-            run_id=str(uuid4()),
+            run_id=run_id,
             source_sensors=["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"],
             detections=[detection],
-            exposure={aoi_name: self.exposure.estimate(flood_area_km2)},
+            exposure={aoi_name: exposure},
             trigger_reason=trigger_reason,
+            published_outputs=self._build_outputs(
+                run_id,
+                aoi_name,
+                review_status,
+                alert_level,
+                confidence_score,
+                exposure.model_dump(),
+            ),
         )

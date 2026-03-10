@@ -1,24 +1,79 @@
-# Pakistan River Flood Monitoring and Breach Detection System
+# Pakistan Flood Monitor MVP Architecture
 
-## Layers
-1. **Data ingestion**: Sentinel-1/2, Landsat, HLS, IMERG, GloFAS, Copernicus DEM, JRC GSW.
-2. **Preprocessing**: SAR calibration, speckle filtering, terrain correction; optical cloud masking and normalization.
-3. **Analytics**: event trigger gate, flood detection, breach risk, flood-area estimation, exposure overlay.
-4. **Delivery**: API, alerting, analyst review flags, dashboard and reporting.
+## 1) Target MVP behavior (implemented architecture target)
+The MVP is designed to:
+- monitor selected river corridors daily,
+- pull Sentinel-1 scenes for corridor AOIs,
+- pull IMERG rainfall and GloFAS forecasts,
+- compare new observations against a historical baseline,
+- produce flood anomaly polygons,
+- flag embankment/breach candidates,
+- estimate district and asset-class exposure,
+- publish map layers, event tables, alert summaries, and API outputs.
 
-## Detection strategy
-- **Event-driven processing** for pilot corridors only.
-- **SAR first** for all-weather monsoon operations.
-- **Optical indices** (NDWI, MNDWI, AWEI) for boundary refinement.
-- **Fusion confidence score** drives alert levels and review workflow.
+### MVP output products
+1. Flood candidate map
+2. Confirmed flood extent after analyst review
+3. Breach suspicion layer
+4. Asset exposure report
+5. Alert feed with confidence score
+6. Historical event dashboard
 
-## Roadmap
-- **Phase 1 (0-4 months)**: rule-based Sentinel-1 flood detection + confidence-scored alerts.
-- **Phase 2 (4-9 months)**: ML models + exposure + forecast fusion + QA metrics.
-- **Phase 3 (9-12+ months)**: deep segmentation + advanced breach anomaly detection.
+## 2) Explicitly out of scope for MVP
+- Full national wall-to-wall daily processing
+- Public mobile app
+- Complex hydrodynamic simulation
+- High-frequency social media ingestion
+- Enterprise IAM / multi-tenant stack
+- Expensive streaming geospatial stack
+- Sophisticated deep-learning serving infrastructure
+- Kubernetes before proven scale bottlenecks
 
-## Suggested deployment
-- PostGIS + object storage
-- FastAPI microservices
-- Optional Prefect orchestration
-- GPU node for training (U-Net / DeepLabV3+) only after labeled data maturity
+## 3) Architecture layers
+### Layer A — source acquisition
+Core sources: Sentinel-1 GRD, Sentinel-2 L2A, Landsat/HLS, IMERG, GloFAS, Copernicus DEM, JRC GSW.
+
+### Layer B — spatial partitioning
+Operate corridor AOIs, embankment zones, districts, and critical-asset overlays (not whole-country rasters).
+
+### Layer C — baseline reference products
+Permanent/seasonal water masks, centerline + corridor buffers, protected-side zones, terrain masks, exposure baselines.
+
+### Layer D — event detection engine
+Trigger scoring, new-water detection, plausibility filtering, protected-side anomaly detection, object ranking.
+
+### Layer E — review and publishing
+Machine confidence, analyst review state, publish/suppress decision, revision history, archive traceability.
+
+## 4) Core data model (recommended)
+- `aoi_corridors`
+- `river_reaches`
+- `embankments`
+- `satellite_scenes`
+- `scene_processing_runs`
+- `flood_candidates`
+- `flood_events`
+- `breach_candidates`
+- `breach_reviews`
+- `exposure_results`
+- `alert_log`
+- `model_versions`
+- `validation_samples`
+
+Design rule: separate raw observations, intermediate masks, candidate detections, reviewed detections, and published alerts.
+
+## 5) Detection strategy
+- Sentinel-1 baseline anomaly detection is the primary operational method.
+- Optical support (NDWI, MNDWI, AWEI) is secondary and opportunistic.
+- Multi-sensor fusion uses weighted evidence (transparent scoring) before advanced ML.
+
+## 6) Breach logic
+Classify candidates as:
+- likely overflow,
+- likely embankment failure,
+- uncertain anomaly.
+
+Use weighted confidence with evidence from sensor anomaly, protected-side location, embankment proximity, hydromet stress, terrain plausibility, and persistence.
+
+## 7) MVP deployment preference
+Prefer one strong VM or two low-cost nodes (DB/storage + worker/API). Keep operational stack simple: Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.

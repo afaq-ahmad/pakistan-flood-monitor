@@ -1,47 +1,55 @@
-# Pakistan River Flood Monitoring and Breach Detection System
-## Startup-Optimized, Low-Cost, Open-Data Implementation Plan
+# Startup Implementation Plan (Operational MVP)
 
-This document operationalizes the project as an MVP-first startup delivery plan.
+## Engineering sequence
+1. AOI/corridor and metadata schema
+2. Scene discovery service (metadata-first, deduplicated)
+3. Raw/prepared/derived/published storage layout
+4. Daily processing job runner (idempotent)
+5. Event and review tables
+6. Narrow operational API
+7. Lightweight dashboard/map publishing
+8. Logging/monitoring + failure notifications
+9. Scaling upgrades only when needed
 
-## Strategic focus
-- Start with **2-4 pilot corridors**, not full-country processing.
-- Use **rule-based detection first**, then classical ML, then deep learning.
-- Use **event-driven AOI processing** triggered by rainfall/forecast/anomaly signals.
-- Keep **human-in-the-loop review** for high-impact alerts.
+## Ingestion architecture
+- Event-driven corridor-aware ingestion, not bulk crawling.
+- Jobs:
+  - scene discovery (Sentinel/Landsat/HLS intersection + dedupe)
+  - hydromet fetch (IMERG/GloFAS summaries)
+  - reference layer sync (DEM/GSW/boundaries/exposure)
+  - task planner (prioritize high-trigger corridors)
 
-## Operating layers
-1. **Monitoring**: Sentinel-1/2, Landsat, HLS, IMERG, GloFAS, DEM, JRC GSW ingestion.
-2. **Analytics**: flood anomaly scoring, breach candidate ranking, flood extent, exposure overlays.
-3. **Delivery**: alert API, run reports, confidence scores, analyst review status.
+## Storage design
+- **Raw**: immutable source data
+- **Prepared**: clipped/reprojected/normalized COGs
+- **Derived**: masks, vectors, confidence layers, stats
+- **Published**: analyst-approved and API-ready assets
 
-## MVP scope (months 0-4)
-- Corridor-limited pipeline
-- Sentinel-1-first flood probability and breach risk scoring
-- Exposure estimation for population/cropland/roads/schools/hospitals
-- Alert levels with confidence score and review status
-- FastAPI endpoint for AOI run execution
+Preferred formats: COG, GeoParquet, PostGIS, JSON/GeoJSON only for delivery.
 
-## Pilot scope (months 4-9)
-- Add additional corridors and season backtesting
-- Threshold tuning using reviewed alert outcomes
-- Add classical ML classifier for breach likelihood
-- Introduce analyst QA queues and false-alarm metrics
+## Workflow states
+`queued`, `running`, `success`, `failed`, `skipped`, `stale`, `manual_retry_requested`.
 
-## Scale scope (months 9-12+)
-- Add segmentation models when labels are mature
-- Expand AOI catalog across river basins
-- Add automated drift checks and retraining triggers
-- Build decision dashboard with approval workflow
+## Reliability minimums
+Monitor discovery success, download failures, processing latency, AOIs processed, events created, false-alert suppressions, API uptime, disk usage, and queue backlog.
 
-## Required operational KPIs
-- Time from satellite availability to alert
-- Alert precision and false-alarm rate
-- Confirmed breach candidate ratio
-- Exposed assets estimated per event
-- Analyst hours saved and stakeholder adoption
+## Security minimums
+- Admin authentication
+- Tokenized API access
+- Secret encryption
+- Audit logs for reviewed alerts
+- Public vs internal endpoint separation
 
-## Cost-control guidance
-- Prefer PostGIS + object storage + Docker + FastAPI + Prefect OSS/cron
-- Run compute only when event triggers are positive
-- Store metadata-rich outputs for later model training
-- Avoid expensive proprietary tools in the MVP phase
+## ML roadmap discipline
+- **Phase A:** rules-first benchmark (implemented first)
+- **Phase B:** classical ML candidate ranking
+- **Phase C:** segmentation only after label maturity and measurable ROI
+
+## Label quality strategy
+Use tiered labels:
+- Tier 1 analyst verified
+- Tier 2 corroborated
+- Tier 3 weak
+- Tier 4 auto provisional
+
+Evaluate with event-based and geography-aware splits to avoid leakage.
