@@ -155,3 +155,9 @@ This preserves the roadmap order: rules-first operations remain primary, classic
 - **17.3.1 Event-based splits:** train/test partitioning is performed at `source_event_id` level so candidates from the same event never leak across sets.
 - **17.3.2 Geometry + operations metrics:** validation now records IoU, precision, recall, F1, alert acceptance rate, false alarm rate, and top-k breach review precision in addition to ranking discrimination metrics.
 - **17.3.3 Business usefulness guardrail:** model promotion evidence now includes analyst-burden proxies (acceptance and false-alarm behavior), so IoU-only gains do not qualify as automatic improvements.
+
+
+17.4 is implemented as **minimal MLOps governance controls**:
+- **17.4.1 Model registry table:** `model_versions` now stores `model_id`, `model_type`, `training_snapshot_version`, validation `metrics`, `deployment_status`, and `rollback_parent_model_id` for explicit rollback lineage.
+- **17.4.2 Threshold registry:** `threshold_versions` is versioned independently from model artifacts so threshold promotions/rollbacks can happen without changing model binaries.
+- **17.4.3 Retraining triggers:** retraining decisions are explicitly evaluated and logged in `retraining_decisions` only when label quality improves materially, drift crosses threshold, or sensors/features change; calendar-based retraining is intentionally excluded.

@@ -105,8 +105,10 @@ def test_classical_ranker_trains_from_candidate_snapshot_and_registers_metadata(
     assert len(registry_files) == 1
     payload = json.loads(registry_files[0].read_text(encoding="utf-8"))
     assert payload["training_dataset_snapshot"] == snapshot_id
+    assert payload["model_type"] == "logistic_regression"
     assert payload["feature_set_version"] == "v2"
     assert "deployment_threshold" in payload
+    assert payload["deployment_status"] == "candidate"
 
 
 def test_false_positive_suppression_target_uses_review_outcome_labels(tmp_path) -> None:
@@ -187,3 +189,39 @@ def test_breach_ranking_reports_top_k_breach_review_precision(tmp_path) -> None:
     model = ranker.train(snapshot_id=snapshot_id, target="breach_confidence", feature_set_version="v2")
 
     assert model.metrics["top_k_breach_review_precision"] >= 0.5
+
+
+def test_threshold_registry_and_retraining_policy_are_material_trigger_based(tmp_path) -> None:
+    from datetime import UTC
+
+    from app.services.ml_ranking import (
+        RetrainingSignal,
+        RetrainingTriggerPolicy,
+        ThresholdMetadataRegistry,
+        ThresholdVersionRecord,
+    )
+
+    threshold_registry = ThresholdMetadataRegistry(tmp_path / "thresholds")
+    record_path = threshold_registry.register(
+        ThresholdVersionRecord(
+            threshold_id="thr-flood-v3",
+            target="flood_confidence",
+            version="v3",
+            values={"deployment_threshold": 0.61},
+            created_at=datetime.now(UTC).isoformat(),
+            linked_model_id="flood_confidence-20260310-aaaa1111",
+        )
+    )
+
+    payload = json.loads(record_path.read_text(encoding="utf-8"))
+    assert payload["target"] == "flood_confidence"
+    assert payload["version"] == "v3"
+
+    policy = RetrainingTriggerPolicy(min_label_quality_gain=0.1, drift_threshold=0.2)
+    no_retrain = policy.evaluate(RetrainingSignal(label_quality_gain=0.04, drift_score=0.09, feature_schema_changed=False))
+    assert no_retrain.should_retrain is False
+    assert no_retrain.reasons == []
+
+    retrain = policy.evaluate(RetrainingSignal(label_quality_gain=0.12, drift_score=0.05, feature_schema_changed=False))
+    assert retrain.should_retrain is True
+    assert retrain.reasons == ["label_quality_improved"]

@@ -8,10 +8,12 @@ from app.models.core import (
     FloodCandidate,
     FloodEvent,
     ModelVersion,
+    RetrainingDecisionLog,
     RiverReach,
     SatelliteScene,
     SceneProcessingRun,
     TaskQueueRecord,
+    ThresholdVersion,
     ValidationSample,
 )
 
@@ -29,5 +31,7 @@ __all__ = [
     "ExposureResult",
     "AlertLog",
     "ModelVersion",
+    "ThresholdVersion",
+    "RetrainingDecisionLog",
     "ValidationSample",
 ]

@@ -206,9 +206,42 @@ class AlertLog(Base, ProvenanceMixin):
 class ModelVersion(Base):
     __tablename__ = "model_versions"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    model_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    version: Mapped[str] = mapped_column(String(100), nullable=False)
+    model_id: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
+    model_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    training_snapshot_version: Mapped[str] = mapped_column(String(150), nullable=False)
+    metrics: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    deployment_status: Mapped[str] = mapped_column(String(50), nullable=False, default="candidate")
+    rollback_parent_model_id: Mapped[str | None] = mapped_column(String(150), nullable=True)
     model_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_model_versions_type_status", "model_type", "deployment_status"),
+        Index("ix_model_versions_snapshot", "training_snapshot_version"),
+    )
+
+
+class ThresholdVersion(Base):
+    __tablename__ = "threshold_versions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    threshold_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    version: Mapped[str] = mapped_column(String(100), nullable=False)
+    threshold_values: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    linked_model_id: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_threshold_versions_name_version", "threshold_name", "version", unique=True),
+    )
+
+
+class RetrainingDecisionLog(Base):
+    __tablename__ = "retraining_decisions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    model_id: Mapped[str] = mapped_column(String(150), nullable=False)
+    should_retrain: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    trigger_reasons: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    signal_snapshot: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
 

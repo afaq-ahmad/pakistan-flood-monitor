@@ -14,6 +14,7 @@ from sklearn.metrics import average_precision_score, f1_score, precision_recall_
 from app.services.ml_features import CandidateKind, FeatureSnapshotStore
 
 RankingTarget = Literal["flood_confidence", "breach_confidence", "false_positive_suppression"]
+DeploymentStatus = Literal["candidate", "shadow", "active", "rolled_back", "retired"]
 
 
 _TARGET_LABEL_MAP: dict[RankingTarget, set[str]] = {
@@ -26,6 +27,7 @@ _TARGET_LABEL_MAP: dict[RankingTarget, set[str]] = {
 @dataclass(slots=True)
 class TrainingRunRecord:
     model_id: str
+    model_type: str
     target: RankingTarget
     candidate_kind: CandidateKind
     created_at: str
@@ -34,11 +36,14 @@ class TrainingRunRecord:
     hyperparameters: dict[str, Any]
     validation_metrics: dict[str, float]
     deployment_threshold: float
+    deployment_status: DeploymentStatus = "candidate"
+    rollback_parent_model_id: str | None = None
     rules_baseline_metrics: dict[str, float] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "model_id": self.model_id,
+            "model_type": self.model_type,
             "target": self.target,
             "candidate_kind": self.candidate_kind,
             "created_at": self.created_at,
@@ -47,7 +52,29 @@ class TrainingRunRecord:
             "hyperparameters": self.hyperparameters,
             "validation_metrics": self.validation_metrics,
             "deployment_threshold": self.deployment_threshold,
+            "deployment_status": self.deployment_status,
+            "rollback_parent_model_id": self.rollback_parent_model_id,
             "rules_baseline_metrics": self.rules_baseline_metrics,
+        }
+
+
+@dataclass(slots=True)
+class ThresholdVersionRecord:
+    threshold_id: str
+    target: RankingTarget
+    version: str
+    values: dict[str, float]
+    created_at: str
+    linked_model_id: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "threshold_id": self.threshold_id,
+            "target": self.target,
+            "version": self.version,
+            "values": self.values,
+            "created_at": self.created_at,
+            "linked_model_id": self.linked_model_id,
         }
 
 
@@ -62,6 +89,55 @@ class ModelMetadataRegistry:
         output_path = self.root_dir / f"{record.model_id}.json"
         output_path.write_text(json.dumps(record.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
         return output_path
+
+
+class ThresholdMetadataRegistry:
+    """Versioned threshold registry kept separate from model binaries and metadata."""
+
+    def __init__(self, root_dir: Path) -> None:
+        self.root_dir = root_dir
+        self.root_dir.mkdir(parents=True, exist_ok=True)
+
+    def register(self, record: ThresholdVersionRecord) -> Path:
+        output_path = self.root_dir / f"{record.target}-{record.version}.json"
+        output_path.write_text(json.dumps(record.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+        return output_path
+
+
+@dataclass(slots=True)
+class RetrainingSignal:
+    label_quality_gain: float
+    drift_score: float
+    feature_schema_changed: bool
+
+
+@dataclass(slots=True)
+class RetrainingDecision:
+    should_retrain: bool
+    reasons: list[str]
+
+
+class RetrainingTriggerPolicy:
+    """Policy for retraining only on material evidence, never calendar cadence."""
+
+    def __init__(
+        self,
+        *,
+        min_label_quality_gain: float = 0.1,
+        drift_threshold: float = 0.2,
+    ) -> None:
+        self._min_label_quality_gain = min_label_quality_gain
+        self._drift_threshold = drift_threshold
+
+    def evaluate(self, signal: RetrainingSignal) -> RetrainingDecision:
+        reasons: list[str] = []
+        if signal.label_quality_gain >= self._min_label_quality_gain:
+            reasons.append("label_quality_improved")
+        if signal.drift_score >= self._drift_threshold:
+            reasons.append("data_drift_detected")
+        if signal.feature_schema_changed:
+            reasons.append("sensor_or_feature_changed")
+        return RetrainingDecision(should_retrain=bool(reasons), reasons=reasons)
 
 
 @dataclass(slots=True)
@@ -174,6 +250,7 @@ class ClassicalCandidateRanker:
         model_id = f"{target}-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid4().hex[:8]}"
         record = TrainingRunRecord(
             model_id=model_id,
+            model_type="logistic_regression",
             target=target,
             candidate_kind=candidate_kind,
             created_at=datetime.now(UTC).isoformat(),
