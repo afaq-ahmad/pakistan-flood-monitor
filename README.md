@@ -62,6 +62,29 @@ Detection posture:
 - Optical indices (NDWI/MNDWI/AWEI) are secondary support when available.
 - Weighted evidence scoring is preferred before adding complex real-time ML serving.
 
+### System flow (high level)
+```mermaid
+flowchart LR
+    A[Data discovery\nSentinel-1 + hydromet] --> B[Ingestion + preprocessing]
+    B --> C[Anomaly and breach analytics]
+    C --> D[Exposure estimation]
+    D --> E[Review workflow]
+    E --> F[Publication + alerts]
+    F --> G[Dashboard and API consumers]
+```
+
+### Review and publication workflow
+```mermaid
+flowchart TD
+    Q[Candidate detection] --> W[Review queue]
+    W --> E{Analyst decision}
+    E -- Approve --> R[Promote to confirmed event]
+    E -- Needs edits --> T[Return for correction]
+    E -- Reject --> Y[Archive as rejected]
+    R --> U[Publish map layers + API records]
+    U --> I[Emit alert feed entries]
+```
+
 ## Runtime stacks (important)
 This repo intentionally contains **two API stacks**:
 
