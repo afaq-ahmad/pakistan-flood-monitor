@@ -49,6 +49,39 @@ The implementation is modular (not one large script) and organized around five r
 
 ### Supporting implementation views
 
+### End-to-end operational flow
+```mermaid
+flowchart LR
+    A[Daily scheduler\ncron / Prefect] --> B[Scene + hydromet discovery]
+    B --> C[Ingestion + preprocessing\nSAR, optical support, masks]
+    C --> D[Baseline anomaly detection]
+    D --> E[Breach suspicion scoring\nweighted evidence]
+    E --> F[Exposure estimation\ndistrict + assets]
+    F --> G[Review queue creation]
+    G --> H[Analyst review + status updates]
+    H --> I[Publication + alert feed]
+    I --> J[Dashboard + APIs]
+```
+
+### Decision flow for flood-event confidence
+```mermaid
+flowchart TD
+    S[Candidate anomaly polygon] --> Q{SAR anomaly above threshold?}
+    Q -- No --> R[Reject or hold\nlow-confidence artifact]
+    Q -- Yes --> O{Optical/hydromet corroboration available?}
+    O -- No --> P[Keep as SAR-led candidate\nmedium confidence]
+    O -- Yes --> W[Apply weighted evidence model]
+    W --> X{Protected-side + embankment proximity?}
+    X -- Yes --> Y[Raise breach suspicion score]
+    X -- No --> Z[Classify as likely overflow]
+    Y --> U[Send to analyst review queue]
+    Z --> U
+    P --> U
+    U --> V{Analyst confirmed?}
+    V -- Yes --> AA[Publish confirmed event + alerts]
+    V -- No --> AB[Archive with review notes]
+```
+
 ## 4) Core data model (recommended)
 - `aoi_corridors`
 - `river_reaches`
