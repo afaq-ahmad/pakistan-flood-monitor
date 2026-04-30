@@ -19,6 +19,7 @@ from app.services.observability import metrics_registry
 from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
 from pakistan_flood_monitor.services.gis_qa import publication_gate
+from pakistan_flood_monitor.services.alert_templates import render_alert_template
 
 app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
@@ -78,6 +79,10 @@ def _limitations_link() -> dict[str, str]:
 
 
 def _attach_limitations(payload: dict[str, Any]) -> dict[str, Any]:
+    existing = payload.get("limitations")
+    if isinstance(existing, dict):
+        link = _limitations_link()
+        return payload | {"limitations": existing | link | {"link": link}}
     return payload | {"limitations": _limitations_link()}
 
 
@@ -760,9 +765,9 @@ def mobile_advisory(
 
 
 @public_router.get("/alerts/feed")
-def alert_feed():
+def alert_feed(variant: str = Query(default="public_safe")):
     return [_attach_limitations(
-        run["published_outputs"]["alert_feed_item"])
+        render_alert_template(event=_event_record_from_run(run), variant=variant))
         for runs in run_history.values()
         for run in runs
         if run["detections"][0]["review_status"] == "analyst_validated"
@@ -928,11 +933,19 @@ def get_event_confidence(event_id: str) -> dict[str, Any]:
 
 
 @public_router.get("/alerts/latest")
-def latest_alerts() -> list[dict]:
-    return [_attach_limitations(event["latest_event_summary"] | {"event_id": event["event_id"], "aoi": event["aoi"]})
+def latest_alerts(variant: str = Query(default="public_safe")) -> list[dict]:
+    return [_attach_limitations(render_alert_template(event=event, variant=variant))
         for event in _all_events()
         if event["status"] == "published"
     ]
+
+
+@internal_router.get("/alerts/templates", dependencies=[Depends(_require_role("admin", "analyst", "reviewer"))])
+def internal_alert_templates(event_id: str, variant: str = Query(default="official_internal")) -> dict[str, Any]:
+    event = _event_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found.")
+    return render_alert_template(event=event, variant=variant)
 
 
 @public_router.get("/risk-summary/{level}")
