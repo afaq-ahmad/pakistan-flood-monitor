@@ -12,6 +12,23 @@ Internal APIs require bearer tokens:
 
 - `FLOOD_MONITOR_ADMIN_TOKEN` for admin operations
 - `FLOOD_MONITOR_ANALYST_TOKEN` for analyst operations
+- `FLOOD_MONITOR_REVIEWER_TOKEN` for reviewer operations (review-only boundary)
+- `FLOOD_MONITOR_SERVICE_TOKEN` for service-to-service monitoring access
+
+Structured bearer tokens are also supported for expiry enforcement:
+- format: `v1.<base64url-json>`
+- required claims: `role`, `principal_id`, `exp` (ISO-8601 UTC timestamp)
+- expired tokens return `401 {"detail": "Token expired"}`
+- malformed structured tokens return `401 {"detail": "Malformed token"}`
+
+### Authorization matrix
+| Endpoint boundary | admin | analyst | reviewer | service | public |
+| --- | --- | --- | --- | --- | --- |
+| `/internal/run/*` and `/internal/admin/reprocess-scene` | allow | deny | deny | deny | deny |
+| `/internal/admin/review-event` | allow | allow | allow | deny | deny |
+| `/internal/admin/register-*`, `/internal/admin/evaluate-retraining`, `/internal/admin/state/*`, `/internal/admin/privileged-audit` | allow | deny | deny | deny | deny |
+| `/internal/monitoring/metrics*`, `/internal/breach-candidates` | allow | allow | deny | deny | deny |
+| `/public/*` | allow | allow | allow | allow | allow |
 
 ### Rotation strategy
 1. Keep two valid token slots in deployment secrets (`current` and `next`).
@@ -19,6 +36,7 @@ Internal APIs require bearer tokens:
 3. Switch clients to `next` token.
 4. Remove old token in the following deployment.
 5. Rotate at least every 30 days or immediately after incident response.
+6. For structured tokens, issue short-lived credentials (recommended <= 60 minutes) and rotate signing/issuance material through secret manager.
 
 ### Actor attribution control
 Privileged actor identity is **server-derived** from the authenticated token principal.
