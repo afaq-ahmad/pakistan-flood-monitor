@@ -73,6 +73,13 @@ LIMITATIONS_STATEMENT = {
     "warning_limitations": "Alerts may miss events, include false positives, and can lag real-world conditions due to data latency and quality constraints.",
     "non_replacement_notice": "Do not use this system as a replacement for official emergency warnings, evacuation orders, or instructions from government authorities and disaster-management agencies.",
 }
+LIMITATIONS_STATEMENT_UR = {
+    "title": "پاکستان فلڈ مانیٹر کی حدود اور مجوزہ استعمال",
+    "intended_use": "ممکنہ سیلاب اور پشتے کی بے قاعدگی کی صورتحال میں آگاہی اور تجزیہ کار کی معاونت کے لیے۔",
+    "confidence_and_uncertainty": "اعتماد کے اسکور SAR، ہائیڈرو میٹ، اور قواعدی اشاروں پر مبنی تخمینے ہیں اور غلط، تاخیر زدہ، یا نامکمل ہو سکتے ہیں۔",
+    "warning_limitations": "الرٹس بعض واقعات کو نہیں پکڑ سکتے، غلط مثبت دے سکتے ہیں، اور ڈیٹا تاخیر یا معیار کی وجہ سے زمینی حالات سے پیچھے ہو سکتے ہیں۔",
+    "non_replacement_notice": "اس نظام کو سرکاری ہنگامی انتباہات، انخلا کے احکامات، یا حکومتی ہدایات کے متبادل کے طور پر استعمال نہ کریں۔",
+}
 
 def _limitations_link() -> dict[str, str]:
     return {"href": LIMITATIONS_PATH, "rel": "limitations", "title": LIMITATIONS_STATEMENT["title"]}
@@ -84,6 +91,27 @@ def _attach_limitations(payload: dict[str, Any]) -> dict[str, Any]:
         link = _limitations_link()
         return payload | {"limitations": existing | link | {"link": link}}
     return payload | {"limitations": _limitations_link()}
+
+
+def _apply_language(payload: dict[str, Any], language: str) -> dict[str, Any]:
+    if language not in {"en", "ur"}:
+        raise HTTPException(status_code=400, detail="language must be one of en|ur")
+    localized = payload.get("localized", {})
+    if language == "ur":
+        payload = payload | {
+            "language": "ur",
+            "dir": "rtl",
+            "a11y": (payload.get("a11y") or {}) | {"direction": "rtl", "language": ["en", "ur"]},
+        }
+        if isinstance(localized, dict):
+            if isinstance(localized.get("disclaimer"), dict):
+                payload["public_disclaimer"] = localized["disclaimer"].get("ur", payload.get("public_disclaimer"))
+            if isinstance(localized.get("limitations_summary"), dict):
+                payload.setdefault("limitations", {})["summary"] = localized["limitations_summary"].get("ur", payload.get("limitations", {}).get("summary"))
+            if isinstance(localized.get("recommended_actions"), dict):
+                payload["recommended_actions"] = localized["recommended_actions"].get("ur", payload.get("recommended_actions"))
+        return payload
+    return payload | {"language": "en", "dir": "ltr"}
 
 
 LIFECYCLE_TRANSITIONS: dict[str, set[str]] = {
@@ -754,6 +782,7 @@ def get_published_outputs(aoi_name: str):
 def mobile_advisory(
     aoi_name: str,
     low_bandwidth: bool = Query(default=False),
+    language: str = Query(default="en"),
 ) -> dict[str, Any]:
     report = _latest_run(aoi_name)
     if not report:
@@ -783,8 +812,26 @@ def mobile_advisory(
         "a11y": {
             "min_text_size_px": 16,
             "high_contrast": True,
-            "language": ["en"],
+            "language": ["en", "ur"],
             "keyboard_navigation_required": True,
+        },
+        "localized": {
+            "headline": {
+                "en": f"{detection['alert_level'].upper()} flood advisory for {aoi_name}",
+                "ur": f"{aoi_name} کے لیے {detection['alert_level']} سیلابی ہدایت",
+            },
+            "actions": {
+                "en": [
+                    "Monitor official district and provincial disaster-management updates.",
+                    "Avoid crossing flooded roads and low bridges.",
+                    "Prepare household emergency supplies and communication plans.",
+                ],
+                "ur": [
+                    "ضلعی اور صوبائی ڈیزاسٹر مینجمنٹ کی سرکاری ہدایات پر نظر رکھیں۔",
+                    "زیرِ آب سڑکوں اور نچلے پلوں سے گزرنے سے گریز کریں۔",
+                    "گھریلو ہنگامی سامان اور رابطہ منصوبہ تیار رکھیں۔",
+                ],
+            },
         },
     }
     if low_bandwidth:
@@ -796,13 +843,18 @@ def mobile_advisory(
         advisory["payload_estimate_kb"] = 320
         advisory["network_profile"] = "3g"
 
-    return _attach_limitations(advisory)
+    advisory = _attach_limitations(advisory)
+    advisory = _apply_language(advisory, language)
+    if advisory.get("language") == "ur":
+        advisory["headline"] = advisory["localized"]["headline"]["ur"]
+        advisory["actions"] = advisory["localized"]["actions"]["ur"]
+    return advisory
 
 
 @public_router.get("/alerts/feed")
-def alert_feed(variant: str = Query(default="public_safe")):
+def alert_feed(variant: str = Query(default="public_safe"), language: str = Query(default="en")):
     return [_attach_limitations(
-        render_alert_template(event=_event_record_from_run(run), variant=variant))
+        _apply_language(render_alert_template(event=_event_record_from_run(run), variant=variant), language))
         for runs in run_history.values()
         for run in runs
         if run["detections"][0]["review_status"] == "analyst_validated"
@@ -968,8 +1020,8 @@ def get_event_confidence(event_id: str) -> dict[str, Any]:
 
 
 @public_router.get("/alerts/latest")
-def latest_alerts(variant: str = Query(default="public_safe")) -> list[dict]:
-    return [_attach_limitations(render_alert_template(event=event, variant=variant))
+def latest_alerts(variant: str = Query(default="public_safe"), language: str = Query(default="en")) -> list[dict]:
+    return [_attach_limitations(_apply_language(render_alert_template(event=event, variant=variant), language))
         for event in _all_events()
         if event["status"] == "published"
     ]

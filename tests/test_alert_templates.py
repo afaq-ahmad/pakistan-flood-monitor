@@ -90,3 +90,5 @@ def test_alert_template_snapshot_like_output() -> None:
     assert payload["template"] == "ndma_pdma_flood_alert_v1"
     assert payload["source_lineage"]["source_scene_ids"] == ["S1A_001"]
     assert payload["confidence"]["score"] == 0.9
+    assert payload["localized"]["disclaimer"]["ur"]
+    assert payload["localized"]["recommended_actions"]["ur"][0]
