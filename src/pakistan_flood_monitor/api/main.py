@@ -64,7 +64,7 @@ rate_limiter = RateLimiter()
 
 class ReviewEventRequest(BaseModel):
     action: str
-    actor: str | None = None
+    actor: str | None = Field(default=None, deprecated=True)
     analyst_confidence: float | None = None
     notes: str = ""
     reviewed_geometry: dict[str, Any] | None = None
@@ -78,7 +78,7 @@ class ThresholdRegistrationRequest(BaseModel):
     version: str
     threshold_values: dict[str, float] = Field(default_factory=dict)
     linked_model_id: str | None = None
-    actor: str | None = None
+    actor: str | None = Field(default=None, deprecated=True)
     notes: str = ""
 
 
@@ -89,7 +89,7 @@ class RetrainingTriggerRequest(BaseModel):
     label_quality_gain: float
     drift_score: float
     feature_schema_changed: bool = False
-    actor: str | None = None
+    actor: str | None = Field(default=None, deprecated=True)
     notes: str = ""
 
 
@@ -147,7 +147,7 @@ class ModelRegistrationRequest(BaseModel):
     validation_metrics: dict[str, float] = Field(default_factory=dict)
     deployment_status: str = "candidate"
     rollback_parent_model_id: str | None = None
-    actor: str | None = None
+    actor: str | None = Field(default=None, deprecated=True)
     notes: str = ""
 
 
@@ -321,10 +321,11 @@ def _confidence_bucket(score_percent: float) -> str:
     return "low"
 
 
-def _audit_privileged_action(*, actor: str, action: str, resource_type: str, resource_id: str, details: dict[str, Any] | None = None) -> None:
+def _audit_privileged_action(*, principal_id: str, action: str, resource_type: str, resource_id: str, details: dict[str, Any] | None = None) -> None:
     privileged_audit_log.append(
         {
-            "actor": actor,
+            "principal_id": principal_id,
+            "actor": principal_id,
             "action": action,
             "resource_type": resource_type,
             "resource_id": resource_id,
@@ -342,15 +343,6 @@ def _resolve_role(token: str) -> str | None:
     if analyst_token and token == analyst_token:
         return "analyst"
     return None
-
-
-def _assert_actor_matches_role(role: str, actor: str) -> None:
-    expected_prefix = f"{role}-"
-    if not actor.startswith(expected_prefix):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Actor '{actor}' is not allowed for role '{role}'. Use actor IDs prefixed with '{expected_prefix}'.",
-        )
 
 
 def _principal_id_for_role(role: str) -> str:
@@ -696,7 +688,7 @@ def monitoring_metrics() -> dict[str, Any]:
 def admin_reprocess_scene(aoi_name: str) -> dict:
     report = pipeline.run_daily(aoi_name).model_dump()
     _record_run(report)
-    _audit_privileged_action(actor="system-admin", action="reprocess", resource_type="corridor", resource_id=aoi_name)
+    _audit_privileged_action(principal_id="admin-principal", action="reprocess", resource_type="corridor", resource_id=aoi_name)
     return {
         "status": "reprocessed",
         "run_id": report["run_id"],
@@ -749,6 +741,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
     review_audit_log.append(
         {
             "event_id": event_id,
+            "principal_id": principal_id,
             "actor": principal_id,
             "action": payload.action,
             "changed_at": datetime.now(UTC).isoformat(),
@@ -760,7 +753,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
         }
     )
     _audit_privileged_action(
-        actor=principal_id,
+        principal_id=principal_id,
         action="review",
         resource_type="event",
         resource_id=event_id,
@@ -806,7 +799,7 @@ def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depend
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     threshold_registry.append(record)
     _audit_privileged_action(
-        actor=principal_id,
+        principal_id=principal_id,
         action="threshold_change",
         resource_type="threshold",
         resource_id=payload.threshold_name,
@@ -821,7 +814,7 @@ def register_model(payload: ModelRegistrationRequest, role: str = Depends(_requi
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     model_registry.append(record)
     _audit_privileged_action(
-        actor=principal_id,
+        principal_id=principal_id,
         action="publish",
         resource_type="model",
         resource_id=payload.model_id,
@@ -839,7 +832,7 @@ def evaluate_retraining(payload: RetrainingTriggerRequest, role: str = Depends(_
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id} | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
     retraining_decisions.append(record)
     _audit_privileged_action(
-        actor=principal_id,
+        principal_id=principal_id,
         action="retraining_evaluated",
         resource_type="model",
         resource_id=payload.model_id,

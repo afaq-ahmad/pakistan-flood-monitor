@@ -95,7 +95,7 @@ def test_concurrent_writes_and_read_after_write_across_clients() -> None:
         assert sum(len(runs) for runs in run_history.values()) >= 4
 
 
-def test_actor_spoofing_is_rejected_and_token_misuse_forbidden() -> None:
+def test_payload_actor_is_ignored_and_token_misuse_forbidden() -> None:
     _reset_state()
     client = TestClient(app)
 
@@ -107,8 +107,12 @@ def test_actor_spoofing_is_rejected_and_token_misuse_forbidden() -> None:
         headers=_analyst_headers(),
         json={"action": "accept", "actor": "admin-fake", "notes": "spoof"},
     )
-    assert spoof_attempt.status_code == 403
-    assert "not allowed" in spoof_attempt.json()["detail"]
+    assert spoof_attempt.status_code == 200
+
+    review_audit = client.get("/internal/admin/review-audit", headers=_analyst_headers())
+    assert review_audit.status_code == 200
+    assert review_audit.json()[-1]["principal_id"] == "analyst-principal"
+    assert review_audit.json()[-1]["actor"] == "analyst-principal"
 
     admin_only = client.post(
         "/internal/admin/register-threshold",
