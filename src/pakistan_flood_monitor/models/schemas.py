@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from pydantic import BaseModel, Field
 
@@ -41,6 +41,43 @@ class AOI(BaseModel):
     name: str
     district: str
     geometry_wkt: str
+
+
+class LineageSceneAsset(BaseModel):
+    href: str
+    roles: List[str] = Field(default_factory=list)
+
+
+class SourceSceneLineage(BaseModel):
+    scene_id: str
+    sensor: str
+    acquired_at: datetime
+    assets: Dict[str, LineageSceneAsset] = Field(default_factory=dict)
+
+
+class EventLineage(BaseModel):
+    schema: str = "stac-lineage-event/v1"
+    run_id: str
+    source_scene_ids: List[str] = Field(default_factory=list)
+    source_scenes: List[SourceSceneLineage] = Field(default_factory=list)
+    processing_version: str
+    threshold_version: str
+    thresholds: Dict[str, float] = Field(default_factory=dict)
+    model: Dict[str, Any] = Field(default_factory=dict)
+    generated_at: datetime
+
+
+class RunLineage(BaseModel):
+    schema: str = "stac-lineage-run/v1"
+    run_id: str
+    aoi: str
+    source_scene_ids: List[str] = Field(default_factory=list)
+    source_scenes: List[SourceSceneLineage] = Field(default_factory=list)
+    processing_version: str
+    threshold_version: str
+    thresholds: Dict[str, float] = Field(default_factory=dict)
+    model: Dict[str, Any] = Field(default_factory=dict)
+    generated_at: datetime
 
 
 class FloodDetectionResult(BaseModel):
@@ -118,6 +155,7 @@ class ReviewQueueEvent(BaseModel):
     decision: EventDecision | None = None
     notes: str = ""
     source_scenes: List[str] = Field(default_factory=list)
+    lineage: EventLineage | None = None
 
 
 class HistoricalEventRecord(BaseModel):
@@ -146,3 +184,4 @@ class ProcessingReport(BaseModel):
     exposure: Dict[str, ExposureStats]
     trigger_reason: str
     published_outputs: MVPOutputs
+    run_lineage: RunLineage

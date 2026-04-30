@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from app.services.observability import log_failure, log_structured, metrics_registry
@@ -22,6 +22,10 @@ from pakistan_flood_monitor.models.schemas import (
     ModelVersion,
     MVPOutputs,
     ProcessingReport,
+    EventLineage,
+    RunLineage,
+    SourceSceneLineage,
+    LineageSceneAsset,
     ReviewQueueEvent,
     ReviewStatus,
 )
@@ -88,6 +92,35 @@ class FloodMonitoringPipeline:
             rollback_model_id=None,
         )
 
+    def _scene_lineage(self, scenes) -> list[SourceSceneLineage]:
+        output: list[SourceSceneLineage] = []
+        for scene in scenes:
+            assets = {
+                name: LineageSceneAsset(href=href, roles=["source", name])
+                for name, href in (scene.assets or {}).items()
+            }
+            output.append(
+                SourceSceneLineage(
+                    scene_id=scene.scene_id,
+                    sensor=scene.sensor,
+                    acquired_at=datetime.combine(scene.acquisition_date, datetime.min.time(), tzinfo=UTC),
+                    assets=assets,
+                )
+            )
+        return output
+
+    def _build_event_lineage(self, *, run_id: str, source_scenes: list[SourceSceneLineage], thresholds: dict[str, float], processing_version: str, threshold_version: str, model: ModelVersion) -> EventLineage:
+        return EventLineage(
+            run_id=run_id,
+            source_scene_ids=[scene.scene_id for scene in source_scenes],
+            source_scenes=source_scenes,
+            processing_version=processing_version,
+            threshold_version=threshold_version,
+            thresholds=thresholds,
+            model=model.model_dump(),
+            generated_at=datetime.now(UTC),
+        )
+
     def _build_outputs(
         self,
         run_id: str,
@@ -98,6 +131,7 @@ class FloodMonitoringPipeline:
         breach_risk: float,
         source_scenes: list[str],
         exposure_report: dict,
+        lineage: EventLineage,
     ) -> MVPOutputs:
         polygon_ids = [f"{aoi_name}-candidate-001", f"{aoi_name}-candidate-002"]
         breach_category = (
@@ -140,14 +174,17 @@ class FloodMonitoringPipeline:
                 summary=f"{alert_level.value} flood signal for {aoi_name}",
             ),
             model_version=self._active_model_version(),
-            review_queue_event=self._build_review_queue_event(
-                run_id,
-                aoi_name,
-                source_scenes,
-                alert_level,
-                breach_risk,
-                confidence_score,
-                review_status,
+            review_queue_event=ReviewQueueEvent(
+                **self._build_review_queue_event(
+                    run_id,
+                    aoi_name,
+                    source_scenes,
+                    alert_level,
+                    breach_risk,
+                    confidence_score,
+                    review_status,
+                ).model_dump(exclude={"lineage"}),
+                lineage=lineage,
             ),
             historical_event_dashboard=[
                 HistoricalEventRecord(
@@ -172,19 +209,43 @@ class FloodMonitoringPipeline:
             checkpoint = "fetch_inputs"
             scenes = self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
             support_layers = self.catalog.fetch_supporting_layers(aoi_name)
+            processing_version = "sar-preprocess-v1"
+            threshold_version = "alert-thresholds-v1"
+            thresholds = {
+                "sar_drop_db": settings.thresholds.sar_drop_db,
+                "ndwi": settings.thresholds.ndwi,
+                "confidence_warning": settings.thresholds.confidence_warning,
+                "confidence_critical": settings.thresholds.confidence_critical,
+            }
             extracted = self.feature_extractor.extract(
                 run_id=run_id,
                 aoi_name=aoi_name,
                 scenes=scenes,
                 support_layers=support_layers,
-                processing_version="sar-preprocess-v1",
-                threshold_version="alert-thresholds-v1",
-                thresholds={
-                    "sar_drop_db": settings.thresholds.sar_drop_db,
-                    "ndwi": settings.thresholds.ndwi,
-                    "confidence_warning": settings.thresholds.confidence_warning,
-                    "confidence_critical": settings.thresholds.confidence_critical,
-                },
+                processing_version=processing_version,
+                threshold_version=threshold_version,
+                thresholds=thresholds,
+            )
+            active_model = self._active_model_version()
+            scene_lineage = self._scene_lineage(scenes)
+            run_lineage = RunLineage(
+                run_id=run_id,
+                aoi=aoi_name,
+                source_scene_ids=[scene.scene_id for scene in scene_lineage],
+                source_scenes=scene_lineage,
+                processing_version=processing_version,
+                threshold_version=threshold_version,
+                thresholds=thresholds,
+                model=active_model.model_dump(),
+                generated_at=datetime.now(UTC),
+            )
+            event_lineage = self._build_event_lineage(
+                run_id=run_id,
+                source_scenes=scene_lineage,
+                thresholds=thresholds,
+                processing_version=processing_version,
+                threshold_version=threshold_version,
+                model=active_model,
             )
             features = extracted.features
 
@@ -225,7 +286,9 @@ class FloodMonitoringPipeline:
                         0.0,
                         extracted.source_scene_ids + ["imerg", "glofas"],
                         exposure.model_dump(),
+                        event_lineage,
                     ),
+                    run_lineage=run_lineage,
                 )
             else:
                 flood_probability = self.detector.rule_based_probability(features)
@@ -269,7 +332,9 @@ class FloodMonitoringPipeline:
                         breach_risk,
                         source_sensors,
                         exposure.model_dump(),
+                        event_lineage,
                     ),
+                    run_lineage=run_lineage,
                 )
 
             delay_hours = max(0.0, (datetime.utcnow() - detection.timestamp).total_seconds() / 3600)

@@ -230,6 +230,7 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
         "analyst_confidence": review_event["analyst_confidence"],
         "confidence_bucket": _confidence_bucket(review_event["machine_confidence"]),
         "source_scenes": review_event["source_scenes"],
+        "lineage": review_event.get("lineage"),
         "district_overlays": [review_event["aoi"]],
         "notes": review_event["notes"],
         "timestamps": {
@@ -592,6 +593,7 @@ def get_event(event_id: str) -> dict:
         "status": event["status"],
         "geometry": event["geometry"],
         "source_scenes": event["source_scenes"],
+        "lineage": event.get("lineage"),
         "confidence_breakdown": event["confidence_breakdown"],
         "notes": event["notes"],
         "timestamps": event["timestamps"],
