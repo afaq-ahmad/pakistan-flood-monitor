@@ -63,6 +63,23 @@ class RateLimiter:
 
 rate_limiter = RateLimiter()
 
+LIMITATIONS_PATH = "/public/limitations"
+LIMITATIONS_STATEMENT = {
+    "title": "Pakistan Flood Monitor limitations and intended use",
+    "intended_use": "Supports situational awareness and analyst triage for potential flooding and embankment anomalies.",
+    "confidence_and_uncertainty": "Confidence scores are model-derived estimates from SAR, hydromet, and rule-based signals and can be wrong, delayed, or incomplete.",
+    "warning_limitations": "Alerts may miss events, include false positives, and can lag real-world conditions due to data latency and quality constraints.",
+    "non_replacement_notice": "Do not use this system as a replacement for official emergency warnings, evacuation orders, or instructions from government authorities and disaster-management agencies.",
+}
+
+def _limitations_link() -> dict[str, str]:
+    return {"href": LIMITATIONS_PATH, "rel": "limitations", "title": LIMITATIONS_STATEMENT["title"]}
+
+
+def _attach_limitations(payload: dict[str, Any]) -> dict[str, Any]:
+    return payload | {"limitations": _limitations_link()}
+
+
 LIFECYCLE_TRANSITIONS: dict[str, set[str]] = {
     "draft": {"review"},
     "review": {"approved"},
@@ -508,6 +525,14 @@ def health() -> dict[str, str | float]:
     return {"status": "ok", "api_uptime": 1.0}
 
 
+@public_router.get("/limitations")
+def public_limitations() -> dict[str, Any]:
+    return {
+        "path": LIMITATIONS_PATH,
+        "statement": LIMITATIONS_STATEMENT,
+    }
+
+
 @internal_router.get("/run/{aoi_name}", dependencies=[Depends(_require_role("admin"))])
 def run_pipeline(aoi_name: str):
     report = pipeline.run_daily(aoi_name).model_dump()
@@ -521,7 +546,7 @@ def get_published_outputs(aoi_name: str):
     if not report:
         raise HTTPException(status_code=404, detail="No run found for AOI. Execute /run/{aoi_name} first.")
 
-    return {
+    return _attach_limitations({
         "map_layers": {
             "flood_candidate_map": report["published_outputs"]["flood_candidate_map"],
             "confirmed_flood_extent": report["published_outputs"]["confirmed_flood_extent"],
@@ -530,13 +555,13 @@ def get_published_outputs(aoi_name: str):
         "event_tables": report["detections"],
         "alert_summaries": report["published_outputs"]["alert_feed_item"],
         "api_outputs": report,
-    }
+    })
 
 
 @public_router.get("/alerts/feed")
 def alert_feed():
-    return [
-        run["published_outputs"]["alert_feed_item"]
+    return [_attach_limitations(
+        run["published_outputs"]["alert_feed_item"])
         for runs in run_history.values()
         for run in runs
         if run["detections"][0]["review_status"] == "analyst_validated"
@@ -562,7 +587,7 @@ def corridors() -> list[dict]:
                 },
             }
         )
-    return response
+    return [_attach_limitations(item) for item in response]
 
 
 @public_router.get("/corridors/{aoi_name}/status")
@@ -572,7 +597,7 @@ def corridor_status(aoi_name: str) -> dict:
         raise HTTPException(status_code=404, detail="No status found for AOI.")
     detection = report["detections"][0]
     latest_event = _event_record_from_run(report)
-    return {
+    return _attach_limitations({
         "corridor_id": aoi_name,
         "latest_hydromet_stress": {
             "rainfall_mm_72h": detection["indicators"].get("rainfall_mm_72h", 0.0),
@@ -582,7 +607,7 @@ def corridor_status(aoi_name: str) -> dict:
         "latest_scene_time": detection["timestamp"],
         "queue_status": detection["review_status"],
         "latest_event_summary": latest_event["latest_event_summary"],
-    }
+    })
 
 
 @public_router.get("/corridors/{aoi_name}/events")
@@ -602,15 +627,14 @@ def corridor_events(
     if confidence_bucket:
         records = [event for event in records if event["confidence_bucket"] == confidence_bucket]
 
-    return [
-        {
+    return [_attach_limitations({
             "event_id": event["event_id"],
             "class": event["event_class"],
             "status": event["status"],
             "confidence_bucket": event["confidence_bucket"],
             "machine_confidence": event["machine_confidence"],
             "detected_at": event["timestamps"]["detected_at"],
-        }
+        })
         for event in records
     ]
 
@@ -621,7 +645,7 @@ def get_event(event_id: str) -> dict:
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
     _ensure_published_event(event)
-    return {
+    return _attach_limitations({
         "event_id": event["event_id"],
         "class": event["event_class"],
         "status": event["status"],
@@ -631,7 +655,7 @@ def get_event(event_id: str) -> dict:
         "confidence_breakdown": event["confidence_breakdown"],
         "notes": event["notes"],
         "timestamps": event["timestamps"],
-    }
+    })
 
 
 @public_router.get("/events/{event_id}/exposure")
@@ -640,11 +664,11 @@ def get_event_exposure(event_id: str) -> dict:
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
     _ensure_published_event(event)
-    return {
+    return _attach_limitations({
         "event_id": event_id,
         "district": event["exposure"]["district"],
         "asset_summary": event["exposure"]["asset_class_exposure"],
-    }
+    })
 
 
 @public_router.get("/events/{event_id}/historical")
@@ -664,7 +688,7 @@ def get_event_historical(event_id: str) -> dict[str, Any]:
         }
         for report in history
     ]
-    return {"event_id": event_id, "event_area_trend": trend, "candidate_persistence_hours": event["candidate_persistence_hours"]}
+    return _attach_limitations({"event_id": event_id, "event_area_trend": trend, "candidate_persistence_hours": event["candidate_persistence_hours"]})
 
 
 @public_router.get("/historical-events")
@@ -672,15 +696,14 @@ def list_historical_events(corridor_reach: str | None = Query(default=None)) -> 
     records = [HistoricalEventRecord.model_validate(item) for item in historical_event_library.values()]
     if corridor_reach:
         records = [record for record in records if record.catalog.corridor_reach == corridor_reach]
-    return [
-        {
+    return [_attach_limitations({
             "event_id": record.event_id,
             "event_name": record.catalog.event_name,
             "corridor_reach": record.catalog.corridor_reach,
             "peak_date": record.catalog.peak_date,
             "label_quality_score": record.catalog.label_quality_score,
             "status": record.status,
-        }
+        })
         for record in records
     ]
 
@@ -691,7 +714,7 @@ def get_historical_event(event_id: str) -> dict[str, Any]:
     if not record:
         raise HTTPException(status_code=404, detail="Historical event not found.")
     parsed = HistoricalEventRecord.model_validate(record)
-    return parsed.model_dump()
+    return _attach_limitations(parsed.model_dump())
 
 
 @public_router.get("/events/{event_id}/confidence")
@@ -700,13 +723,12 @@ def get_event_confidence(event_id: str) -> dict[str, Any]:
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
     _ensure_published_event(event)
-    return {"event_id": event_id, "confidence_breakdown": event["confidence_breakdown"]}
+    return _attach_limitations({"event_id": event_id, "confidence_breakdown": event["confidence_breakdown"]})
 
 
 @public_router.get("/alerts/latest")
 def latest_alerts() -> list[dict]:
-    return [
-        event["latest_event_summary"] | {"event_id": event["event_id"], "aoi": event["aoi"]}
+    return [_attach_limitations(event["latest_event_summary"] | {"event_id": event["event_id"], "aoi": event["aoi"]})
         for event in _all_events()
         if event["status"] == "published"
     ]

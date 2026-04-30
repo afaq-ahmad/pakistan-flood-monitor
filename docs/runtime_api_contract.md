@@ -124,3 +124,29 @@ Example publish request (must already be in `approved`):
   "mapping_rules": {"certainty_class": "high"}
 }
 ```
+
+## Public limitations and intended-use contract
+All public-facing alert endpoints include a `limitations` object with:
+- `href`: canonical link to limitations statement (`/public/limitations`)
+- `rel`: link relation (`limitations`)
+- `title`: short human-readable label
+
+The limitations statement endpoint (`GET /public/limitations`) provides:
+- confidence and uncertainty notes
+- intended-use boundaries
+- warning limitations (false positives, misses, latency)
+- non-replacement notice for official emergency instructions
+
+Public endpoints required to include the `limitations` reference:
+- `/public/publish/{aoi_name}`
+- `/public/alerts/feed`
+- `/public/corridors`
+- `/public/corridors/{aoi_name}/status`
+- `/public/corridors/{aoi_name}/events`
+- `/public/events/{event_id}`
+- `/public/events/{event_id}/exposure`
+- `/public/events/{event_id}/historical`
+- `/public/events/{event_id}/confidence`
+- `/public/historical-events`
+- `/public/historical-events/{event_id}`
+- `/public/alerts/latest`

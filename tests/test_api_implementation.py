@@ -357,3 +357,46 @@ def test_lifecycle_invalid_and_trace_and_auth() -> None:
     assert trace[-1]["principal_id"] == "analyst-principal"
     assert trace[-1]["previous_state"] == "approved"
     assert trace[-1]["new_state"] == "published"
+
+
+def test_public_endpoints_include_limitations_reference() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    _lifecycle_transition(client, event_id, "review", "begin analyst review")
+    _lifecycle_transition(client, event_id, "approved", "approved by analyst")
+    publish_response = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "approved for public"),
+        headers=_analyst_headers(),
+    )
+    assert publish_response.status_code == 200
+
+    limitation_doc = client.get("/public/limitations")
+    assert limitation_doc.status_code == 200
+    assert limitation_doc.json()["path"] == "/public/limitations"
+
+    checks = [
+        client.get("/public/publish/Indus-Lower").json(),
+        client.get("/public/corridors").json()[0],
+        client.get("/public/corridors/Indus-Lower/status").json(),
+        client.get("/public/corridors/Indus-Lower/events").json()[0],
+        client.get(f"/public/events/{event_id}").json(),
+        client.get(f"/public/events/{event_id}/exposure").json(),
+        client.get(f"/public/events/{event_id}/historical").json(),
+        client.get(f"/public/events/{event_id}/confidence").json(),
+        client.get("/public/historical-events").json()[0],
+        client.get(f"/public/historical-events/{event_id}").json(),
+        client.get("/public/alerts/latest").json()[0],
+    ]
+    for payload in checks:
+        assert payload["limitations"]["href"] == "/public/limitations"
+
+    feed = client.get("/public/alerts/feed")
+    assert feed.status_code == 200
+    for payload in feed.json():
+        assert payload["limitations"]["href"] == "/public/limitations"
