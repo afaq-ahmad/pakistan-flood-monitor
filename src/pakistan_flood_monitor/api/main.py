@@ -28,6 +28,8 @@ run_history: dict[str, list[dict[str, Any]]] = {}
 event_store: dict[str, dict[str, Any]] = {}
 historical_event_library: dict[str, dict[str, Any]] = {}
 review_audit_log: list[dict[str, Any]] = []
+field_reports: dict[str, dict[str, Any]] = {}
+field_report_audit_log: list[dict[str, Any]] = []
 threshold_registry: list[dict[str, Any]] = []
 model_registry: list[dict[str, Any]] = []
 retraining_decisions: list[dict[str, Any]] = []
@@ -206,6 +208,22 @@ class ReviewEventRequest(BaseModel):
     label_metadata: dict[str, Any] | None = None
     mapping_rules: dict[str, Any] | None = None
 
+
+class FieldReportIngestRequest(BaseModel):
+    event_id: str
+    observed_at: datetime
+    location: dict[str, float]
+    reporter_metadata: dict[str, Any] = Field(default_factory=dict)
+    evidence_urls: list[str] = Field(default_factory=list)
+    notes: str = ""
+    client_report_id: str | None = None
+
+
+class FieldReportModerationRequest(BaseModel):
+    action: str
+    reason: str = ""
+    trusted: bool | None = None
+    tags: list[str] = Field(default_factory=list)
 
 class ThresholdRegistrationRequest(BaseModel):
     threshold_name: str
@@ -799,6 +817,8 @@ def _runtime_state_snapshot() -> dict[str, Any]:
             "event_store": event_store,
             "historical_event_library": historical_event_library,
             "review_audit_log": review_audit_log,
+            "field_reports": field_reports,
+            "field_report_audit_log": field_report_audit_log,
             "threshold_registry": threshold_registry,
             "model_registry": model_registry,
             "retraining_decisions": retraining_decisions,
@@ -816,6 +836,10 @@ def _restore_runtime_state(payload: dict[str, Any]) -> None:
         historical_event_library.update(payload.get("historical_event_library", {}))
         review_audit_log.clear()
         review_audit_log.extend(payload.get("review_audit_log", []))
+        field_reports.clear()
+        field_reports.update(payload.get("field_reports", {}))
+        field_report_audit_log.clear()
+        field_report_audit_log.extend(payload.get("field_report_audit_log", []))
         threshold_registry.clear()
         threshold_registry.extend(payload.get("threshold_registry", []))
         model_registry.clear()
@@ -1383,6 +1407,111 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, auth_context:
     if requested_state in {"retracted"}:
         metrics_registry.increment("product.false_alarms")
     return {"status": "review_updated", "event": event, "qa": {"passed": qa_result.passed, "errors": qa_result.errors}}
+
+
+def _validate_field_report_location(location: dict[str, float]) -> None:
+    lat = location.get("lat")
+    lon = location.get("lon")
+    if lat is None or lon is None:
+        raise HTTPException(status_code=400, detail="location must include lat and lon")
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        raise HTTPException(status_code=400, detail="location lat/lon out of range")
+
+
+@internal_router.post("/reports/field")
+def ingest_field_report(
+    payload: FieldReportIngestRequest,
+    auth_context: dict[str, str] = Depends(_require_role("admin", "analyst", "reviewer")),
+) -> dict[str, Any]:
+    event = _event_by_id(payload.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Linked event_id not found")
+    _validate_field_report_location(payload.location)
+    if len(payload.notes) > 2000:
+        raise HTTPException(status_code=400, detail="notes exceeds 2000 characters")
+    if len(payload.evidence_urls) > 8:
+        raise HTTPException(status_code=400, detail="maximum 8 evidence_urls allowed")
+
+    principal_id = auth_context["principal_id"]
+    dedupe_key = payload.client_report_id or f"{payload.event_id}:{payload.observed_at.isoformat()}:{payload.location.get('lat')}:{payload.location.get('lon')}:{principal_id}"
+    report_id = f"fr-{hashlib.sha256(dedupe_key.encode('utf-8')).hexdigest()[:16]}"
+    if report_id in field_reports:
+        return {"status": "accepted_duplicate", "report": field_reports[report_id]}
+
+    created_at = datetime.now(UTC).isoformat()
+    report = {
+        "report_id": report_id,
+        "event_id": payload.event_id,
+        "observed_at": payload.observed_at.isoformat(),
+        "location": payload.location,
+        "reporter_metadata": payload.reporter_metadata | {"submitted_by": principal_id},
+        "evidence_urls": payload.evidence_urls,
+        "notes": payload.notes,
+        "status": "submitted",
+        "trusted": False,
+        "moderation_reason": "",
+        "moderation_tags": [],
+        "created_at": created_at,
+        "updated_at": created_at,
+    }
+    field_reports[report_id] = report
+    event.setdefault("linked_field_reports", []).append(report_id)
+    event.setdefault("field_report_summary", {"trusted_count": 0, "total_count": 0})
+    event["field_report_summary"]["total_count"] += 1
+    return {"status": "accepted", "report": report}
+
+
+@internal_router.post("/admin/reports/field/{report_id}/moderate")
+def moderate_field_report(
+    report_id: str,
+    payload: FieldReportModerationRequest,
+    auth_context: dict[str, str] = Depends(_require_role("admin", "analyst")),
+) -> dict[str, Any]:
+    report = field_reports.get(report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Field report not found")
+    principal_id = auth_context["principal_id"]
+    action = payload.action.strip().lower()
+    transitions = {
+        "submitted": {"approve", "reject", "needs_more_info", "flag_spam"},
+        "needs_more_info": {"approve", "reject", "flag_spam"},
+        "approved": {"reject"},
+        "rejected": set(),
+        "flagged_spam": set(),
+    }
+    target_state_map = {"approve": "approved", "reject": "rejected", "needs_more_info": "needs_more_info", "flag_spam": "flagged_spam"}
+    if action not in target_state_map:
+        raise HTTPException(status_code=400, detail="Unsupported moderation action")
+    old_status = report["status"]
+    new_status = target_state_map[action]
+    if action not in transitions.get(old_status, set()):
+        raise HTTPException(status_code=400, detail="Invalid moderation transition")
+    report["status"] = new_status
+    report["trusted"] = bool(payload.trusted) if new_status == "approved" else False
+    report["moderation_reason"] = payload.reason
+    report["moderation_tags"] = payload.tags
+    report["updated_at"] = datetime.now(UTC).isoformat()
+    event = _event_by_id(report["event_id"])
+    if event:
+        trusted_count = sum(1 for rid in event.get("linked_field_reports", []) if field_reports.get(rid, {}).get("status") == "approved" and field_reports.get(rid, {}).get("trusted"))
+        event.setdefault("field_report_summary", {"trusted_count": 0, "total_count": 0})
+        event["field_report_summary"]["trusted_count"] = trusted_count
+    entry = _build_audit_entry(
+        chain_name="field_report_review",
+        action=action,
+        principal_id=principal_id,
+        resource_type="field_report",
+        resource_id=report_id,
+        details={"old_status": old_status, "new_status": new_status, "trusted": report["trusted"], "reason": payload.reason, "event_id": report["event_id"]},
+        previous_hash=field_report_audit_log[-1]["entry_hash"] if field_report_audit_log else "GENESIS",
+    )
+    _append_audit_entry(field_report_audit_log, entry)
+    return {"status": "moderated", "report": report}
+
+
+@internal_router.get("/admin/reports/field/audit", dependencies=[Depends(_require_role("admin", "analyst"))])
+def field_report_audit() -> list[dict[str, Any]]:
+    return field_report_audit_log
 
 
 @internal_router.get("/admin/review-audit", dependencies=[Depends(_require_role("admin", "analyst"))])
