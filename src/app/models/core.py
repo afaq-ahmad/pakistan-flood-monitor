@@ -252,3 +252,44 @@ class ValidationSample(Base):
     label: Mapped[str] = mapped_column(String(50), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class RuntimeRunState(Base):
+    __tablename__ = "runtime_run_states"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_hash: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    outputs: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    state_payload: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class RuntimeReviewItem(Base):
+    __tablename__ = "runtime_review_items"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    candidate_id: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
+    candidate_payload: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default="queued", nullable=False)
+    candidate_class: Mapped[str] = mapped_column(String(50), default="flood", nullable=False)
+    analyst_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    notes: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    assigned_analyst: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    original_machine_geometry: Mapped[str] = mapped_column(Geometry("GEOMETRY", srid=4326), nullable=False)
+    analyst_edited_geometry: Mapped[str | None] = mapped_column(Geometry("GEOMETRY", srid=4326), nullable=True)
+    final_published_geometry: Mapped[str | None] = mapped_column(Geometry("GEOMETRY", srid=4326), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class RuntimeReviewAudit(Base):
+    __tablename__ = "runtime_review_audit"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    candidate_id: Mapped[str] = mapped_column(String(150), nullable=False)
+    actor: Mapped[str] = mapped_column(String(255), nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    old_status: Mapped[str] = mapped_column(String(50), nullable=False)
+    new_status: Mapped[str] = mapped_column(String(50), nullable=False)
+    old_geometry_ref: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    new_geometry_ref: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
