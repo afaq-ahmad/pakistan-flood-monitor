@@ -16,6 +16,8 @@
 - [ ] Internal rate limit thresholds configured for expected traffic.
 
 ## Validation gates
+- [ ] Known-event benchmark validation run: `python scripts/run_benchmark_validation.py --benchmark tests/fixtures/validation/known_events_benchmark.json --output-dir reports/validation` and report artifact attached.
+- [ ] Monthly corridor false-positive trend reviewed from `reports/validation/accuracy_report_<YYYY-MM>.json`.
 - [ ] End-to-end contract test passes (ingestion -> review -> public event/exposure/alerts).
 - [ ] Resilience tests pass (snapshot restore + concurrent writes/read-after-write).
 
