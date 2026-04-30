@@ -103,3 +103,19 @@ class SnapshotRecord(BaseModel):
     snapshot_url: str
     width: int = Field(default=512)
     height: int = Field(default=512)
+
+
+class ExportRequest(BaseModel):
+    event_id: str
+    format: str = Field(pattern="^(geojson|cog|geoparquet)$")
+
+
+class ExportResponse(BaseModel):
+    export_id: str
+    event_id: str
+    format: str
+    output_path: str
+    manifest_path: str
+    validation: dict[str, object]
+    download_url: str
+    manifest_url: str
