@@ -78,3 +78,11 @@ Troubleshooting: respect `Retry-After` header and tune `FLOOD_MONITOR_RATE_LIMIT
 {"detail": "Internal server error"}
 ```
 Troubleshooting: check API logs, PostGIS connectivity, and restore from latest state export if runtime state is inconsistent.
+
+
+## Canonical scene-derived feature contract
+- `FloodMonitoringPipeline.run_daily` computes `DetectionFeatures` from fetched Sentinel-1 scene assets (if available) and deterministic hashed fallbacks when rasters are unavailable.
+- Per-run deterministic snapshot is written to `.cache/feature_snapshots/{aoi}/{run_id}.json`.
+- Snapshot schema fields: `run_id`, `aoi_name`, `processing_version`, `threshold_version`, `source_scene_ids`, `parameters`, `thresholds`, `derived_features`.
+- Lineage requirements: snapshot stores processing and threshold versions plus source scene IDs for reproducibility and replay.
+- Reproducibility guarantee: for identical scene IDs/assets and support-layer references, derived features are stable across replays.
