@@ -142,6 +142,22 @@ def test_monitoring_and_event_endpoints() -> None:
     assert payload["catalog"]["label_quality_score"] >= 0.8
 
 
+def test_mobile_advisory_low_bandwidth_payload() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+
+    mobile_response = client.get("/public/advisories/Indus-Lower/mobile?low_bandwidth=true")
+    assert mobile_response.status_code == 200
+    payload = mobile_response.json()
+    assert payload["payload_target_kb"] == 500
+    assert payload["payload_estimate_kb"] <= payload["payload_target_kb"]
+    assert payload["map"]["core_layers"] == ["confirmed_flood_extent"]
+    assert payload["a11y"]["min_text_size_px"] >= 16
+    assert payload["limitations"]["href"] == "/public/limitations"
+
+
 def test_admin_and_registry_endpoints() -> None:
     _reset_state()
     client = TestClient(app)

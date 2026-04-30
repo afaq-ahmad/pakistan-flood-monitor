@@ -34,4 +34,6 @@
 - [ ] `curl -H "Authorization: Bearer $FLOOD_MONITOR_ADMIN_TOKEN" http://localhost:8000/internal/admin/audit/verify`
 - [ ] `pytest tests/test_review_workflow.py` (review lifecycle transitions)
 - [ ] `pytest tests/test_sar_preprocessing_pipeline.py` (SAR preprocessing integrity)
+- [ ] `pytest tests/test_api_implementation.py -k mobile_advisory_low_bandwidth_payload` (mobile advisory payload/accessibility contract)
+- [ ] Capture advisory payload evidence: `/public/advisories/{aoi_name}/mobile?low_bandwidth=true` response size is below 500 KB.
 - [ ] Evidence captured: attach command output snippets and commit SHA in release artifact.
