@@ -21,3 +21,11 @@
 2. Restore previous known-good runtime state snapshot.
 3. Re-run health and public API smoke checks.
 4. Communicate rollback and incident summary.
+
+
+## CI command gates
+- [ ] `pytest tests/test_api_implementation.py` (API contract and auth behavior)
+- [ ] `pytest tests/test_resilience_security_contracts.py` (state export/restore and security resilience)
+- [ ] `pytest tests/test_review_workflow.py` (review lifecycle transitions)
+- [ ] `pytest tests/test_sar_preprocessing_pipeline.py` (SAR preprocessing integrity)
+- [ ] Evidence captured: attach command output snippets and commit SHA in release artifact.

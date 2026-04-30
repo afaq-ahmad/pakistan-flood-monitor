@@ -64,7 +64,7 @@ rate_limiter = RateLimiter()
 
 class ReviewEventRequest(BaseModel):
     action: str
-    actor: str
+    actor: str | None = None
     analyst_confidence: float | None = None
     notes: str = ""
     reviewed_geometry: dict[str, Any] | None = None
@@ -78,7 +78,7 @@ class ThresholdRegistrationRequest(BaseModel):
     version: str
     threshold_values: dict[str, float] = Field(default_factory=dict)
     linked_model_id: str | None = None
-    actor: str
+    actor: str | None = None
     notes: str = ""
 
 
@@ -89,7 +89,7 @@ class RetrainingTriggerRequest(BaseModel):
     label_quality_gain: float
     drift_score: float
     feature_schema_changed: bool = False
-    actor: str
+    actor: str | None = None
     notes: str = ""
 
 
@@ -147,7 +147,7 @@ class ModelRegistrationRequest(BaseModel):
     validation_metrics: dict[str, float] = Field(default_factory=dict)
     deployment_status: str = "candidate"
     rollback_parent_model_id: str | None = None
-    actor: str
+    actor: str | None = None
     notes: str = ""
 
 
@@ -351,6 +351,10 @@ def _assert_actor_matches_role(role: str, actor: str) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Actor '{actor}' is not allowed for role '{role}'. Use actor IDs prefixed with '{expected_prefix}'.",
         )
+
+
+def _principal_id_for_role(role: str) -> str:
+    return f"{role}-principal"
 
 
 def _runtime_state_snapshot() -> dict[str, Any]:
@@ -703,7 +707,7 @@ def admin_reprocess_scene(aoi_name: str) -> dict:
 
 @internal_router.post("/admin/review-event")
 def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = Depends(_require_role("admin", "analyst"))) -> dict:
-    _assert_actor_matches_role(role, payload.actor)
+    principal_id = _principal_id_for_role(role)
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
@@ -745,7 +749,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
     review_audit_log.append(
         {
             "event_id": event_id,
-            "actor": payload.actor,
+            "actor": principal_id,
             "action": payload.action,
             "changed_at": datetime.now(UTC).isoformat(),
             "old_status": old_status,
@@ -756,7 +760,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
         }
     )
     _audit_privileged_action(
-        actor=payload.actor,
+        actor=principal_id,
         action="review",
         resource_type="event",
         resource_id=event_id,
@@ -798,11 +802,11 @@ def admin_get_historical_event(event_id: str) -> dict[str, Any]:
 
 @internal_router.post("/admin/register-threshold")
 def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    _assert_actor_matches_role(role, payload.actor)
-    record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
+    principal_id = _principal_id_for_role(role)
+    record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     threshold_registry.append(record)
     _audit_privileged_action(
-        actor=payload.actor,
+        actor=principal_id,
         action="threshold_change",
         resource_type="threshold",
         resource_id=payload.threshold_name,
@@ -813,11 +817,11 @@ def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depend
 
 @internal_router.post("/admin/register-model")
 def register_model(payload: ModelRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    _assert_actor_matches_role(role, payload.actor)
-    record = payload.model_dump() | {"registered_at": datetime.now(UTC).isoformat()}
+    principal_id = _principal_id_for_role(role)
+    record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     model_registry.append(record)
     _audit_privileged_action(
-        actor=payload.actor,
+        actor=principal_id,
         action="publish",
         resource_type="model",
         resource_id=payload.model_id,
@@ -830,12 +834,12 @@ def register_model(payload: ModelRegistrationRequest, role: str = Depends(_requi
 
 @internal_router.post("/admin/evaluate-retraining")
 def evaluate_retraining(payload: RetrainingTriggerRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    _assert_actor_matches_role(role, payload.actor)
+    principal_id = _principal_id_for_role(role)
     decision = _evaluate_retraining_trigger(payload)
-    record = payload.model_dump() | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
+    record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id} | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
     retraining_decisions.append(record)
     _audit_privileged_action(
-        actor=payload.actor,
+        actor=principal_id,
         action="retraining_evaluated",
         resource_type="model",
         resource_id=payload.model_id,

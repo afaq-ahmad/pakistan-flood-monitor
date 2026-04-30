@@ -146,7 +146,7 @@ def test_admin_and_registry_endpoints() -> None:
         f"/internal/admin/review-event?event_id={event_id}",
         json={
             "action": "accept",
-            "actor": "analyst-1",
+            "actor": "spoofed-actor",
             "analyst_confidence": 0.88,
             "notes": "Validated",
         },
@@ -161,6 +161,7 @@ def test_admin_and_registry_endpoints() -> None:
     audit_response = client.get("/internal/admin/review-audit", headers=_analyst_headers())
     assert audit_response.status_code == 200
     assert audit_response.json()[0]["event_id"] == event_id
+    assert audit_response.json()[0]["actor"] == "analyst-principal"
 
     threshold_response = client.post(
         "/internal/admin/register-threshold",
@@ -168,12 +169,13 @@ def test_admin_and_registry_endpoints() -> None:
             "threshold_name": "flood_thresholds",
             "file_path": "configs/alert_thresholds.yaml",
             "version": "v2",
-            "actor": "admin-mlops",
+            "actor": "admin-spoof",
             "notes": "monsoon calibration",
         },
         headers=_admin_headers(),
     )
     assert threshold_response.status_code == 200
+    assert threshold_response.json()["threshold"]["actor"] == "admin-principal"
 
     model_response = client.post(
         "/internal/admin/register-model",
@@ -183,7 +185,7 @@ def test_admin_and_registry_endpoints() -> None:
             "training_data_snapshot_version": "snapshot-2024-10",
             "training_config_path": "configs/training_config.yaml",
             "evaluation_report_path": "reports/evaluation/rules_v1.md",
-            "actor": "admin-mlops",
+            "actor": "admin-spoof",
             "validation_metrics": {"f1": 0.81},
             "deployment_status": "active",
             "rollback_parent_model_id": "rules-v1",
@@ -192,6 +194,7 @@ def test_admin_and_registry_endpoints() -> None:
         headers=_admin_headers(),
     )
     assert model_response.status_code == 200
+    assert model_response.json()["model"]["actor"] == "admin-principal"
 
     reprocess_response = client.post("/internal/admin/reprocess-scene?aoi_name=Chenab-Middle", headers=_admin_headers())
     assert reprocess_response.status_code == 200
@@ -204,13 +207,14 @@ def test_admin_and_registry_endpoints() -> None:
             "label_quality_gain": 0.12,
             "drift_score": 0.05,
             "feature_schema_changed": False,
-            "actor": "admin-mlops",
+            "actor": "admin-spoof",
             "notes": "better labels, no drift",
         },
         headers=_admin_headers(),
     )
     assert retraining_response.status_code == 200
     assert retraining_response.json()["decision"]["should_retrain"] is True
+    assert retraining_response.json()["decision"]["actor"] == "admin-principal"
     assert "label_quality_improved" in retraining_response.json()["decision"]["reasons"]
 
     privileged_audit_response = client.get("/internal/admin/privileged-audit", headers=_admin_headers())
