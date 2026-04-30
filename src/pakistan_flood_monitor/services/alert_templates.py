@@ -7,6 +7,10 @@ PUBLIC_DISCLAIMER = (
     "For situational awareness only. Follow NDMA/PDMA and district authority instructions for warnings, "
     "evacuations, and response actions."
 )
+PUBLIC_DISCLAIMER_UR = (
+    "یہ صرف صورتحال سے آگاہی کے لیے ہے۔ انتباہات، انخلا، اور ہنگامی اقدامات کے لیے NDMA/PDMA "
+    "اور ضلعی انتظامیہ کی ہدایات پر عمل کریں۔"
+)
 
 
 def _utc_now_iso() -> str:
@@ -73,6 +77,32 @@ def render_alert_template(*, event: dict[str, Any], variant: str, template_name:
 
     if variant == "public_safe":
         payload["public_disclaimer"] = PUBLIC_DISCLAIMER
+        payload["public_disclaimer_ur"] = PUBLIC_DISCLAIMER_UR
+        payload["localized"] = {
+            "languages_supported": ["en", "ur"],
+            "default_language": "en",
+            "rtl_languages": ["ur"],
+            "disclaimer": {
+                "en": PUBLIC_DISCLAIMER,
+                "ur": PUBLIC_DISCLAIMER_UR,
+            },
+            "limitations_summary": {
+                "en": payload["limitations"]["summary"],
+                "ur": "ماڈل اور ڈیٹا پر مبنی سیلابی اشارے تاخیر یا غیر یقینی کا شکار ہو سکتے ہیں۔",
+            },
+            "recommended_actions": {
+                "en": [
+                    "Monitor official NDMA/PDMA and district advisories.",
+                    "Avoid floodwater crossings and low-lying routes.",
+                    "Keep emergency supplies and family communication plans ready.",
+                ],
+                "ur": [
+                    "NDMA/PDMA اور ضلعی انتظامیہ کی سرکاری ہدایات پر نظر رکھیں۔",
+                    "سیلابی پانی اور نشیبی راستوں سے گزرنے سے گریز کریں۔",
+                    "ہنگامی سامان اور خاندانی رابطہ منصوبہ تیار رکھیں۔",
+                ],
+            },
+        }
         payload["limitations"]["reference"] = "/public/limitations"
         payload["recommended_actions"] = [
             "Monitor official NDMA/PDMA and district advisories.",

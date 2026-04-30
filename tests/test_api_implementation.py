@@ -158,6 +158,53 @@ def test_mobile_advisory_low_bandwidth_payload() -> None:
     assert payload["limitations"]["href"] == "/public/limitations"
 
 
+def test_public_language_toggle_renders_urdu_and_rtl() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    _lifecycle_transition(client, event_id, "review")
+    _lifecycle_transition(client, event_id, "approved")
+    assert client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "ok"),
+        headers=_analyst_headers(),
+    ).status_code == 200
+
+    ur_alert = client.get("/public/alerts/latest?language=ur").json()[0]
+    assert ur_alert["language"] == "ur"
+    assert ur_alert["dir"] == "rtl"
+    assert "NDMA/PDMA" in ur_alert["public_disclaimer"]
+
+    ur_advisory = client.get("/public/advisories/Indus-Lower/mobile?language=ur").json()
+    assert ur_advisory["language"] == "ur"
+    assert ur_advisory["a11y"]["direction"] == "rtl"
+    assert ur_advisory["headline"] == ur_advisory["localized"]["headline"]["ur"]
+
+
+def test_language_fallback_and_validation_behavior() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    _lifecycle_transition(client, event_id, "review")
+    _lifecycle_transition(client, event_id, "approved")
+    assert client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "ok"),
+        headers=_analyst_headers(),
+    ).status_code == 200
+
+    en_alert = client.get("/public/alerts/latest").json()[0]
+    assert en_alert["language"] == "en"
+    assert en_alert["dir"] == "ltr"
+
+    invalid_language = client.get("/public/alerts/latest?language=de")
+    assert invalid_language.status_code == 400
+
+
 def test_admin_and_registry_endpoints() -> None:
     _reset_state()
     client = TestClient(app)
