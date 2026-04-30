@@ -5,8 +5,16 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from app.schemas.dashboard import DashboardViewResponse, ReviewDashboardResponse, SnapshotRecord, SnapshotRequest
+from app.schemas.dashboard import (
+    DashboardViewResponse,
+    ExportRequest,
+    ExportResponse,
+    ReviewDashboardResponse,
+    SnapshotRecord,
+    SnapshotRequest,
+)
 from app.services.dashboard import dashboard_service
+from app.services.export_center import export_center_service
 
 router = APIRouter()
 
@@ -73,3 +81,40 @@ def get_snapshot(event_id: str) -> FileResponse:
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Snapshot not found for event: {event_id}")
     return FileResponse(path, media_type="image/png", filename=f"{event_id}.png")
+
+
+@router.post("/exports", response_model=ExportResponse)
+def create_export(payload: ExportRequest) -> dict:
+    try:
+        bundle = export_center_service.create_export(event_id=payload.event_id, export_format=payload.format)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return {
+        "export_id": bundle.export_id,
+        "event_id": bundle.event_id,
+        "format": bundle.format,
+        "output_path": str(bundle.output_path),
+        "manifest_path": str(bundle.manifest_path),
+        "validation": bundle.validation,
+        "download_url": f"/analytics/exports/{bundle.export_id}/file",
+        "manifest_url": f"/analytics/exports/{bundle.export_id}/manifest",
+    }
+
+
+@router.get("/exports/{export_id}/file")
+def download_export(export_id: str) -> FileResponse:
+    export_root = export_center_service._export_dir / export_id
+    files = [item for item in export_root.iterdir() if item.is_file() and item.name != "manifest.json"]
+    if not files:
+        raise HTTPException(status_code=404, detail=f"Export not found: {export_id}")
+    file_path = files[0]
+    return FileResponse(file_path, filename=file_path.name)
+
+
+@router.get("/exports/{export_id}/manifest")
+def download_manifest(export_id: str) -> FileResponse:
+    manifest = export_center_service._export_dir / export_id / "manifest.json"
+    if not manifest.exists():
+        raise HTTPException(status_code=404, detail=f"Manifest not found: {export_id}")
+    return FileResponse(manifest, media_type="application/json", filename=f"{export_id}-manifest.json")
