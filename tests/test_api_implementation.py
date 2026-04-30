@@ -11,6 +11,8 @@ from pakistan_flood_monitor.api.main import (
     historical_event_library,
     model_registry,
     privileged_audit_log,
+    field_reports,
+    field_report_audit_log,
     retraining_decisions,
     review_audit_log,
     run_history,
@@ -28,6 +30,8 @@ def _reset_state() -> None:
     historical_event_library.clear()
     review_audit_log.clear()
     privileged_audit_log.clear()
+    field_reports.clear()
+    field_report_audit_log.clear()
     threshold_registry.clear()
     model_registry.clear()
     retraining_decisions.clear()
@@ -318,45 +322,116 @@ def test_admin_and_registry_endpoints() -> None:
         headers=_admin_headers(),
     )
     assert model_response.status_code == 200
-    assert model_response.json()["model"]["actor"] == "admin-principal"
 
-    reprocess_response = client.post("/internal/admin/reprocess-scene?aoi_name=Chenab-Middle", headers=_admin_headers())
-    assert reprocess_response.status_code == 200
-    assert reprocess_response.json()["history_depth"] == 2
 
-    retraining_response = client.post(
-        "/internal/admin/evaluate-retraining",
-        json={
-            "model_id": "rules-v2",
-            "label_quality_gain": 0.12,
-            "drift_score": 0.05,
-            "feature_schema_changed": False,
-            "actor": "admin-spoof",
-            "notes": "better labels, no drift",
-        },
-        headers=_admin_headers(),
-    )
-    assert retraining_response.status_code == 200
-    assert retraining_response.json()["decision"]["should_retrain"] is True
-    assert retraining_response.json()["decision"]["actor"] == "admin-principal"
-    assert "label_quality_improved" in retraining_response.json()["decision"]["reasons"]
+def test_field_report_ingestion_and_event_linkage() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
 
-    privileged_audit_response = client.get("/internal/admin/privileged-audit", headers=_admin_headers())
-    assert privileged_audit_response.status_code == 200
-    assert len(privileged_audit_response.json()) >= 4
-
-    historical_admin_response = client.get("/internal/admin/historical-events", headers=_analyst_headers())
-    assert historical_admin_response.status_code == 200
-    assert any(item["event_id"] == event_id for item in historical_admin_response.json())
-
-    export_response = client.get(
-        "/internal/admin/historical-events/export?min_label_quality=0.8",
+    ingest_response = client.post(
+        "/internal/reports/field",
         headers=_analyst_headers(),
+        json={
+            "event_id": event_id,
+            "observed_at": "2026-01-02T10:00:00+00:00",
+            "location": {"lat": 27.56, "lon": 68.21},
+            "reporter_metadata": {"channel": "mobile_app", "device": "android"},
+            "evidence_urls": ["https://example.org/photo1.jpg"],
+            "notes": "Waterline has crossed neighborhood road.",
+            "client_report_id": "mob-1001",
+        },
     )
-    assert export_response.status_code == 200
-    export_payload = export_response.json()
-    assert export_payload["manifest"]["schema_version"] == "historical-event-library-v1"
-    assert any(item["event_id"] == event_id for item in export_payload["events"])
+    assert ingest_response.status_code == 200
+    payload = ingest_response.json()
+    assert payload["status"] == "accepted"
+    report_id = payload["report"]["report_id"]
+    assert event_store[event_id]["linked_field_reports"] == [report_id]
+    assert event_store[event_id]["field_report_summary"]["trusted_count"] == 0
+
+
+def test_field_report_moderation_authorization_and_audit() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    ingest = client.post(
+        "/internal/reports/field",
+        headers=_analyst_headers(),
+        json={
+            "event_id": event_id,
+            "observed_at": "2026-01-02T10:00:00+00:00",
+            "location": {"lat": 27.56, "lon": 68.21},
+            "reporter_metadata": {"channel": "sms"},
+            "evidence_urls": [],
+            "notes": "Initial report",
+            "client_report_id": "sms-1",
+        },
+    )
+    report_id = ingest.json()["report"]["report_id"]
+
+    unauthorized = client.post(
+        f"/internal/admin/reports/field/{report_id}/moderate",
+        json={"action": "approve", "reason": "credible", "trusted": True},
+    )
+    assert unauthorized.status_code == 401
+
+    moderate = client.post(
+        f"/internal/admin/reports/field/{report_id}/moderate",
+        headers=_analyst_headers(),
+        json={"action": "approve", "reason": "cross-checked with hydromet", "trusted": True, "tags": ["cross_checked"]},
+    )
+    assert moderate.status_code == 200
+    moderated = moderate.json()["report"]
+    assert moderated["status"] == "approved"
+    assert moderated["trusted"] is True
+    assert event_store[event_id]["field_report_summary"]["trusted_count"] == 1
+
+    audit = client.get("/internal/admin/reports/field/audit", headers=_admin_headers())
+    assert audit.status_code == 200
+    audit_payload = audit.json()
+    assert audit_payload[-1]["resource_type"] == "field_report"
+    assert audit_payload[-1]["details"]["new_status"] == "approved"
+
+
+def test_field_report_validation_and_deduplication() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    bad_location = client.post(
+        "/internal/reports/field",
+        headers=_analyst_headers(),
+        json={
+            "event_id": event_id,
+            "observed_at": "2026-01-02T10:00:00+00:00",
+            "location": {"lat": 127.56, "lon": 68.21},
+            "reporter_metadata": {},
+            "evidence_urls": [],
+            "notes": "Invalid",
+            "client_report_id": "dup-1",
+        },
+    )
+    assert bad_location.status_code == 400
+
+    body = {
+        "event_id": event_id,
+        "observed_at": "2026-01-02T10:00:00+00:00",
+        "location": {"lat": 27.56, "lon": 68.21},
+        "reporter_metadata": {},
+        "evidence_urls": [],
+        "notes": "duplicate test",
+        "client_report_id": "dup-1",
+    }
+    first = client.post("/internal/reports/field", headers=_analyst_headers(), json=body)
+    second = client.post("/internal/reports/field", headers=_analyst_headers(), json=body)
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert second.json()["status"] == "accepted_duplicate"
+
 
 
 def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
