@@ -215,3 +215,13 @@ Response UX/performance guarantees:
 - high-contrast mode on by default
 - keyboard navigation requirement declared
 - payload budget metadata (`payload_target_kb`, `payload_estimate_kb`) for release verification
+
+
+## Damage classification output contract (v1)
+- `GET /public/events/{event_id}/exposure` includes `damage_classification`.
+- Object fields:
+  - `schema: damage-classification/v1`
+  - `rows[]` with `housing.damage_class`, `infrastructure.damage_class`, `confidence`, `uncertainty`, and `lineage`.
+  - `benchmark_validation` with `sample_size`, `housing_accuracy`, `infrastructure_accuracy`, `joint_accuracy`.
+- Intended use: triage/support signal for impact reporting; not a replacement for field verification.
+

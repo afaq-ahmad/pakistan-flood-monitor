@@ -123,6 +123,8 @@ def test_monitoring_and_event_endpoints() -> None:
     exposure_response = client.get(f"/public/events/{event_id}/exposure")
     assert exposure_response.status_code == 200
     assert "asset_summary" in exposure_response.json()
+    assert "damage_classification" in exposure_response.json()
+    assert exposure_response.json()["damage_classification"]["schema"] == "damage-classification/v1"
 
     historical_response = client.get(f"/public/events/{event_id}/historical")
     assert historical_response.status_code == 200

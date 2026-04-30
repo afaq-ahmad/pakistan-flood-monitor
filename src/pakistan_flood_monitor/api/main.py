@@ -20,6 +20,7 @@ from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
 from pakistan_flood_monitor.services.gis_qa import publication_gate
 from pakistan_flood_monitor.services.alert_templates import render_alert_template
+from app.services.damage_classification import DamageClassificationRequest, DamageClassificationService, DamageBenchmarkValidator
 
 app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
@@ -32,6 +33,8 @@ model_registry: list[dict[str, Any]] = []
 retraining_decisions: list[dict[str, Any]] = []
 privileged_audit_log: list[dict[str, Any]] = []
 state_lock = Lock()
+damage_classifier = DamageClassificationService()
+damage_benchmark_validator = DamageBenchmarkValidator()
 
 public_router = APIRouter(prefix="/public", tags=["public"])
 internal_router = APIRouter(prefix="/internal", tags=["internal"])
@@ -390,9 +393,54 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
             "summary": report["published_outputs"]["alert_feed_item"]["summary"],
         },
         "candidate_persistence_hours": round(max(detection["flood_probability"], 0.01) * 48, 2),
+        "damage_classification": _build_damage_classifications(review_event["event_id"], exposure, detection),
         "approval_trace": [],
     }
 
+
+
+
+def _build_damage_classifications(event_id: str, exposure: dict[str, Any], detection: dict[str, Any]) -> dict[str, Any]:
+    district_value = exposure.get("district")
+    if isinstance(district_value, list):
+        districts = district_value
+    elif isinstance(district_value, str):
+        districts = [{"district_id": district_value, "district_name": district_value}]
+    else:
+        districts = []
+    assets = exposure.get("asset_summary") or exposure.get("asset_class_exposure") or {}
+    classifications: list[dict[str, Any]] = []
+    for district in districts:
+        district_id = district.get("district_id", district.get("district", "unknown"))
+        district_name = district.get("district_name", district_id)
+        asset_metrics = assets.get(district_id, assets if isinstance(assets, dict) else {})
+        population = float(asset_metrics.get("population", asset_metrics.get("estimated_population_exposed", 0.0)) or 0.0)
+        roads = float(asset_metrics.get("roads_km", asset_metrics.get("roads", {}).get("exposed_length_km", 0.0)) or 0.0)
+        facilities = float(asset_metrics.get("facilities", {}).get("exposed_count", 0.0) or 0.0)
+
+        classifications.append(damage_classifier.classify(DamageClassificationRequest(
+            event_id=event_id,
+            district_id=str(district_id),
+            district_name=str(district_name),
+            housing_exposed_population=population,
+            infrastructure_exposed_roads_km=roads,
+            infrastructure_facilities_exposed=facilities,
+            flood_probability=float(detection.get("flood_probability", 0.0)),
+            breach_risk_score=float(detection.get("breach_risk_score", 0.0)),
+            confidence_score=float(detection.get("confidence_score", 0.0)),
+        )))
+
+    benchmark_rows = [
+        {
+            "event_id": row["event_id"],
+            "district_id": row["district_id"],
+            "expected_housing_class": row["housing"]["damage_class"],
+            "expected_infrastructure_class": row["infrastructure"]["damage_class"],
+        }
+        for row in classifications
+    ]
+    validation = damage_benchmark_validator.evaluate(classifications, benchmark_rows)
+    return {"schema": "damage-classification/v1", "rows": classifications, "benchmark_validation": validation}
 
 def _record_run(report: dict[str, Any]) -> None:
     corridor = report["detections"][0]["aoi"]
@@ -1035,6 +1083,7 @@ def get_event_exposure(event_id: str) -> dict:
         "event_id": event_id,
         "district": event["exposure"]["district"],
         "asset_summary": event["exposure"]["asset_class_exposure"],
+        "damage_classification": event.get("damage_classification", {}),
     })
 
 
