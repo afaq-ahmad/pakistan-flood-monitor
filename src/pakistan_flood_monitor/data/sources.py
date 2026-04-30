@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Mapping
 
 
 @dataclass
@@ -9,6 +9,7 @@ class SceneMetadata:
     scene_id: str
     acquisition_date: date
     cloud_cover: float | None = None
+    assets: Mapping[str, str] | None = None
 
 
 class DataCatalog:
@@ -21,7 +22,13 @@ class DataCatalog:
         if sensor not in self.sensors:
             raise ValueError(f"Unknown sensor: {sensor}")
         return [
-            SceneMetadata(sensor=sensor, scene_id=f"{sensor}-{aoi_name}-{start}", acquisition_date=start, cloud_cover=18.0)
+            SceneMetadata(
+                sensor=sensor,
+                scene_id=f"{sensor}-{aoi_name}-{start}",
+                acquisition_date=start,
+                cloud_cover=18.0,
+                assets={"vv": f"memory://{aoi_name}/vv", "vh": f"memory://{aoi_name}/vh"} if sensor == "sentinel-1" else None,
+            )
         ]
 
     def fetch_supporting_layers(self, aoi_name: str) -> Dict[str, str]:

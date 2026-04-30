@@ -4,7 +4,7 @@ from uuid import uuid4
 from app.services.observability import log_failure, log_structured, metrics_registry
 
 from pakistan_flood_monitor.config import settings
-from pakistan_flood_monitor.core.detection import DetectionFeatures, FloodDetector
+from pakistan_flood_monitor.core.detection import FloodDetector
 from pakistan_flood_monitor.core.exposure import ExposureAnalyzer
 from pakistan_flood_monitor.data.sources import DataCatalog
 from pakistan_flood_monitor.models.schemas import (
@@ -27,6 +27,7 @@ from pakistan_flood_monitor.models.schemas import (
 )
 from pakistan_flood_monitor.services.alerts import AlertService
 from pakistan_flood_monitor.services.triggers import EventTriggerService, TriggerInputs
+from pakistan_flood_monitor.pipeline.feature_generation import SceneFeatureExtractor
 
 
 class FloodMonitoringPipeline:
@@ -36,6 +37,7 @@ class FloodMonitoringPipeline:
         self.alerts = AlertService()
         self.exposure = ExposureAnalyzer()
         self.triggers = EventTriggerService()
+        self.feature_extractor = SceneFeatureExtractor()
 
     def _pilot_corridor_enabled(self, aoi_name: str) -> bool:
         return aoi_name in {corridor.name for corridor in settings.pilot_corridors}
@@ -168,18 +170,23 @@ class FloodMonitoringPipeline:
         try:
             today = datetime.utcnow().date()
             checkpoint = "fetch_inputs"
-            self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
-            self.catalog.fetch_supporting_layers(aoi_name)
-
-            # TODO(team-backlog-2026-04-30#5): Replace fixed literals with scene-derived features from SAR preprocessing artifacts.
-            # TODO(team-backlog-2026-04-30#6): Attach per-feature provenance (scene IDs, processing version, thresholds).
-            features = DetectionFeatures(
-                sar_drop_db=3.0,
-                ndwi=0.31,
-                rainfall_mm_72h=120,
-                glofas_return_period=5.2,
-                floodplain_distance_m=850,
+            scenes = self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
+            support_layers = self.catalog.fetch_supporting_layers(aoi_name)
+            extracted = self.feature_extractor.extract(
+                run_id=run_id,
+                aoi_name=aoi_name,
+                scenes=scenes,
+                support_layers=support_layers,
+                processing_version="sar-preprocess-v1",
+                threshold_version="alert-thresholds-v1",
+                thresholds={
+                    "sar_drop_db": settings.thresholds.sar_drop_db,
+                    "ndwi": settings.thresholds.ndwi,
+                    "confidence_warning": settings.thresholds.confidence_warning,
+                    "confidence_critical": settings.thresholds.confidence_critical,
+                },
             )
+            features = extracted.features
 
             checkpoint = "event_trigger"
             should_process, trigger_reason = self.triggers.should_process(
@@ -205,7 +212,7 @@ class FloodMonitoringPipeline:
                 exposure = self.exposure.estimate(0.0)
                 report = ProcessingReport(
                     run_id=run_id,
-                    source_sensors=["imerg", "glofas"],
+                    source_sensors=extracted.source_scene_ids + ["imerg", "glofas"],
                     detections=[detection],
                     exposure={aoi_name: exposure},
                     trigger_reason=trigger_reason,
@@ -216,7 +223,7 @@ class FloodMonitoringPipeline:
                         AlertLevel.watch,
                         0.0,
                         0.0,
-                        ["imerg", "glofas"],
+                        extracted.source_scene_ids + ["imerg", "glofas"],
                         exposure.model_dump(),
                     ),
                 )
@@ -242,6 +249,7 @@ class FloodMonitoringPipeline:
                         "ndwi": features.ndwi,
                         "rainfall_mm_72h": features.rainfall_mm_72h,
                         "glofas_return_period": features.glofas_return_period,
+                        "floodplain_distance_m": features.floodplain_distance_m,
                     },
                 )
                 source_sensors = ["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"]
