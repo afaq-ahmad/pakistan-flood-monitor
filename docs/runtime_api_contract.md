@@ -94,3 +94,33 @@ Troubleshooting: check API logs, PostGIS connectivity, and restore from latest s
 - `source_scenes[]` include `scene_id`, `sensor`, `acquired_at`, and `assets` (href + roles).
 - Troubleshooting missing lineage: verify scene discovery provided `scene_id` and acquisition date, and SAR preprocessing populated scene assets before `run_daily`.
 
+
+## Analyst approval lifecycle
+
+Lifecycle states are strictly ordered:
+`draft -> review -> approved -> published -> retracted`.
+
+`POST /internal/admin/review-event` now enforces only the next allowed state.
+Invalid transitions return `400` with:
+- `error: invalid_lifecycle_transition`
+- `current_state`
+- `requested_state`
+- `allowed_transitions`
+
+Each transition appends an `approval_trace` entry on the event payload:
+- `principal_id`
+- `timestamp`
+- `previous_state`
+- `new_state`
+- `reason`
+- `comment`
+
+Example publish request (must already be in `approved`):
+```json
+{
+  "action": "published",
+  "notes": "QA passed and ready for public release",
+  "label_metadata": {"label_type": "flood_extent"},
+  "mapping_rules": {"certainty_class": "high"}
+}
+```
