@@ -64,3 +64,14 @@ Suggested use: web/mobile public-facing advisory outputs.
 - Confidence values are model-derived and should be interpreted with uncertainty.
 - Source lineage fields may be partially populated if upstream provenance is incomplete.
 - Urdu translations are safety-first and preserve imperative meaning; maintainers should update `localized` fields alongside any English content changes.
+
+
+## Outbound channel adapters
+
+Published template payloads can be delivered through outbound adapters for opt-in recipients:
+
+- SMS (`NotificationChannel.sms`)
+- Email (`NotificationChannel.email`)
+- WhatsApp (`NotificationChannel.whatsapp`)
+
+Reference implementation lives in `src/pakistan_flood_monitor/services/notifications.py` and includes provider stubs, opt-in enforcement, retry handling, and delivery audit traces.
