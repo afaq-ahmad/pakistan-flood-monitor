@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import hashlib
+import json
 import os
 from threading import Lock
 import time
@@ -60,6 +62,52 @@ class RateLimiter:
 
 
 rate_limiter = RateLimiter()
+
+
+def _canonicalize(value: dict[str, Any]) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
+
+
+def _build_audit_entry(*, chain_name: str, action: str, principal_id: str, resource_type: str, resource_id: str, details: dict[str, Any] | None = None, previous_hash: str = "GENESIS") -> dict[str, Any]:
+    timestamp = datetime.now(UTC).isoformat()
+    payload = {
+        "chain": chain_name,
+        "action": action,
+        "principal_id": principal_id,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "details": details or {},
+        "timestamp": timestamp,
+        "previous_hash": previous_hash,
+    }
+    payload_hash = hashlib.sha256(_canonicalize(payload).encode("utf-8")).hexdigest()
+    return payload | {"entry_hash": payload_hash, "actor": principal_id}
+
+
+def _append_audit_entry(log: list[dict[str, Any]], entry: dict[str, Any]) -> None:
+    log.append(entry)
+
+
+def _verify_audit_chain(log: list[dict[str, Any]], chain_name: str) -> tuple[bool, str | None]:
+    previous_hash = "GENESIS"
+    for idx, row in enumerate(log):
+        payload = {
+            "chain": row.get("chain", chain_name),
+            "action": row.get("action"),
+            "principal_id": row.get("principal_id"),
+            "resource_type": row.get("resource_type"),
+            "resource_id": row.get("resource_id"),
+            "details": row.get("details", {}),
+            "timestamp": row.get("timestamp") or row.get("changed_at"),
+            "previous_hash": row.get("previous_hash", previous_hash),
+        }
+        expected = hashlib.sha256(_canonicalize(payload).encode("utf-8")).hexdigest()
+        if row.get("entry_hash") != expected:
+            return False, f"{chain_name}[{idx}] hash mismatch"
+        if payload["previous_hash"] != previous_hash:
+            return False, f"{chain_name}[{idx}] previous_hash mismatch"
+        previous_hash = expected
+    return True, None
 
 
 class ReviewEventRequest(BaseModel):
@@ -322,17 +370,17 @@ def _confidence_bucket(score_percent: float) -> str:
 
 
 def _audit_privileged_action(*, principal_id: str, action: str, resource_type: str, resource_id: str, details: dict[str, Any] | None = None) -> None:
-    privileged_audit_log.append(
-        {
-            "principal_id": principal_id,
-            "actor": principal_id,
-            "action": action,
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "timestamp": datetime.now(UTC).isoformat(),
-            "details": details or {},
-        }
+    previous_hash = privileged_audit_log[-1]["entry_hash"] if privileged_audit_log else "GENESIS"
+    entry = _build_audit_entry(
+        chain_name="privileged",
+        action=action,
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        details=details,
+        previous_hash=previous_hash,
     )
+    _append_audit_entry(privileged_audit_log, entry)
 
 
 def _resolve_role(token: str) -> str | None:
@@ -738,20 +786,30 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
     historical_record.updated_at = datetime.now(UTC).isoformat()
     historical_event_library[event_id] = historical_record.model_dump()
 
-    review_audit_log.append(
-        {
-            "event_id": event_id,
-            "principal_id": principal_id,
-            "actor": principal_id,
-            "action": payload.action,
-            "changed_at": datetime.now(UTC).isoformat(),
+    review_previous_hash = review_audit_log[-1]["entry_hash"] if review_audit_log else "GENESIS"
+    review_entry = _build_audit_entry(
+        chain_name="review",
+        action=payload.action,
+        principal_id=principal_id,
+        resource_type="event",
+        resource_id=event_id,
+        details={
             "old_status": old_status,
             "new_status": event["status"],
             "notes": payload.notes,
             "qa_passed": qa_result.passed,
             "qa_errors": qa_result.errors,
-        }
+        },
+        previous_hash=review_previous_hash,
     )
+    review_entry["event_id"] = event_id
+    review_entry["changed_at"] = review_entry["timestamp"]
+    review_entry["old_status"] = old_status
+    review_entry["new_status"] = event["status"]
+    review_entry["notes"] = payload.notes
+    review_entry["qa_passed"] = qa_result.passed
+    review_entry["qa_errors"] = qa_result.errors
+    _append_audit_entry(review_audit_log, review_entry)
     _audit_privileged_action(
         principal_id=principal_id,
         action="review",
@@ -872,14 +930,46 @@ def export_runtime_state() -> dict[str, Any]:
 
 
 @internal_router.post("/admin/state/restore", dependencies=[Depends(_require_role("admin"))])
-def restore_runtime_state(payload: dict[str, Any]) -> dict[str, Any]:
-    _restore_runtime_state(payload.get("state", {}))
+def restore_runtime_state(payload: dict[str, Any], role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
+    principal_id = _principal_id_for_role(role)
+    state = payload.get("state", {})
+    _restore_runtime_state(state)
+    _audit_privileged_action(
+        principal_id=principal_id,
+        action="restore_attempt",
+        resource_type="runtime_state",
+        resource_id="global",
+        details={"requested_keys": sorted(state.keys())},
+    )
+    _audit_privileged_action(
+        principal_id=principal_id,
+        action="restore_completed",
+        resource_type="runtime_state",
+        resource_id="global",
+        details={"events": len(event_store), "audit_records": len(review_audit_log)},
+    )
     return {
         "status": "restored",
         "corridors": len(run_history),
         "events": len(event_store),
         "audit_records": len(review_audit_log),
     }
+
+
+@internal_router.get("/admin/audit/verify", dependencies=[Depends(_require_role("admin"))])
+def verify_audit_integrity() -> dict[str, Any]:
+    review_ok, review_error = _verify_audit_chain(review_audit_log, "review")
+    privileged_ok, privileged_error = _verify_audit_chain(privileged_audit_log, "privileged")
+    if not review_ok or not privileged_ok:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "failed",
+                "review": review_error,
+                "privileged": privileged_error,
+            },
+        )
+    return {"status": "ok", "review_entries": len(review_audit_log), "privileged_entries": len(privileged_audit_log)}
 
 
 app.include_router(public_router)

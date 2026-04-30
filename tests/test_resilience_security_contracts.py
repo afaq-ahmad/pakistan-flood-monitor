@@ -193,3 +193,41 @@ def test_end_to_end_contract_flow_with_realistic_dataset() -> None:
     assert public_event.json()["status"] == "published"
     assert "asset_summary" in public_exposure.json()
     assert any(item["event_id"] == event_id for item in alerts.json())
+
+
+def test_audit_chain_verification_and_tamper_detection() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get('/internal/run/Indus-Lower', headers=_admin_headers())
+    event_id = run_response.json()['published_outputs']['review_queue_event']['event_id']
+    review = client.post(
+        f'/internal/admin/review-event?event_id={event_id}',
+        headers=_analyst_headers(),
+        json={'action': 'accept', 'notes': 'chain check'},
+    )
+    assert review.status_code == 200
+
+    verify_ok = client.get('/internal/admin/audit/verify', headers=_admin_headers())
+    assert verify_ok.status_code == 200
+    assert verify_ok.json()['status'] == 'ok'
+
+    review_audit_log[-1]['details']['notes'] = 'tampered'
+    verify_bad = client.get('/internal/admin/audit/verify', headers=_admin_headers())
+    assert verify_bad.status_code == 409
+    assert verify_bad.json()['detail']['status'] == 'failed'
+
+
+def test_restore_operations_are_audited_in_privileged_chain() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get('/internal/run/Chenab-Middle', headers=_admin_headers())
+    assert run_response.status_code == 200
+
+    state = client.get('/internal/admin/state/export', headers=_admin_headers()).json()['state']
+    before = len(privileged_audit_log)
+    restore = client.post('/internal/admin/state/restore', headers=_admin_headers(), json={'state': state})
+    assert restore.status_code == 200
+    assert len(privileged_audit_log) >= before + 2
+    assert privileged_audit_log[-2]['action'] == 'restore_attempt'
+    assert privileged_audit_log[-1]['action'] == 'restore_completed'
