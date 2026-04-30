@@ -62,6 +62,16 @@ def _gis_review_payload(action: str, actor: str, notes: str) -> dict:
     }
 
 
+
+
+def _lifecycle_transition(client: TestClient, event_id: str, action: str, notes: str = "") -> None:
+    response = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": action, "notes": notes},
+        headers=_analyst_headers(),
+    )
+    assert response.status_code == 200
+
 def test_monitoring_and_event_endpoints() -> None:
     _reset_state()
     client = TestClient(app)
@@ -70,6 +80,8 @@ def test_monitoring_and_event_endpoints() -> None:
     assert run_response.status_code == 200
     event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
 
+    _lifecycle_transition(client, event_id, "review", "begin analyst review")
+    _lifecycle_transition(client, event_id, "approved", "approved by analyst")
     review_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
         json=_gis_review_payload("published", "analyst-1", "approved for public"),
@@ -77,20 +89,9 @@ def test_monitoring_and_event_endpoints() -> None:
     )
     assert review_response.status_code == 200
 
-    hidden_after_reject = client.post(
-        f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "reject", "actor": "analyst-1", "notes": "not publishable"},
-        headers=_analyst_headers(),
-    )
-    assert hidden_after_reject.status_code == 200
-    assert client.get(f"/public/events/{event_id}").status_code == 404
-
-    republish_response = client.post(
-        f"/internal/admin/review-event?event_id={event_id}",
-        json=_gis_review_payload("published", "analyst-1", "approved for public"),
-        headers=_analyst_headers(),
-    )
-    assert republish_response.status_code == 200
+    events_response = client.get("/public/corridors/Indus-Lower/events")
+    assert events_response.status_code == 200
+    assert events_response.json()[0]["event_id"] == event_id
 
     corridors_response = client.get("/public/corridors")
     assert corridors_response.status_code == 200
@@ -99,10 +100,6 @@ def test_monitoring_and_event_endpoints() -> None:
     status_response = client.get("/public/corridors/Indus-Lower/status")
     assert status_response.status_code == 200
     assert "latest_hydromet_stress" in status_response.json()
-
-    events_response = client.get("/public/corridors/Indus-Lower/events")
-    assert events_response.status_code == 200
-    assert events_response.json()[0]["event_id"] == event_id
 
     event_response = client.get(f"/public/events/{event_id}")
     assert event_response.status_code == 200
@@ -146,14 +143,11 @@ def test_admin_and_registry_endpoints() -> None:
     run_response = client.get("/internal/run/Chenab-Middle", headers=_admin_headers())
     event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
 
+    _lifecycle_transition(client, event_id, "review", "Validated")
+    _lifecycle_transition(client, event_id, "approved", "Approved")
     review_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
-        json={
-            "action": "accept",
-            "actor": "spoofed-actor",
-            "analyst_confidence": 0.88,
-            "notes": "Validated",
-        },
+        json=_gis_review_payload("published", "spoofed-actor", "Validated"),
         headers=_analyst_headers(),
     )
     assert review_response.status_code == 200
@@ -249,7 +243,7 @@ def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
 
     accept_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "accept", "actor": "analyst-2", "notes": "confirmed"},
+        json={"action": "review", "actor": "analyst-2", "notes": "confirmed"},
         headers=_analyst_headers(),
     )
     assert accept_response.status_code == 200
@@ -299,7 +293,7 @@ def test_privileged_endpoints_ignore_or_absorb_missing_actor_and_bind_principal(
 
     review_response = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "accept", "notes": "no actor in payload"},
+        json={"action": "review", "notes": "no actor in payload"},
         headers=_analyst_headers(),
     )
     assert review_response.status_code == 200
@@ -328,3 +322,38 @@ def test_unauthenticated_privileged_actions_are_rejected() -> None:
         },
     )
     assert resp.status_code == 401
+
+
+def test_lifecycle_invalid_and_trace_and_auth() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    skip_response = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "approved", "notes": "skip review"},
+        headers=_analyst_headers(),
+    )
+    assert skip_response.status_code == 400
+    assert skip_response.json()["detail"]["error"] == "invalid_lifecycle_transition"
+
+    no_auth = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "review", "notes": "no auth"},
+    )
+    assert no_auth.status_code == 401
+
+    _lifecycle_transition(client, event_id, "review", "start review")
+    _lifecycle_transition(client, event_id, "approved", "approve")
+    publish = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "publish"),
+        headers=_analyst_headers(),
+    )
+    assert publish.status_code == 200
+    trace = publish.json()["event"]["approval_trace"]
+    assert len(trace) == 3
+    assert trace[-1]["principal_id"] == "analyst-principal"
+    assert trace[-1]["previous_state"] == "approved"
+    assert trace[-1]["new_state"] == "published"

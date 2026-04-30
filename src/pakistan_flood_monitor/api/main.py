@@ -63,6 +63,39 @@ class RateLimiter:
 
 rate_limiter = RateLimiter()
 
+LIFECYCLE_TRANSITIONS: dict[str, set[str]] = {
+    "draft": {"review"},
+    "review": {"approved"},
+    "approved": {"published"},
+    "published": {"retracted"},
+    "retracted": set(),
+}
+
+
+def _normalize_lifecycle_action(action: str) -> str:
+    normalized = action.strip().lower()
+    aliases = {
+        "accept": "approved",
+        "accepted": "approved",
+        "publish": "published",
+        "reject": "retracted",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _validate_lifecycle_transition(current_state: str, requested_state: str) -> None:
+    allowed = LIFECYCLE_TRANSITIONS.get(current_state, set())
+    if requested_state not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid_lifecycle_transition",
+                "current_state": current_state,
+                "requested_state": requested_state,
+                "allowed_transitions": sorted(allowed),
+            },
+        )
+
 
 def _canonicalize(value: dict[str, Any]) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
@@ -224,7 +257,7 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
         "run_id": report["run_id"],
         "aoi": review_event["aoi"],
         "event_class": review_event["event_class"],
-        "status": review_event["decision"] or "pending_review",
+        "status": "draft",
         "queue_status": detection["review_status"],
         "machine_confidence": review_event["machine_confidence"],
         "analyst_confidence": review_event["analyst_confidence"],
@@ -257,6 +290,7 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
             "summary": report["published_outputs"]["alert_feed_item"]["summary"],
         },
         "candidate_persistence_hours": round(max(detection["flood_probability"], 0.01) * 48, 2),
+        "approval_trace": [],
     }
 
 
@@ -327,7 +361,7 @@ def _upsert_historical_event_from_event(event: dict[str, Any]) -> None:
 def _training_export_package(*, min_label_quality: float, include_pending: bool) -> dict[str, Any]:
     records = [HistoricalEventRecord.model_validate(item) for item in historical_event_library.values()]
     if not include_pending:
-        records = [r for r in records if r.status in {"accept", "published"}]
+        records = [r for r in records if r.status in {"approved", "published"}]
     records = [r for r in records if r.catalog.label_quality_score >= min_label_quality]
 
     return {
@@ -463,7 +497,7 @@ def _require_role(*allowed_roles: str):
 
 
 def _ensure_published_event(event: dict[str, Any]) -> None:
-    if event["status"] not in {"accept", "published"}:
+    if event["status"] != "published":
         raise HTTPException(status_code=404, detail="Event not found.")
 
 
@@ -561,8 +595,8 @@ def corridor_events(
     if not history:
         raise HTTPException(status_code=404, detail="No events found for AOI.")
 
-    records = [_event_record_from_run(report) for report in history]
-    records = [event for event in records if event["status"] in {"accept", "published"}]
+    records = [event for event in _all_events() if event["aoi"] == aoi_name]
+    records = [event for event in records if event["status"] == "published"]
     if status:
         records = [event for event in records if event["status"] == status]
     if confidence_bucket:
@@ -674,7 +708,7 @@ def latest_alerts() -> list[dict]:
     return [
         event["latest_event_summary"] | {"event_id": event["event_id"], "aoi": event["aoi"]}
         for event in _all_events()
-        if event["status"] in {"accept", "published"}
+        if event["status"] == "published"
     ]
 
 
@@ -755,7 +789,9 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
         raise HTTPException(status_code=404, detail="Event not found.")
 
     old_status = event["status"]
-    event["status"] = payload.action
+    requested_state = _normalize_lifecycle_action(payload.action)
+    _validate_lifecycle_transition(old_status, requested_state)
+    event["status"] = requested_state
     event["analyst_confidence"] = payload.analyst_confidence
     if payload.notes:
         event["notes"] = payload.notes
@@ -773,7 +809,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
         )
 
     qa_result = publication_gate(event)
-    if payload.action in {"published", "publish"} and not qa_result.passed:
+    if requested_state == "published" and not qa_result.passed:
         raise HTTPException(status_code=400, detail={"qa_failed": qa_result.errors})
     if qa_result.normalized_geometry:
         event["geometry"] = qa_result.normalized_geometry
@@ -791,7 +827,7 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
     review_previous_hash = review_audit_log[-1]["entry_hash"] if review_audit_log else "GENESIS"
     review_entry = _build_audit_entry(
         chain_name="review",
-        action=payload.action,
+        action=requested_state,
         principal_id=principal_id,
         resource_type="event",
         resource_id=event_id,
@@ -819,10 +855,19 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = D
         resource_id=event_id,
         details={"old_status": old_status, "new_status": event["status"]},
     )
-    if payload.action in {"accept", "published"}:
+    trace_entry = {
+        "principal_id": principal_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "previous_state": old_status,
+        "new_state": event["status"],
+        "reason": payload.notes or None,
+        "comment": payload.notes or None,
+    }
+    event.setdefault("approval_trace", []).append(trace_entry)
+    if requested_state in {"approved", "published"}:
         metrics_registry.increment("product.alerts_confirmed")
         metrics_registry.increment("product.analyst_hours_saved_proxy", 0.75)
-    if payload.action in {"reject", "false_alarm"}:
+    if requested_state in {"retracted"}:
         metrics_registry.increment("product.false_alarms")
     return {"status": "review_updated", "event": event, "qa": {"passed": qa_result.passed, "errors": qa_result.errors}}
 
