@@ -28,6 +28,17 @@ Use `GET /analytics/dashboard/review` as the single review workspace payload. Ea
 Execute review actions via `POST /admin/review/{candidate_id}/actions` with header `X-Analyst-Id`.
 The actor is always server-attributed from the authenticated analyst identity header and logged to audit records.
 
+## Before/after imagery and event timeline workflow
+
+Use `GET /public/events/{event_id}/imagery` to drive temporal comparison in map viewers.
+
+- `comparison.mode` is currently `swipe` for a before/after slider UX.
+- `comparison.before_scene` and `comparison.after_scene` include scene IDs, acquisition timestamps, SAR sensor type, and asset links.
+- `comparison.missing_layers` explicitly reports absent timeline layers (`before` or `after`) and `fallback_message` provides analyst guidance when a comparison cannot be rendered.
+- `source_scene_lineage` provides source-scene provenance records for trust-oriented tooltips and source drill-down.
+- `timeline[]` is the event-evolution series keyed by run timestamp with area, confidence, status, and lineage metadata.
+- `supported_formats` currently includes `COG`, `GeoTIFF`, and `PNG_TILE`.
+- `timeline_metadata_fields` lists expected keys for clients that validate timeline payload completeness.
 
 ## Outbound notification workflow
 

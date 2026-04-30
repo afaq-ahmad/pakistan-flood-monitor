@@ -413,6 +413,80 @@ def _event_by_id(event_id: str) -> dict[str, Any] | None:
     return event_store.get(event_id)
 
 
+def _event_imagery_payload(event: dict[str, Any], history: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    lineage = event.get("lineage") or {}
+    source_scene_ids = lineage.get("source_scene_ids") or event.get("source_scenes") or []
+    source_scene_references = []
+    for idx, scene_id in enumerate(source_scene_ids):
+        scene_time = event["timestamps"]["detected_at"]
+        source_scene_references.append(
+            {
+                "scene_id": scene_id,
+                "acquired_at": scene_time,
+                "sensor_type": "SAR",
+                "format": "COG",
+                "asset_role": "before" if idx == 0 else "after",
+                "asset_href": f"s3://pakistan-flood-monitor/scenes/{scene_id}.tif",
+            }
+        )
+    if len(source_scene_references) < 2 and history and len(history) >= 2:
+        earliest = history[0]
+        latest = history[-1]
+        source_scene_references = [
+            {
+                "scene_id": f"{earliest['run_id']}-scene",
+                "acquired_at": earliest["detections"][0]["timestamp"],
+                "sensor_type": "SAR",
+                "format": "COG",
+                "asset_role": "before",
+                "asset_href": f"s3://pakistan-flood-monitor/scenes/{earliest['run_id']}.tif",
+            },
+            {
+                "scene_id": f"{latest['run_id']}-scene",
+                "acquired_at": latest["detections"][0]["timestamp"],
+                "sensor_type": "SAR",
+                "format": "COG",
+                "asset_role": "after",
+                "asset_href": f"s3://pakistan-flood-monitor/scenes/{latest['run_id']}.tif",
+            },
+        ]
+    before_scene = source_scene_references[0] if source_scene_references else None
+    after_scene = source_scene_references[1] if len(source_scene_references) > 1 else None
+    missing = []
+    if before_scene is None:
+        missing.append("before")
+    if after_scene is None:
+        missing.append("after")
+
+    return {
+        "event_id": event["event_id"],
+        "comparison": {
+            "mode": "swipe",
+            "before_scene": before_scene,
+            "after_scene": after_scene,
+            "missing_layers": missing,
+            "is_comparison_available": not missing,
+            "fallback_message": "Before/after imagery is incomplete. Use timeline events and lineage metadata for interpretation." if missing else None,
+        },
+        "timeline": [
+            {
+                "timestamp": event["timestamps"]["detected_at"],
+                "event_area_km2": event["event_area_km2"],
+                "status": event["status"],
+                "machine_confidence": event["machine_confidence"],
+                "lineage": {
+                    "processing_version": lineage.get("processing_version"),
+                    "thresholds": lineage.get("thresholds", {}),
+                    "source_scene_ids": source_scene_ids,
+                },
+            }
+        ],
+        "source_scene_lineage": source_scene_references,
+        "supported_formats": ["COG", "GeoTIFF", "PNG_TILE"],
+        "timeline_metadata_fields": ["timestamp", "event_area_km2", "status", "machine_confidence", "lineage"],
+    }
+
+
 def _admin_breakdown_for_event(event: dict[str, Any]) -> list[dict[str, str]]:
     overlays = event.get("admin_overlays")
     if isinstance(overlays, list) and overlays:
@@ -982,6 +1056,32 @@ def get_event_historical(event_id: str) -> dict[str, Any]:
         for report in history
     ]
     return _attach_limitations({"event_id": event_id, "event_area_trend": trend, "candidate_persistence_hours": event["candidate_persistence_hours"]})
+
+
+@public_router.get("/events/{event_id}/imagery")
+def get_event_imagery(event_id: str) -> dict[str, Any]:
+    event = _event_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found.")
+    _ensure_published_event(event)
+    history = _corridor_run_history(event["aoi"])
+    payload = _event_imagery_payload(event, history)
+    payload["timeline"] = [
+        {
+            "run_id": report["run_id"],
+            "timestamp": report["detections"][0]["timestamp"],
+            "event_area_km2": report["detections"][0]["flood_area_km2"],
+            "status": event["status"],
+            "machine_confidence": report["detections"][0]["confidence_score"],
+            "lineage": {
+                "processing_version": (event.get("lineage") or {}).get("processing_version"),
+                "source_scene_ids": (event.get("lineage") or {}).get("source_scene_ids", event.get("source_scenes", [])),
+                "thresholds": (event.get("lineage") or {}).get("thresholds", {}),
+            },
+        }
+        for report in history
+    ]
+    return _attach_limitations(payload)
 
 
 @public_router.get("/historical-events")
