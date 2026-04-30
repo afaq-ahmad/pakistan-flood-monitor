@@ -1,6 +1,8 @@
 # Hard Release Checklist
 
 ## Pre-release gates
+- [ ] Canonical runtime command validated: `uvicorn pakistan_flood_monitor.api.main:app --reload`.
+- [ ] No deployment artifact or runbook uses deprecated prototype entrypoint `app.api.main:app`.
 - [ ] Alembic migration state is current and applied in staging/prod.
 - [ ] Runtime config validation completed (`.env`, thresholds, token vars).
 - [ ] `/health` returns OK in deployment environment.

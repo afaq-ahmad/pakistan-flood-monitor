@@ -188,13 +188,7 @@ psql -h localhost -U postgres -d flood_monitor -c "SELECT ST_AsText(ST_Point(73.
 
 ## 5) Run locally
 
-### 5.1 Start the prototype API (dashboard/prototyping stack)
-
-```bash
-uvicorn app.api.main:app --reload
-```
-
-### 5.2 Start the canonical runtime API
+### 5.1 Start the canonical runtime API (official)
 
 ```bash
 uvicorn pakistan_flood_monitor.api.main:app --reload
@@ -311,7 +305,7 @@ Before production cutover:
 - **Unexpected actor value in audit logs**
   - Verify the bearer token maps to the expected principal; payload `actor` is ignored by design.
 - **Unexpected endpoint mismatch**
-  - Confirm you launched the intended app (`app.api.main:app` vs `pakistan_flood_monitor.api.main:app`).
+- Confirm you launched the canonical app (`pakistan_flood_monitor.api.main:app`).
 
 ## 10) Related runbooks
 
