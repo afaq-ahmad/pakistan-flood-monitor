@@ -10,6 +10,7 @@
 ## Security gates
 - [ ] Admin and analyst tokens rotated within policy window.
 - [ ] Actor-prefix checks verified (`admin-*`, `analyst-*`).
+- [ ] Audit integrity verified (`GET /internal/admin/audit/verify`) before release.
 - [ ] Internal rate limit thresholds configured for expected traffic.
 
 ## Validation gates
@@ -26,6 +27,7 @@
 ## CI command gates
 - [ ] `pytest tests/test_api_implementation.py` (API contract and auth behavior)
 - [ ] `pytest tests/test_resilience_security_contracts.py` (state export/restore and security resilience)
+- [ ] `curl -H "Authorization: Bearer $FLOOD_MONITOR_ADMIN_TOKEN" http://localhost:8000/internal/admin/audit/verify`
 - [ ] `pytest tests/test_review_workflow.py` (review lifecycle transitions)
 - [ ] `pytest tests/test_sar_preprocessing_pipeline.py` (SAR preprocessing integrity)
 - [ ] Evidence captured: attach command output snippets and commit SHA in release artifact.
