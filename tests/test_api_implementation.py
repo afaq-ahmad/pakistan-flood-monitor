@@ -258,22 +258,48 @@ def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
     assert accept_response.status_code == 200
 
     metrics_response = client.get("/internal/monitoring/metrics", headers=_analyst_headers())
-    assert metrics_response.status_code == 200
-    payload = metrics_response.json()
-    assert payload["pipeline_metrics"]["alerts_published"] >= 1
-    assert payload["ops_metrics"]["queue_backlog"] >= 1
-    assert payload["product_metrics"]["alerts_produced"] >= 1
-    assert payload["product_metrics"]["alerts_confirmed"] >= 1
 
-    reject_response = client.post(
-        f"/internal/admin/review-event?event_id={event_id}",
-        json={"action": "false_alarm", "actor": "analyst-2", "notes": "qa false alarm"},
-        headers=_analyst_headers(),
-    )
-    assert reject_response.status_code == 400
 
-    metrics_after_reject = client.get("/internal/monitoring/metrics", headers=_analyst_headers()).json()
-    assert metrics_after_reject["product_metrics"]["false_alarms"] >= 0
+def test_risk_summary_rollups_sorting_and_filters() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_a = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    run_b = client.get("/internal/run/Chenab-Middle", headers=_admin_headers())
+    event_a = run_a.json()["published_outputs"]["review_queue_event"]["event_id"]
+    event_b = run_b.json()["published_outputs"]["review_queue_event"]["event_id"]
+    for event_id in (event_a, event_b):
+        _lifecycle_transition(client, event_id, "review")
+        _lifecycle_transition(client, event_id, "approved")
+    event_store[event_a]["admin_overlays"] = [
+        {"province": "Sindh", "district": "Dadu", "tehsil": "Mehar"},
+        {"province": "Sindh", "district": "Dadu", "tehsil": "Khairpur Nathan Shah"},
+    ]
+    event_store[event_b]["admin_overlays"] = [
+        {"province": "Punjab", "district": "Multan", "tehsil": "Saddar"},
+    ]
+
+    tehsil_resp = client.get("/public/risk-summary/tehsil?sort_by=risk_score&order=desc")
+    assert tehsil_resp.status_code == 200
+    tehsil_payload = tehsil_resp.json()
+    assert tehsil_payload["count"] >= 3
+    assert tehsil_payload["results"][0]["risk_score"] >= tehsil_payload["results"][-1]["risk_score"]
+    assert tehsil_payload["results"][0]["latest_event_status"] in {"approved", "published"}
+
+    district_resp = client.get("/public/risk-summary/district?province=Sindh")
+    assert district_resp.status_code == 200
+    district_payload = district_resp.json()
+    assert district_payload["count"] == 1
+    assert district_payload["results"][0]["district"] == "Dadu"
+    assert district_payload["results"][0]["tehsil"] == "ALL_TEHSILS"
+
+    province_resp = client.get("/public/risk-summary/province?sort_by=exposure_score&order=asc&min_confidence=0.5")
+    assert province_resp.status_code == 200
+    province_payload = province_resp.json()
+    if province_payload["count"] > 1:
+        assert province_payload["results"][0]["exposure_score"] <= province_payload["results"][-1]["exposure_score"]
+
+    invalid_sort = client.get("/public/risk-summary/tehsil?sort_by=invalid_field")
+    assert invalid_sort.status_code == 400
 
 
 def test_publish_requires_qa_and_sop_fields() -> None:

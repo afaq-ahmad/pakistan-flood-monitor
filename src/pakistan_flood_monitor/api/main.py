@@ -250,6 +250,20 @@ class ModelRegistrationRequest(BaseModel):
     notes: str = ""
 
 
+class RiskSummaryRow(BaseModel):
+    province: str
+    district: str
+    tehsil: str
+    event_count: int
+    risk_score: float
+    exposure_score: float
+    severity_score: float
+    confidence_score: float
+    latest_event_id: str | None = None
+    latest_event_status: str | None = None
+    latest_review_status: str | None = None
+
+
 def _corridor_run_history(aoi_name: str) -> list[dict[str, Any]]:
     return run_history.get(aoi_name, [])
 
@@ -329,6 +343,104 @@ def _all_events() -> list[dict[str, Any]]:
 
 def _event_by_id(event_id: str) -> dict[str, Any] | None:
     return event_store.get(event_id)
+
+
+def _admin_breakdown_for_event(event: dict[str, Any]) -> list[dict[str, str]]:
+    overlays = event.get("admin_overlays")
+    if isinstance(overlays, list) and overlays:
+        return [item for item in overlays if isinstance(item, dict)]
+    aoi = str(event.get("aoi", "unknown"))
+    return [{"province": aoi, "district": aoi, "tehsil": f"{aoi}-central"}]
+
+
+def _summarize_risk_rows(
+    *,
+    level: str,
+    province: str | None = None,
+    district: str | None = None,
+    only_reviewed: bool = True,
+) -> list[dict[str, Any]]:
+    buckets: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for event in _all_events():
+        if only_reviewed and event.get("status") not in {"approved", "published"}:
+            continue
+        for admin in _admin_breakdown_for_event(event):
+            admin_province = admin.get("province", "unknown")
+            admin_district = admin.get("district", "unknown")
+            admin_tehsil = admin.get("tehsil", "unknown")
+            if province and admin_province != province:
+                continue
+            if district and admin_district != district:
+                continue
+            key = (admin_province, admin_district, admin_tehsil)
+            row = buckets.setdefault(
+                key,
+                {
+                    "province": admin_province,
+                    "district": admin_district,
+                    "tehsil": admin_tehsil,
+                    "event_count": 0,
+                    "risk_score": 0.0,
+                    "exposure_score": 0.0,
+                    "severity_score": 0.0,
+                    "confidence_score": 0.0,
+                    "latest_event_id": None,
+                    "latest_event_status": None,
+                    "latest_review_status": None,
+                    "_latest_detected_at": "",
+                },
+            )
+            exposure = event.get("exposure", {}).get("asset_class_exposure", {})
+            exposure_score = float(exposure.get("population", 0.0)) + float(exposure.get("roads_km", 0.0)) * 20.0
+            confidence = float(event.get("machine_confidence", 0.0))
+            severity = float(event.get("event_area_km2", 0.0))
+            risk = round((confidence * 0.5) + (min(severity / 25.0, 1.0) * 0.3) + (min(exposure_score / 100000.0, 1.0) * 0.2), 4)
+            row["event_count"] += 1
+            row["risk_score"] += risk
+            row["exposure_score"] += exposure_score
+            row["severity_score"] += severity
+            row["confidence_score"] += confidence
+            detected_at = str(event.get("timestamps", {}).get("detected_at", ""))
+            if detected_at >= row["_latest_detected_at"]:
+                row["_latest_detected_at"] = detected_at
+                row["latest_event_id"] = event.get("event_id")
+                row["latest_event_status"] = event.get("status")
+                row["latest_review_status"] = event.get("queue_status")
+    rows = list(buckets.values())
+    for row in rows:
+        count = max(1, row["event_count"])
+        row["risk_score"] = round(row["risk_score"] / count, 4)
+        row["exposure_score"] = round(row["exposure_score"] / count, 2)
+        row["severity_score"] = round(row["severity_score"] / count, 3)
+        row["confidence_score"] = round(row["confidence_score"] / count, 4)
+        row.pop("_latest_detected_at", None)
+    if level == "district":
+        grouped: dict[tuple[str, str], dict[str, Any]] = {}
+        for row in rows:
+            key = (row["province"], row["district"])
+            agg = grouped.setdefault(key, row | {"tehsil": "ALL_TEHSILS"})
+            if agg is not row:
+                agg["event_count"] += row["event_count"]
+                agg["risk_score"] = round((agg["risk_score"] + row["risk_score"]) / 2, 4)
+                agg["exposure_score"] += row["exposure_score"]
+                agg["severity_score"] += row["severity_score"]
+                agg["confidence_score"] = round((agg["confidence_score"] + row["confidence_score"]) / 2, 4)
+        rows = list(grouped.values())
+    if level == "province":
+        grouped: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            agg = grouped.setdefault(
+                row["province"],
+                row | {"district": "ALL_DISTRICTS", "tehsil": "ALL_TEHSILS"},
+            )
+            if agg is not row:
+                agg["event_count"] += row["event_count"]
+                agg["risk_score"] = round((agg["risk_score"] + row["risk_score"]) / 2, 4)
+                agg["exposure_score"] += row["exposure_score"]
+                agg["severity_score"] += row["severity_score"]
+                agg["confidence_score"] = round((agg["confidence_score"] + row["confidence_score"]) / 2, 4)
+        rows = list(grouped.values())
+    return rows
 
 
 def _upsert_historical_event_from_event(event: dict[str, Any]) -> None:
@@ -772,6 +884,47 @@ def latest_alerts() -> list[dict]:
         for event in _all_events()
         if event["status"] == "published"
     ]
+
+
+@public_router.get("/risk-summary/{level}")
+def risk_summary(
+    level: str,
+    province: str | None = None,
+    district: str | None = None,
+    sort_by: str = Query(default="risk_score"),
+    order: str = Query(default="desc", pattern="^(asc|desc)$"),
+    min_risk: float | None = Query(default=None, ge=0.0, le=1.0),
+    min_exposure: float | None = Query(default=None, ge=0.0),
+    min_severity: float | None = Query(default=None, ge=0.0),
+    min_confidence: float | None = Query(default=None, ge=0.0, le=1.0),
+) -> dict[str, Any]:
+    if level not in {"tehsil", "district", "province"}:
+        raise HTTPException(status_code=400, detail="level must be one of tehsil|district|province")
+    allowed_sort = {"risk_score", "exposure_score", "severity_score", "confidence_score", "province", "district", "tehsil", "event_count"}
+    if sort_by not in allowed_sort:
+        raise HTTPException(status_code=400, detail={"error": "invalid_sort_by", "allowed": sorted(allowed_sort)})
+    rows = _summarize_risk_rows(level=level, province=province, district=district, only_reviewed=True)
+    if min_risk is not None:
+        rows = [row for row in rows if row["risk_score"] >= min_risk]
+    if min_exposure is not None:
+        rows = [row for row in rows if row["exposure_score"] >= min_exposure]
+    if min_severity is not None:
+        rows = [row for row in rows if row["severity_score"] >= min_severity]
+    if min_confidence is not None:
+        rows = [row for row in rows if row["confidence_score"] >= min_confidence]
+    rows = sorted(rows, key=lambda row: row[sort_by], reverse=(order == "desc"))
+    return {
+        "level": level,
+        "filters": {"province": province, "district": district, "min_risk": min_risk, "min_exposure": min_exposure, "min_severity": min_severity, "min_confidence": min_confidence},
+        "sort": {"sort_by": sort_by, "order": order},
+        "count": len(rows),
+        "results": rows,
+        "baseline_dataset_requirements": {
+            "district_tehsil_boundaries": "Required (properties: province, district, tehsil).",
+            "event_admin_overlay_join": "Required for mapping reviewed/approved events to district/tehsil.",
+            "exposure_baseline_layers": "Required for exposure score comparability.",
+        },
+    }
 
 
 @internal_router.get("/breach-candidates", dependencies=[Depends(_require_role("admin", "analyst"))])
