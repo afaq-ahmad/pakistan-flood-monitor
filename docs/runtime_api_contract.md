@@ -35,3 +35,47 @@ Internal API has configurable rate limiting middleware:
 - `FLOOD_MONITOR_RATE_LIMIT_WINDOW_SECONDS` (default `60`)
 
 Exceeding the policy returns `429` with a `Retry-After` header.
+
+
+## Failure response examples
+
+### 401 Unauthorized
+```http
+GET /internal/run/Indus-Lower
+Authorization: Bearer invalid-token
+```
+```json
+{"detail": "Unauthorized"}
+```
+Troubleshooting: verify token value and secret injection for `FLOOD_MONITOR_ADMIN_TOKEN`/`FLOOD_MONITOR_ANALYST_TOKEN`.
+
+### 403 Forbidden
+```http
+POST /internal/admin/register-threshold
+Authorization: Bearer <analyst-token>
+```
+```json
+{"detail": "Forbidden"}
+```
+Troubleshooting: endpoint requires admin principal.
+
+### 404 Not Found
+```http
+GET /public/events/evt-does-not-exist
+```
+```json
+{"detail": "Event not found."}
+```
+Troubleshooting: verify event ID from `/public/corridors/{corridor_id}/events`.
+
+### 429 Too Many Requests
+```json
+{"detail": "Rate limit exceeded"}
+```
+Troubleshooting: respect `Retry-After` header and tune `FLOOD_MONITOR_RATE_LIMIT_*` settings for environment capacity.
+
+### 500 Internal Server Error
+```json
+{"detail": "Internal server error"}
+```
+Troubleshooting: check API logs, PostGIS connectivity, and restore from latest state export if runtime state is inconsistent.

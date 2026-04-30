@@ -171,6 +171,8 @@ class FloodMonitoringPipeline:
             self.catalog.fetch_scenes("sentinel-1", aoi_name, today - timedelta(days=2), today)
             self.catalog.fetch_supporting_layers(aoi_name)
 
+            # TODO(team-backlog-2026-04-30#5): Replace fixed literals with scene-derived features from SAR preprocessing artifacts.
+            # TODO(team-backlog-2026-04-30#6): Attach per-feature provenance (scene IDs, processing version, thresholds).
             features = DetectionFeatures(
                 sar_drop_db=3.0,
                 ndwi=0.31,

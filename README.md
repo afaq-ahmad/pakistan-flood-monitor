@@ -97,6 +97,8 @@ This repo intentionally contains **two API stacks**:
 
 For production integrations, use the canonical runtime API contract in `docs/runtime_api_contract.md`.
 
+> **Deprecation timeline:** As of **April 30, 2026**, `pakistan_flood_monitor.api.main:app` is the canonical runtime path. The prototype `app.api.main:app` path is deprecated for production integrations and will be removed after **December 31, 2026**. Integrators should migrate to `/internal/*` and `/public/*` endpoints documented in `docs/runtime_api_contract.md`.
+
 ## Repository structure
 ```text
 src/
