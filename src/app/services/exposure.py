@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from shapely.geometry import shape
@@ -26,6 +27,10 @@ class AssetLayer:
     kind: Literal["polygon", "line", "point", "population"]
     features: list[OverlayFeature]
     value_field: str | None = None
+    source_uri: str | None = None
+    source_version: str | None = None
+    source_timestamp: str | None = None
+    quality_score: float = 1.0
 
 
 @dataclass(slots=True)
@@ -39,6 +44,8 @@ class ExposureRequest:
     district_boundaries: list[OverlayFeature]
     asset_layers: list[AssetLayer]
     cloud_limited: bool = False
+    processing_version: str = "exposure-overlay-v2"
+    processing_parameters: dict[str, Any] | None = None
 
 
 @dataclass(slots=True)
@@ -79,7 +86,15 @@ class ExposureComputationService:
             layers=request.asset_layers,
         )
 
+        lineage = _build_lineage(request=request, geometry_source=source)
+        uncertainty = _build_uncertainty(
+            request=request,
+            geometry_source=source,
+            district_summaries=district_summaries,
+            asset_summaries=asset_summaries,
+        )
         uncertainty_flag = request.cloud_limited or source == "machine_provisional" or request.review_status == "unreviewed"
+
         summary_blob = {
             "event_id": request.event_id,
             "geometry_source": source,
@@ -97,6 +112,8 @@ class ExposureComputationService:
                 for row in district_summaries
             ],
             "assets": asset_summaries,
+            "lineage": lineage,
+            "uncertainty": uncertainty,
         }
 
         relational_rows: list[dict[str, Any]] = []
@@ -104,6 +121,8 @@ class ExposureComputationService:
             row["event_id"] = request.event_id
             row["uncertainty_flag"] = uncertainty_flag
             row["geometry_source"] = source
+            row["lineage_metadata"] = lineage
+            row["uncertainty_bounds"] = uncertainty
             relational_rows.append(row)
         for district_id, assets in asset_summaries.items():
             for layer_name, metrics in assets.items():
@@ -116,6 +135,8 @@ class ExposureComputationService:
                         "metrics": metrics,
                         "uncertainty_flag": uncertainty_flag,
                         "geometry_source": source,
+                        "lineage_metadata": lineage,
+                        "uncertainty_bounds": uncertainty,
                     }
                 )
 
@@ -151,13 +172,14 @@ def _district_summaries(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     output: list[dict[str, Any]] = []
     district_geoms: dict[str, Any] = {}
+    corridor_overlap_area = _area_sqkm(event_geom.intersection(corridor_geom))
+
     for district in districts:
         district_geom = shape(district.geometry)
         district_geoms[district.feature_id] = district_geom
         intersection_area = _area_sqkm(event_geom.intersection(district_geom))
         if intersection_area <= 0:
             continue
-        corridor_overlap_area = _area_sqkm(event_geom.intersection(corridor_geom))
         percent_of_event_area = 0.0 if event_area_sqkm == 0 else (intersection_area / event_area_sqkm) * 100.0
         output.append(
             {
@@ -229,6 +251,67 @@ def _overlay_metric(*, event_geom, layer: AssetLayer) -> dict[str, float]:
         return {"estimated_population_exposed": round(total_population, 2)}
 
     raise ValueError(f"Unsupported asset layer kind: {layer.kind}")
+
+
+def _build_lineage(*, request: ExposureRequest, geometry_source: str) -> dict[str, Any]:
+    layers = []
+    for layer in request.asset_layers:
+        layers.append(
+            {
+                "layer_name": layer.name,
+                "layer_kind": layer.kind,
+                "source_uri": layer.source_uri or "inline-memory",
+                "version": layer.source_version or "unknown",
+                "source_timestamp": layer.source_timestamp,
+                "feature_count": len(layer.features),
+                "value_field": layer.value_field,
+                "quality_score": round(layer.quality_score, 4),
+            }
+        )
+
+    return {
+        "model": "spatial_overlay_exposure",
+        "processing_version": request.processing_version,
+        "computed_at": datetime.now(tz=UTC).isoformat(),
+        "geometry_source": geometry_source,
+        "parameters": request.processing_parameters or {},
+        "layers": layers,
+    }
+
+
+def _build_uncertainty(
+    *,
+    request: ExposureRequest,
+    geometry_source: str,
+    district_summaries: list[dict[str, Any]],
+    asset_summaries: dict[str, dict[str, dict[str, float]]],
+) -> dict[str, Any]:
+    geometry_score = 0.15 if geometry_source == "machine_provisional" else 0.05
+    cloud_score = 0.2 if request.cloud_limited else 0.0
+    layer_quality = 1.0
+    if request.asset_layers:
+        layer_quality = sum(layer.quality_score for layer in request.asset_layers) / len(request.asset_layers)
+    quality_score = max(0.0, min(1.0, 1.0 - layer_quality))
+    base = min(1.0, geometry_score + cloud_score + quality_score)
+
+    by_layer: dict[str, dict[str, float]] = {}
+    for layer in request.asset_layers:
+        layer_uncertainty = min(1.0, base + (1.0 - layer.quality_score) * 0.5)
+        by_layer[layer.name] = {"relative_uncertainty": round(layer_uncertainty, 4)}
+
+    return {
+        "overall_uncertainty_score": round(base, 4),
+        "geometry_source_uncertainty": round(geometry_score, 4),
+        "cloud_uncertainty": round(cloud_score, 4),
+        "layer_quality_uncertainty": round(quality_score, 4),
+        "confidence_interval": {
+            "lower_multiplier": round(max(0.0, 1.0 - base), 4),
+            "upper_multiplier": round(1.0 + base, 4),
+        },
+        "components": by_layer,
+        "district_count": len(district_summaries),
+        "asset_district_records": sum(len(v) for v in asset_summaries.values()),
+    }
 
 
 def _area_sqkm(geom) -> float:

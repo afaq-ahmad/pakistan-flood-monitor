@@ -114,3 +114,61 @@ def test_exposure_rejects_non_triggering_status() -> None:
                 asset_layers=[],
             )
         )
+
+
+def test_exposure_emits_lineage_metadata_for_layers() -> None:
+    service = ExposureComputationService()
+    result = service.compute(
+        ExposureRequest(
+            event_id=33,
+            review_status="accepted",
+            machine_status="weak",
+            reviewed_geometry=_poly(0, 0, 1, 1),
+            machine_geometry=_poly(0, 0, 1, 1),
+            corridor_geometry=_poly(0, 0, 2, 2),
+            district_boundaries=[OverlayFeature("d1", _poly(0, 0, 1, 1), {"name": "District 1"})],
+            asset_layers=[
+                AssetLayer(
+                    "roads",
+                    "line",
+                    [OverlayFeature("r1", {"type": "LineString", "coordinates": [[0, 0.5], [1, 0.5]]}, {})],
+                    source_uri="s3://baseline/roads.parquet",
+                    source_version="2026.04",
+                    source_timestamp="2026-04-15T00:00:00Z",
+                    quality_score=0.9,
+                )
+            ],
+            processing_parameters={"population_allocation": "areal-weighted"},
+        )
+    )
+
+    lineage = result.summary_blob["lineage"]
+    assert lineage["model"] == "spatial_overlay_exposure"
+    assert lineage["processing_version"] == "exposure-overlay-v2"
+    assert lineage["parameters"]["population_allocation"] == "areal-weighted"
+    assert lineage["layers"][0]["source_uri"] == "s3://baseline/roads.parquet"
+
+
+def test_exposure_emits_uncertainty_bounds() -> None:
+    service = ExposureComputationService()
+    result = service.compute(
+        ExposureRequest(
+            event_id=34,
+            review_status="unreviewed",
+            machine_status="strong",
+            reviewed_geometry=None,
+            machine_geometry=_poly(0, 0, 1, 1),
+            corridor_geometry=_poly(0, 0, 2, 2),
+            district_boundaries=[OverlayFeature("d1", _poly(0, 0, 1, 1), {})],
+            asset_layers=[
+                AssetLayer("schools", "point", [OverlayFeature("s1", {"type": "Point", "coordinates": [0.5, 0.5]}, {})], quality_score=0.6)
+            ],
+            cloud_limited=True,
+        )
+    )
+
+    uncertainty = result.summary_blob["uncertainty"]
+    assert uncertainty["overall_uncertainty_score"] > 0
+    assert uncertainty["confidence_interval"]["lower_multiplier"] < 1
+    assert uncertainty["confidence_interval"]["upper_multiplier"] > 1
+    assert uncertainty["components"]["schools"]["relative_uncertainty"] >= uncertainty["overall_uncertainty_score"]
