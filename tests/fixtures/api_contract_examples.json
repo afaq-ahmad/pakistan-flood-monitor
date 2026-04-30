@@ -1,0 +1,60 @@
+{
+  "success": [
+    {
+      "name": "internal_run_success",
+      "method": "GET",
+      "path": "/internal/run/Indus-Lower",
+      "status": 200,
+      "headers": {
+        "Authorization": "Bearer test-admin-token"
+      },
+      "must_include": [
+        "run_id",
+        "published_outputs",
+        "run_lineage"
+      ],
+      "openapi_path": "/internal/run/{aoi_name}"
+    },
+    {
+      "name": "public_corridor_events_success",
+      "method": "GET",
+      "path": "/public/corridors/Indus-Lower/events",
+      "status": 200,
+      "must_include": [],
+      "openapi_path": "/public/corridors/{aoi_name}/events"
+    }
+  ],
+  "failure": [
+    {
+      "name": "unauthorized_internal_run",
+      "method": "GET",
+      "path": "/internal/run/Indus-Lower",
+      "status": 401,
+      "expected": {
+        "detail": "Missing bearer token"
+      },
+      "openapi_path": "/internal/run/{aoi_name}"
+    },
+    {
+      "name": "not_found_event",
+      "method": "GET",
+      "path": "/public/events/evt-does-not-exist",
+      "status": 404,
+      "expected": {
+        "detail": "Event not found."
+      },
+      "openapi_path": "/public/events/{event_id}"
+    },
+    {
+      "name": "rate_limit_exceeded",
+      "method": "GET",
+      "path": "/internal/monitoring/metrics",
+      "status": 429,
+      "headers": {
+        "Authorization": "Bearer test-admin-token"
+      },
+      "precondition": "exhaust_rate_limit",
+      "expected_text": "Rate limit exceeded for internal API. Retry later."
+    }
+  ]
+}
