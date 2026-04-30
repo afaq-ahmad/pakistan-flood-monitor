@@ -27,3 +27,12 @@ Use `GET /analytics/dashboard/review` as the single review workspace payload. Ea
 
 Execute review actions via `POST /admin/review/{candidate_id}/actions` with header `X-Analyst-Id`.
 The actor is always server-attributed from the authenticated analyst identity header and logged to audit records.
+
+
+## Outbound notification workflow
+
+After an event reaches `published`, dispatch alert payloads only to recipients explicitly opted into each channel.
+
+- Every send writes channel audit entries (`attempted`, `succeeded`, `failed`, `blocked`, `retryable_failed`).
+- Channel adapter failures are considered operationally visible events and should trigger on-call follow-up.
+- Use environment-managed provider credentials only (`SMS_API_KEY`, `EMAIL_API_KEY`, `WHATSAPP_API_KEY`).
