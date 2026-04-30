@@ -36,9 +36,15 @@ from pakistan_flood_monitor.services.probabilistic_forecast import (
 )
 from pakistan_flood_monitor.services.triggers import EventTriggerService, TriggerInputs
 from pakistan_flood_monitor.pipeline.feature_generation import SceneFeatureExtractor
+from pakistan_flood_monitor.hazards.registry import HazardRegistry
+from pakistan_flood_monitor.hazards.base import HazardModule, StubHazardModule
 
 
-class FloodMonitoringPipeline:
+class FloodHazardModule(HazardModule):
+    @property
+    def hazard_type(self) -> str:
+        return "flood"
+
     def __init__(self) -> None:
         self.catalog = DataCatalog()
         self.detector = FloodDetector()
@@ -394,3 +400,25 @@ class FloodMonitoringPipeline:
                 output_paths=[],
             )
             raise
+
+
+class FloodMonitoringPipeline:
+    """Compatibility wrapper preserving the flood-first API while enabling multi-hazard plugins."""
+
+    def __init__(self) -> None:
+        self.registry = HazardRegistry()
+        self.register_module(FloodHazardModule())
+        self.register_module(StubHazardModule("landslide"))
+        self.register_module(StubHazardModule("heat"))
+
+    def register_module(self, module: HazardModule) -> None:
+        self.registry.register(module)
+
+    def registered_hazards(self) -> list[str]:
+        return self.registry.registered_hazards()
+
+    def run_hazard_daily(self, hazard_type: str, aoi_name: str) -> ProcessingReport:
+        return self.registry.get(hazard_type).run_daily(aoi_name)
+
+    def run_daily(self, aoi_name: str) -> ProcessingReport:
+        return self.run_hazard_daily("flood", aoi_name)
