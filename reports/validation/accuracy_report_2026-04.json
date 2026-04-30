@@ -1,0 +1,39 @@
+{
+  "benchmark_pack": {
+    "description": "Known historical corridor flood events with expected detections for QA validation.",
+    "name": "pakistan-historical-flood-events-v1",
+    "sources": [
+      "2022 Indus flood response mapping",
+      "Historical analyst-reviewed flood extents"
+    ],
+    "version": "1.0.0"
+  },
+  "corridors": {
+    "indus-lower": {
+      "false_negatives": 1,
+      "false_positives": 0,
+      "monthly_false_positive_trend": {
+        "2022-09": 0
+      },
+      "precision": 1.0,
+      "recall": 0.6667,
+      "true_positives": 2
+    },
+    "indus-upper": {
+      "false_negatives": 1,
+      "false_positives": 2,
+      "monthly_false_positive_trend": {
+        "2022-08": 2
+      },
+      "precision": 0.6667,
+      "recall": 0.8,
+      "true_positives": 4
+    }
+  },
+  "generated_at": "2026-04-01T00:00:00+00:00",
+  "overall": {
+    "corridor_count": 2,
+    "macro_precision": 0.8333,
+    "macro_recall": 0.7333
+  }
+}

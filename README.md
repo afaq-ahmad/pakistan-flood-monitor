@@ -15,6 +15,7 @@ Satellite-driven MVP for daily river-corridor flood monitoring in Pakistan, with
 - [Run pipelines and jobs](#run-pipelines-and-jobs)
 - [Testing](#testing)
 - [Operational guardrails](#operational-guardrails)
+- [Known-event validation suite](docs/validation_benchmark_suite.md)
 - [Documentation index](#documentation-index)
 - [Out of scope (MVP)](#out-of-scope-mvp)
 - [License](#license)
