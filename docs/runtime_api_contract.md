@@ -166,6 +166,25 @@ All public-facing alert endpoints include a `limitations` object with:
 
 The limitations statement endpoint (`GET /public/limitations`) provides:
 - confidence and uncertainty notes
+
+## Probabilistic forecast and uncertainty envelope (v1)
+
+- Each `detections[]` record now includes a `probabilistic_forecast` block (`schema: probabilistic-forecast/v1`).
+- `probability_of_flooding` is an adapter output that combines rule-based flood probability, alert confidence, and normalized hydromet intensity.
+- `uncertainty_envelope` provides a 90% heuristic interval (`lower`, `upper`) intended for risk communication, not deterministic operations.
+- `uncertainty_metrics` contains:
+  - `epistemic` (sample-size-driven uncertainty proxy),
+  - `aleatoric` (Bernoulli variance proxy),
+  - `expected_calibration_error`,
+  - `sharpness`,
+  - `calibration_sample_size`.
+- `lineage` includes model metadata and method identifier (`rules-v1 + hydromet-adapter-v1`).
+
+### Interpretation and limitations
+
+- Calibration values are derived from benchmark-style reference outcomes and should be refreshed as pilot validation data grows.
+- Uncertainty intervals are heuristic and should not be used as the sole evacuation trigger.
+- Forecast confidence should be interpreted jointly with SAR evidence quality, review status, and local authority SOPs.
 - intended-use boundaries
 - warning limitations (false positives, misses, latency)
 - non-replacement notice for official emergency instructions

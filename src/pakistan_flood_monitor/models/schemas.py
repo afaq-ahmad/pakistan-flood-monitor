@@ -90,6 +90,7 @@ class FloodDetectionResult(BaseModel):
     confidence_score: float
     review_status: ReviewStatus
     indicators: Dict[str, float]
+    probabilistic_forecast: Dict[str, Any] = Field(default_factory=dict)
 
 
 class FloodCandidateMap(BaseModel):
