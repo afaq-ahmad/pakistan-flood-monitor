@@ -87,6 +87,8 @@ def test_monitoring_and_event_endpoints() -> None:
 
     run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
     assert run_response.status_code == 200
+    second_run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert second_run_response.status_code == 200
     event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
 
     _lifecycle_transition(client, event_id, "review", "begin analyst review")
@@ -156,6 +158,58 @@ def test_mobile_advisory_low_bandwidth_payload() -> None:
     assert payload["map"]["core_layers"] == ["confirmed_flood_extent"]
     assert payload["a11y"]["min_text_size_px"] >= 16
     assert payload["limitations"]["href"] == "/public/limitations"
+
+
+def test_event_imagery_supports_before_after_and_timeline() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    follow_up_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert follow_up_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    _lifecycle_transition(client, event_id, "review")
+    _lifecycle_transition(client, event_id, "approved")
+    assert client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "ok"),
+        headers=_analyst_headers(),
+    ).status_code == 200
+
+    imagery_response = client.get(f"/public/events/{event_id}/imagery")
+    assert imagery_response.status_code == 200
+    payload = imagery_response.json()
+    assert payload["comparison"]["mode"] == "swipe"
+    assert payload["comparison"]["before_scene"]["scene_id"]
+    assert payload["comparison"]["after_scene"]["scene_id"]
+    assert payload["comparison"]["is_comparison_available"] is True
+    assert len(payload["timeline"]) >= 1
+    assert payload["timeline"][0]["lineage"]["processing_version"] == "sar-preprocess-v1"
+    assert payload["supported_formats"] == ["COG", "GeoTIFF", "PNG_TILE"]
+
+
+def test_event_imagery_missing_layers_returns_clear_fallback() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    _lifecycle_transition(client, event_id, "review")
+    _lifecycle_transition(client, event_id, "approved")
+    assert client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json=_gis_review_payload("published", "analyst-1", "ok"),
+        headers=_analyst_headers(),
+    ).status_code == 200
+    event_store[event_id]["lineage"]["source_scene_ids"] = ["S1A_ONLY_ONE_SCENE"]
+
+    imagery_response = client.get(f"/public/events/{event_id}/imagery")
+    assert imagery_response.status_code == 200
+    payload = imagery_response.json()
+    assert payload["comparison"]["after_scene"] is None
+    assert payload["comparison"]["missing_layers"] == ["after"]
+    assert payload["comparison"]["is_comparison_available"] is False
+    assert "incomplete" in payload["comparison"]["fallback_message"].lower()
 
 
 def test_public_language_toggle_renders_urdu_and_rtl() -> None:
