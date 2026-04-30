@@ -49,3 +49,8 @@ Each export writes `manifest.json` alongside the file with:
 
 - Current COG is an event footprint rasterized to a minimal synthetic mask for interoperability testing, not full SAR intensity imagery.
 - Export storage is local filesystem cache (`.cache/exports`) and intended for runtime/demo workflows.
+
+
+## Analyst guide
+
+- QGIS integration guide: `docs/qgis_export_integration_workflow.md`
