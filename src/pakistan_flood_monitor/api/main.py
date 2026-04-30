@@ -10,7 +10,7 @@ import time
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
@@ -276,6 +276,41 @@ def _corridor_run_history(aoi_name: str) -> list[dict[str, Any]]:
 def _latest_run(aoi_name: str) -> dict[str, Any] | None:
     history = _corridor_run_history(aoi_name)
     return history[-1] if history else None
+
+
+def _pdf_escape(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def _simple_pdf(lines: list[str]) -> bytes:
+    content = "BT /F1 11 Tf 40 800 Td " + " T* ".join(f"({_pdf_escape(line)}) Tj" for line in lines) + " ET"
+    stream = content.encode("latin-1", errors="replace")
+    objs = [
+        b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
+        b"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
+        b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n",
+        f"4 0 obj << /Length {len(stream)} >> stream\n".encode() + stream + b"\nendstream endobj\n",
+        b"5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
+    ]
+    pdf = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objs:
+        offsets.append(len(pdf))
+        pdf.extend(obj)
+    xref = len(pdf)
+    pdf.extend(f"xref\n0 {len(offsets)}\n".encode())
+    pdf.extend(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        pdf.extend(f"{off:010d} 00000 n \n".encode())
+    pdf.extend(f"trailer << /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode())
+    return bytes(pdf)
+
+
+def _latest_reviewed_or_approved_event() -> dict[str, Any] | None:
+    candidates = [evt for evt in event_store.values() if evt.get("status") in {"review", "approved", "published"}]
+    if not candidates:
+        return None
+    return sorted(candidates, key=lambda e: e.get("timestamps", {}).get("detected_at", ""))[-1]
 
 
 def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
@@ -1173,6 +1208,54 @@ def admin_get_historical_event(event_id: str) -> dict[str, Any]:
     if not record:
         raise HTTPException(status_code=404, detail="Historical event not found.")
     return HistoricalEventRecord.model_validate(record).model_dump()
+
+
+@internal_router.post("/admin/sitrep/export", dependencies=[Depends(_require_role("admin", "analyst", "reviewer"))])
+def admin_export_sitrep() -> FileResponse:
+    event = _latest_reviewed_or_approved_event()
+    if not event:
+        raise HTTPException(status_code=404, detail="No reviewed/approved/published event available for SitRep export.")
+    exposure = event.get("exposure", {})
+    asset_summary = exposure.get("asset_summary", {})
+    district_rows = event.get("admin_overlays") or [{"district": d, "tehsil": "ALL_TEHSILS"} for d in event.get("district_overlays", [])]
+    confidence = event.get("confidence_breakdown", {})
+    lines = [
+        "Pakistan Flood Monitor - Situation Report (SitRep)",
+        f"Event ID: {event['event_id']} | AOI: {event['aoi']} | Status: {event['status']}",
+        f"Detected: {event['timestamps']['detected_at']} | Generated: {datetime.now(UTC).isoformat()}",
+        "Section: Event Summary",
+        event.get("latest_event_summary", {}).get("summary", "No summary available."),
+        "Section: District/Tehsil Priorities",
+    ]
+    for idx, row in enumerate(district_rows, start=1):
+        lines.append(f"{idx}. {row.get('district', 'Unknown')} / {row.get('tehsil', 'ALL_TEHSILS')}")
+    lines.extend(
+        [
+            "Section: Recommended Actions",
+            "1) Activate district control room and verify high-risk settlements.",
+            "2) Pre-position rescue boats, shelter kits, and medical teams.",
+            "3) Notify tehsil administrators and union council focal points.",
+            "Section: Exposure/Risk Summary",
+            f"Population exposed: {asset_summary.get('estimated_people_exposed', 'n/a')}",
+            f"Cropland exposed ha: {asset_summary.get('estimated_cropland_exposed_ha', 'n/a')}",
+            f"Critical facilities exposed: {asset_summary.get('critical_facilities_exposed', 'n/a')}",
+            f"Confidence final: {confidence.get('final_confidence', 'n/a')}",
+            "Section: Confidence and Limitations",
+            LIMITATIONS_STATEMENT["confidence_and_uncertainty"],
+            LIMITATIONS_STATEMENT["warning_limitations"],
+            LIMITATIONS_STATEMENT["non_replacement_notice"],
+            "Section: Contacts",
+            "PDMA Provincial Control Room: +92-21-99204452",
+            "District Emergency Officer: [to be filled by operator]",
+            "Rescue 1122: 1122",
+        ]
+    )
+    output_dir = os.path.join("reports", "sitrep")
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"sitrep_{event['event_id']}.pdf")
+    with open(out_path, "wb") as f:
+        f.write(_simple_pdf(lines))
+    return FileResponse(out_path, filename=os.path.basename(out_path), media_type="application/pdf")
 
 
 @internal_router.post("/admin/register-threshold")
