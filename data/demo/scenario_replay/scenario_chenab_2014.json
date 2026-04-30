@@ -1,0 +1,7 @@
+{
+  "scenario_name": "chenab-2014-moderate-flood",
+  "synthetic_sample": true,
+  "event": {"aoi": "Chenab", "event_class": "flood", "districts": ["Multan", "Muzaffargarh"], "tehsils": ["Saddar", "Alipur"], "expected_alert_level": "moderate"},
+  "expected_outputs": {"status": "approved", "risk_summary_count_min": 2, "sitrep_sections": ["Event Summary", "District/Tehsil Priorities", "Recommended Actions", "Exposure/Risk Summary", "Confidence and Limitations", "Contacts"]},
+  "checklist": ["Load scenario fixture", "Replay event lifecycle", "Generate SitRep", "Compare expected sections"]
+}

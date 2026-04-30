@@ -1,0 +1,7 @@
+{
+  "scenario_name": "indus-2022-high-flow",
+  "synthetic_sample": true,
+  "event": {"aoi": "Indus-Lower", "event_class": "flood", "districts": ["Dadu", "Jamshoro"], "tehsils": ["Mehar", "Sehwan"], "expected_alert_level": "high"},
+  "expected_outputs": {"status": "approved", "risk_summary_count_min": 2, "sitrep_sections": ["Event Summary", "District/Tehsil Priorities", "Recommended Actions", "Exposure/Risk Summary", "Confidence and Limitations", "Contacts"]},
+  "checklist": ["Run replay command", "Verify event reviewed->approved", "Export SitRep", "Confirm required sections in PDF bytes"]
+}
