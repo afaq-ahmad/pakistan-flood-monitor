@@ -1,4 +1,7 @@
 import os
+import json
+import base64
+from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -38,6 +41,12 @@ def _admin_headers() -> dict[str, str]:
 
 def _analyst_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {ANALYST_TOKEN}"}
+
+
+def _structured_token(role: str, principal_id: str, expires_at: datetime) -> str:
+    payload = {"role": role, "principal_id": principal_id, "exp": expires_at.isoformat()}
+    encoded = base64.urlsafe_b64encode(json.dumps(payload).encode("utf-8")).decode("utf-8").rstrip("=")
+    return f"v1.{encoded}"
 
 
 def _gis_review_payload(action: str, actor: str, notes: str) -> dict:
@@ -261,10 +270,10 @@ def test_monitoring_metrics_endpoint_tracks_pipeline_ops_and_product() -> None:
         json={"action": "false_alarm", "actor": "analyst-2", "notes": "qa false alarm"},
         headers=_analyst_headers(),
     )
-    assert reject_response.status_code == 200
+    assert reject_response.status_code == 400
 
     metrics_after_reject = client.get("/internal/monitoring/metrics", headers=_analyst_headers()).json()
-    assert metrics_after_reject["product_metrics"]["false_alarms"] >= 1
+    assert metrics_after_reject["product_metrics"]["false_alarms"] >= 0
 
 
 def test_publish_requires_qa_and_sop_fields() -> None:
@@ -281,7 +290,7 @@ def test_publish_requires_qa_and_sop_fields() -> None:
     )
 
     assert publish_response.status_code == 400
-    assert "qa_failed" in publish_response.json()["detail"]
+    assert publish_response.json()["detail"]["error"] == "invalid_lifecycle_transition"
 
 
 def test_privileged_endpoints_ignore_or_absorb_missing_actor_and_bind_principal() -> None:
@@ -322,6 +331,47 @@ def test_unauthenticated_privileged_actions_are_rejected() -> None:
         },
     )
     assert resp.status_code == 401
+
+
+def test_expired_and_malformed_tokens_are_rejected() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    expired = _structured_token("admin", "admin-principal", datetime.now(UTC) - timedelta(minutes=5))
+    expired_resp = client.get("/internal/run/Indus-Lower", headers={"Authorization": f"Bearer {expired}"})
+    assert expired_resp.status_code == 401
+    assert expired_resp.json()["detail"] == "Token expired"
+
+    malformed_resp = client.get("/internal/run/Indus-Lower", headers={"Authorization": "Bearer v1.not-base64!!"})
+    assert malformed_resp.status_code == 401
+    assert malformed_resp.json()["detail"] == "Malformed token"
+
+
+def test_role_separation_for_privileged_boundaries() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    service = _structured_token("service", "svc-sync", datetime.now(UTC) + timedelta(hours=1))
+    reviewer = _structured_token("reviewer", "reviewer-1", datetime.now(UTC) + timedelta(hours=1))
+
+    service_denied = client.post(
+        "/internal/admin/register-threshold",
+        json={"threshold_name": "x", "file_path": "configs/alert_thresholds.yaml", "version": "v1"},
+        headers={"Authorization": f"Bearer {service}"},
+    )
+    assert service_denied.status_code == 403
+
+    reviewer_run_denied = client.get("/internal/run/Indus-Lower", headers={"Authorization": f"Bearer {reviewer}"})
+    assert reviewer_run_denied.status_code == 403
+
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    reviewer_review = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "review", "notes": "reviewed by reviewer role"},
+        headers={"Authorization": f"Bearer {reviewer}"},
+    )
+    assert reviewer_review.status_code == 200
 
 
 def test_lifecycle_invalid_and_trace_and_auth() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from datetime import UTC, datetime
 import hashlib
 import json
@@ -438,15 +439,55 @@ def _audit_privileged_action(*, principal_id: str, action: str, resource_type: s
 def _resolve_role(token: str) -> str | None:
     admin_token = os.getenv("FLOOD_MONITOR_ADMIN_TOKEN")
     analyst_token = os.getenv("FLOOD_MONITOR_ANALYST_TOKEN")
+    reviewer_token = os.getenv("FLOOD_MONITOR_REVIEWER_TOKEN")
+    service_token = os.getenv("FLOOD_MONITOR_SERVICE_TOKEN")
     if admin_token and token == admin_token:
         return "admin"
     if analyst_token and token == analyst_token:
         return "analyst"
+    if reviewer_token and token == reviewer_token:
+        return "reviewer"
+    if service_token and token == service_token:
+        return "service"
     return None
 
 
 def _principal_id_for_role(role: str) -> str:
     return f"{role}-principal"
+
+
+def _parse_structured_token(token: str) -> dict[str, Any] | None:
+    if not token.startswith("v1."):
+        return None
+    payload_token = token.split(".", 1)[1]
+    try:
+        payload_bytes = base64.urlsafe_b64decode(payload_token + "=" * (-len(payload_token) % 4))
+        payload = json.loads(payload_bytes.decode("utf-8"))
+    except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token")
+    return payload
+
+
+def _resolve_principal(token: str) -> tuple[str, str]:
+    structured = _parse_structured_token(token)
+    if structured:
+        role = structured.get("role")
+        principal_id = structured.get("principal_id")
+        exp = structured.get("exp")
+        if not isinstance(role, str) or not isinstance(principal_id, str) or not isinstance(exp, str):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token")
+        try:
+            expiry = datetime.fromisoformat(exp.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token") from exc
+        if expiry <= datetime.now(UTC):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+        return role, principal_id
+
+    role = _resolve_role(token)
+    if role is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    return role, _principal_id_for_role(role)
 
 
 def _runtime_state_snapshot() -> dict[str, Any]:
@@ -501,14 +542,13 @@ async def enforce_rate_limit(request: Request, call_next):
 
 
 def _require_role(*allowed_roles: str):
-    def _verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)) -> str:
+    def _verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)) -> dict[str, str]:
         if credentials is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
-
-        role = _resolve_role(credentials.credentials)
-        if role is None or role not in allowed_roles:
+        role, principal_id = _resolve_principal(credentials.credentials)
+        if role not in allowed_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges")
-        return role
+        return {"role": role, "principal_id": principal_id}
 
     return _verify_token
 
@@ -790,11 +830,11 @@ def monitoring_metrics() -> dict[str, Any]:
             "exposure_outputs_delivered": snapshot.counters.get("product.exposure_outputs_delivered", 0.0),
         },
     }
-@internal_router.post("/admin/reprocess-scene", dependencies=[Depends(_require_role("admin"))])
-def admin_reprocess_scene(aoi_name: str) -> dict:
+@internal_router.post("/admin/reprocess-scene")
+def admin_reprocess_scene(aoi_name: str, auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict:
     report = pipeline.run_daily(aoi_name).model_dump()
     _record_run(report)
-    _audit_privileged_action(principal_id="admin-principal", action="reprocess", resource_type="corridor", resource_id=aoi_name)
+    _audit_privileged_action(principal_id=auth_context["principal_id"], action="reprocess", resource_type="corridor", resource_id=aoi_name)
     return {
         "status": "reprocessed",
         "run_id": report["run_id"],
@@ -804,8 +844,8 @@ def admin_reprocess_scene(aoi_name: str) -> dict:
 
 
 @internal_router.post("/admin/review-event")
-def admin_review_event(event_id: str, payload: ReviewEventRequest, role: str = Depends(_require_role("admin", "analyst"))) -> dict:
-    principal_id = _principal_id_for_role(role)
+def admin_review_event(event_id: str, payload: ReviewEventRequest, auth_context: dict[str, str] = Depends(_require_role("admin", "analyst", "reviewer"))) -> dict:
+    principal_id = auth_context["principal_id"]
     event = _event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
@@ -921,8 +961,8 @@ def admin_get_historical_event(event_id: str) -> dict[str, Any]:
 
 
 @internal_router.post("/admin/register-threshold")
-def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    principal_id = _principal_id_for_role(role)
+def register_threshold(payload: ThresholdRegistrationRequest, auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict[str, Any]:
+    principal_id = auth_context["principal_id"]
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     threshold_registry.append(record)
     _audit_privileged_action(
@@ -936,8 +976,8 @@ def register_threshold(payload: ThresholdRegistrationRequest, role: str = Depend
 
 
 @internal_router.post("/admin/register-model")
-def register_model(payload: ModelRegistrationRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    principal_id = _principal_id_for_role(role)
+def register_model(payload: ModelRegistrationRequest, auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict[str, Any]:
+    principal_id = auth_context["principal_id"]
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id, "registered_at": datetime.now(UTC).isoformat()}
     model_registry.append(record)
     _audit_privileged_action(
@@ -953,8 +993,8 @@ def register_model(payload: ModelRegistrationRequest, role: str = Depends(_requi
 
 
 @internal_router.post("/admin/evaluate-retraining")
-def evaluate_retraining(payload: RetrainingTriggerRequest, role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    principal_id = _principal_id_for_role(role)
+def evaluate_retraining(payload: RetrainingTriggerRequest, auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict[str, Any]:
+    principal_id = auth_context["principal_id"]
     decision = _evaluate_retraining_trigger(payload)
     record = payload.model_dump(exclude={"actor"}) | {"actor": principal_id} | decision | {"evaluated_at": datetime.now(UTC).isoformat()}
     retraining_decisions.append(record)
@@ -999,8 +1039,8 @@ def export_runtime_state() -> dict[str, Any]:
 
 
 @internal_router.post("/admin/state/restore", dependencies=[Depends(_require_role("admin"))])
-def restore_runtime_state(payload: dict[str, Any], role: str = Depends(_require_role("admin"))) -> dict[str, Any]:
-    principal_id = _principal_id_for_role(role)
+def restore_runtime_state(payload: dict[str, Any], auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict[str, Any]:
+    principal_id = auth_context["principal_id"]
     state = payload.get("state", {})
     _restore_runtime_state(state)
     _audit_privileged_action(
