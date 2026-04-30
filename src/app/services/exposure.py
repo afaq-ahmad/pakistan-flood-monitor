@@ -31,6 +31,7 @@ class AssetLayer:
     source_version: str | None = None
     source_timestamp: str | None = None
     quality_score: float = 1.0
+    max_distance_m: float | None = None
 
 
 @dataclass(slots=True)
@@ -108,6 +109,8 @@ class ExposureComputationService:
                     "flooded_area_sqkm": row["flooded_area_sqkm"],
                     "percent_of_event_area": row["percent_of_event_area"],
                     "impact_rank": row["impact_rank"],
+                    "route_constraints": row["route_constraints"],
+                    "shelter_proximity": row["shelter_proximity"],
                 }
                 for row in district_summaries
             ],
@@ -191,6 +194,8 @@ def _district_summaries(
                 "percent_of_event_area": round(percent_of_event_area, 4),
                 "corridor_event_area_sqkm": round(corridor_overlap_area, 6),
                 "impact_rank": 0,
+                "route_constraints": {},
+                "shelter_proximity": {},
                 "uncertainty_flag": False,
                 "geometry_source": None,
             }
@@ -212,18 +217,52 @@ def _asset_summaries(
     output = {district_id: {} for district_id in district_ids}
 
     for district_id in district_ids:
+        district_event_geom = event_geom.intersection(district_geoms[district_id])
+        district_row = next((row for row in district_summaries if row["district_id"] == district_id), None)
         for layer in layers:
-            metric = _overlay_metric(event_geom=event_geom.intersection(district_geoms[district_id]), layer=layer)
+            metric = _overlay_metric(event_geom=district_event_geom, layer=layer)
             output[district_id][layer.name] = metric
+
+            if layer.name == "roads" and district_row is not None:
+                impacted_km = metric.get("exposed_length_km", 0.0)
+                district_row["route_constraints"] = {
+                    "impacted_road_km": round(float(impacted_km), 6),
+                    "impacted_road_ratio": round(
+                        0.0
+                        if metric.get("total_length_km", 0.0) <= 0
+                        else float(impacted_km) / float(metric.get("total_length_km", 0.0)),
+                        4,
+                    ),
+                    "routing_blocked": metric.get("blocked", False),
+                }
+
+            if layer.name == "shelters" and district_row is not None:
+                district_row["shelter_proximity"] = {
+                    "shelters_in_flood_zone": int(metric.get("exposed_count", 0.0)),
+                    "nearest_safe_shelter_m": metric.get("nearest_safe_shelter_m"),
+                    "safe_shelters_within_threshold": int(metric.get("safe_shelters_within_threshold", 0.0)),
+                    "distance_threshold_m": metric.get("distance_threshold_m"),
+                }
     return output
 
 
 def _overlay_metric(*, event_geom, layer: AssetLayer) -> dict[str, float]:
     if layer.kind == "line":
+        exposed_m = 0.0
         total_m = 0.0
+        blocked = False
         for feature in layer.features:
-            total_m += event_geom.intersection(shape(feature.geometry)).length
-        return {"exposed_length_km": round(total_m / 1000.0, 6)}
+            geom = shape(feature.geometry)
+            total_m += geom.length
+            seg_exposed = event_geom.intersection(geom).length
+            exposed_m += seg_exposed
+            if feature.properties.get("evacuation_priority") and seg_exposed > 0:
+                blocked = True
+        return {
+            "exposed_length_km": round(exposed_m / 1000.0, 6),
+            "total_length_km": round(total_m / 1000.0, 6),
+            "blocked": blocked,
+        }
 
     if layer.kind == "polygon":
         total_sqkm = 0.0
@@ -233,10 +272,33 @@ def _overlay_metric(*, event_geom, layer: AssetLayer) -> dict[str, float]:
 
     if layer.kind == "point":
         count = 0
+        safe_points = []
         for feature in layer.features:
-            if event_geom.intersects(shape(feature.geometry)):
+            geom = shape(feature.geometry)
+            if event_geom.intersects(geom):
                 count += 1
-        return {"exposed_count": float(count)}
+            else:
+                safe_points.append(geom)
+
+        metric = {"exposed_count": float(count)}
+        if layer.name == "shelters":
+            threshold_m = layer.max_distance_m or 5000.0
+            nearest = None
+            safe_within = 0
+            if not event_geom.is_empty:
+                boundary = event_geom.boundary if not event_geom.boundary.is_empty else event_geom
+                for safe_pt in safe_points:
+                    dist = boundary.distance(safe_pt)
+                    if nearest is None or dist < nearest:
+                        nearest = dist
+                    if dist <= threshold_m:
+                        safe_within += 1
+            metric.update({
+                "nearest_safe_shelter_m": None if nearest is None else round(float(nearest), 2),
+                "safe_shelters_within_threshold": float(safe_within),
+                "distance_threshold_m": float(threshold_m),
+            })
+        return metric
 
     if layer.kind == "population":
         total_population = 0.0
@@ -271,6 +333,7 @@ def _build_lineage(*, request: ExposureRequest, geometry_source: str) -> dict[st
 
     return {
         "model": "spatial_overlay_exposure",
+        "methodology": "event∩district overlays + roads/shelters proximity analytics",
         "processing_version": request.processing_version,
         "computed_at": datetime.now(tz=UTC).isoformat(),
         "geometry_source": geometry_source,
