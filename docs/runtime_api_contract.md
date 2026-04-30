@@ -183,3 +183,16 @@ Public endpoints required to include the `limitations` reference:
 - `/public/historical-events`
 - `/public/historical-events/{event_id}`
 - `/public/alerts/latest`
+- `/public/advisories/{aoi_name}/mobile`
+
+## Mobile-first advisory contract (low bandwidth)
+`GET /public/advisories/{aoi_name}/mobile` returns a compact advisory payload for low-end phones.
+
+Query parameters:
+- `low_bandwidth` (boolean, default `false`): when `true`, trims map content to the confirmed flood extent and marks static-tile mode.
+
+Response UX/performance guarantees:
+- readable typography baseline (`a11y.min_text_size_px >= 16`)
+- high-contrast mode on by default
+- keyboard navigation requirement declared
+- payload budget metadata (`payload_target_kb`, `payload_estimate_kb`) for release verification

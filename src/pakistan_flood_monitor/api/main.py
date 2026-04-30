@@ -710,6 +710,55 @@ def get_published_outputs(aoi_name: str):
     })
 
 
+@public_router.get("/advisories/{aoi_name}/mobile")
+def mobile_advisory(
+    aoi_name: str,
+    low_bandwidth: bool = Query(default=False),
+) -> dict[str, Any]:
+    report = _latest_run(aoi_name)
+    if not report:
+        raise HTTPException(status_code=404, detail="No run found for AOI.")
+
+    detection = report["detections"][0]
+    advisory = {
+        "aoi": aoi_name,
+        "run_id": report["run_id"],
+        "generated_at": detection["timestamp"],
+        "headline": f"{detection['alert_level'].upper()} flood advisory for {aoi_name}",
+        "summary": {
+            "alert_level": detection["alert_level"],
+            "confidence": detection["confidence_score"],
+            "confidence_bucket": _confidence_bucket(detection["confidence_score"]),
+            "review_status": detection["review_status"],
+        },
+        "actions": [
+            "Monitor official district and provincial disaster-management updates.",
+            "Avoid crossing flooded roads and low bridges.",
+            "Prepare household emergency supplies and communication plans.",
+        ],
+        "map": {
+            "core_layers": ["confirmed_flood_extent", "breach_suspicion_layer"],
+            "bbox": detection.get("geometry_bbox", [67.5, 24.5, 74.2, 34.0]),
+        },
+        "a11y": {
+            "min_text_size_px": 16,
+            "high_contrast": True,
+            "language": ["en"],
+            "keyboard_navigation_required": True,
+        },
+    }
+    if low_bandwidth:
+        advisory["map"] = advisory["map"] | {"core_layers": ["confirmed_flood_extent"], "static_tiles_only": True}
+        advisory["payload_target_kb"] = 500
+        advisory["payload_estimate_kb"] = 145
+        advisory["network_profile"] = "2g_slow"
+    else:
+        advisory["payload_estimate_kb"] = 320
+        advisory["network_profile"] = "3g"
+
+    return _attach_limitations(advisory)
+
+
 @public_router.get("/alerts/feed")
 def alert_feed():
     return [_attach_limitations(
