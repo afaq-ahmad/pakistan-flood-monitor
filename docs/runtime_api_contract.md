@@ -21,12 +21,11 @@ Internal APIs require bearer tokens:
 5. Rotate at least every 30 days or immediately after incident response.
 
 ### Actor attribution control
-Actor IDs in privileged payloads are constrained by role prefix:
+Privileged actor identity is **server-derived** from the authenticated token principal.
 
-- admin tokens -> `actor` must start with `admin-`
-- analyst tokens -> `actor` must start with `analyst-`
-
-This prevents actor spoofing in audit logs.
+- Client-supplied `actor` fields are accepted for backward compatibility but ignored.
+- Audit records persist `principal_id` from authenticated claims/context only.
+- `actor` in audit payloads mirrors `principal_id` for compatibility with legacy consumers.
 
 ## Abuse controls
 Internal API has configurable rate limiting middleware:

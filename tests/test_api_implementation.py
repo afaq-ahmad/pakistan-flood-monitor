@@ -284,3 +284,43 @@ def test_publish_requires_qa_and_sop_fields() -> None:
 
     assert publish_response.status_code == 400
     assert "qa_failed" in publish_response.json()["detail"]
+
+
+def test_privileged_endpoints_ignore_or_absorb_missing_actor_and_bind_principal() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get("/internal/run/Chenab-Middle", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    review_response = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "accept", "notes": "no actor in payload"},
+        headers=_analyst_headers(),
+    )
+    assert review_response.status_code == 200
+
+    audit_response = client.get("/internal/admin/review-audit", headers=_analyst_headers())
+    assert audit_response.status_code == 200
+    assert audit_response.json()[-1]["principal_id"] == "analyst-principal"
+
+    privileged_response = client.get("/internal/admin/privileged-audit", headers=_admin_headers())
+    assert privileged_response.status_code == 200
+    assert privileged_response.json()[-1]["principal_id"] == "analyst-principal"
+
+
+def test_unauthenticated_privileged_actions_are_rejected() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    resp = client.post(
+        "/internal/admin/register-model",
+        json={
+            "model_id": "m1",
+            "model_type": "xgb",
+            "training_data_snapshot_version": "v1",
+            "training_config_path": "configs/training_config.yaml",
+            "evaluation_report_path": "reports/evaluation/rules_v1.md",
+        },
+    )
+    assert resp.status_code == 401

@@ -221,10 +221,7 @@ export FLOOD_MONITOR_ANALYST_TOKEN="<analyst-token>"
 - Admin token: admin operations
 - Analyst token: review/analyst operations
 
-Actor naming is validated in request payloads:
-
-- Admin token requires actor values prefixed with `admin-`
-- Analyst token requires actor values prefixed with `analyst-`
+Actor identity for privileged operations is derived from the authenticated token. Client `actor` values are ignored if present.
 
 ### 6.2 Local request example
 
@@ -311,8 +308,8 @@ Before production cutover:
   - Create the configured storage folders.
 - **401 on internal endpoints**
   - Check bearer token presence and value.
-- **403/validation errors for actor field**
-  - Ensure actor prefix matches token role (`admin-` or `analyst-`).
+- **Unexpected actor value in audit logs**
+  - Verify the bearer token maps to the expected principal; payload `actor` is ignored by design.
 - **Unexpected endpoint mismatch**
   - Confirm you launched the intended app (`app.api.main:app` vs `pakistan_flood_monitor.api.main:app`).
 
