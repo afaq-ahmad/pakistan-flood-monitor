@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from app.pipelines import publish_events_pipeline
 from app.schemas.review import ReviewActionRequest, ReviewCandidateInput
@@ -103,12 +103,12 @@ def list_review_queue(
 
 
 @router.post("/review/{candidate_id}/actions")
-def review_action(candidate_id: str, payload: ReviewActionRequest) -> dict:
+def review_action(candidate_id: str, payload: ReviewActionRequest, x_analyst_id: str = Header(..., alias="X-Analyst-Id")) -> dict:
     try:
         item = review_service.apply_action(
             candidate_id=candidate_id,
             action=payload.action,
-            actor=payload.actor,
+            actor=x_analyst_id,
             notes=payload.notes,
             geometry=payload.geometry,
             candidate_class=payload.candidate_class,

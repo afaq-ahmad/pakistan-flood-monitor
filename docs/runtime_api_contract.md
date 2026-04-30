@@ -45,6 +45,8 @@ Privileged actor identity is **server-derived** from the authenticated token pri
 - Audit records persist `principal_id` from authenticated claims/context only.
 - `actor` in audit payloads mirrors `principal_id` for compatibility with legacy consumers.
 
+For prototype review workflows under `/admin/review/{candidate_id}/actions`, `X-Analyst-Id` is now required and used as actor-of-record; client body `actor` is ignored.
+
 ## Abuse controls
 Internal API has configurable rate limiting middleware:
 
@@ -132,6 +134,19 @@ Each transition appends an `approval_trace` entry on the event payload:
 - `new_state`
 - `reason`
 - `comment`
+
+Prototype review lifecycle enforcement (dashboard/admin APIs) now allows only:
+- `queued -> accepted|rejected|needs_revision`
+- `needs_revision -> accepted|rejected`
+- `accepted -> published|needs_revision`
+- terminal states: `published`, `rejected`
+
+`GET /analytics/dashboard/review` includes unified analyst workflow fields per queue item:
+- `qa_flags`
+- `source_scene_references`
+- `confidence_breakdown`
+- `exposure_summary`
+- `allowed_actions`
 
 Example publish request (must already be in `approved`):
 ```json
