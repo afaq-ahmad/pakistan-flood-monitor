@@ -6,7 +6,7 @@ Satellite-driven MVP for daily river-corridor flood monitoring in Pakistan, with
 - [Project purpose](#project-purpose)
 - [MVP scope](#mvp-scope)
 - [Architecture at a glance](#architecture-at-a-glance)
-- [Runtime stacks (important)](#runtime-stacks-important)
+- [Runtime stack (canonical)](#runtime-stack-canonical)
 - [Repository structure](#repository-structure)
 - [Quick start](#quick-start)
 - [Configuration and environment variables](#configuration-and-environment-variables)
@@ -85,19 +85,16 @@ flowchart TD
     U --> I[Emit alert feed entries]
 ```
 
-## Runtime stacks (important)
-This repo intentionally contains **two API stacks**:
+## Runtime stack (canonical)
+Official runtime API (production target):
 
-- **Canonical runtime API (production target):**
-  - App: `pakistan_flood_monitor.api.main:app`
-  - Paths: `/internal/*` and `/public/*`
-- **Prototype/dashboard API (non-canonical):**
-  - App: `app.api.main:app`
-  - Used for prototyping/dashboard feature work.
+- App: `pakistan_flood_monitor.api.main:app`
+- Paths: `/internal/*` and `/public/*`
 
-For production integrations, use the canonical runtime API contract in `docs/runtime_api_contract.md`.
+Prototype API (`app.api.main:app`) is deprecated for runtime use. For migration instructions, see:
 
-> **Deprecation timeline:** As of **April 30, 2026**, `pakistan_flood_monitor.api.main:app` is the canonical runtime path. The prototype `app.api.main:app` path is deprecated for production integrations and will be removed after **December 31, 2026**. Integrators should migrate to `/internal/*` and `/public/*` endpoints documented in `docs/runtime_api_contract.md`.
+- `docs/runtime_api_contract.md`
+- `docs/migration/prototype_to_canonical_runtime.md`
 
 ## Repository structure
 ```text
@@ -143,9 +140,9 @@ mkdir -p storage/raw storage/prepared storage/derived storage/published
 ### 3) Prepare local env file
 By default, `APP_ENV=local` and settings are loaded from `.env.local`.
 
-### 4) Run prototype API quickly
+### 4) Run canonical runtime API
 ```bash
-uvicorn app.api.main:app --reload
+uvicorn pakistan_flood_monitor.api.main:app --reload
 ```
 
 ### 5) Run a sample daily pipeline
@@ -202,12 +199,7 @@ Detailed setup instructions (Ubuntu/macOS/Docker PostGIS options) are documented
 - `docs/local_setup_and_deployment.md`
 
 ## Run the APIs
-### Prototype/dashboard stack
-```bash
-uvicorn app.api.main:app --reload
-```
-
-### Canonical runtime stack
+### Canonical runtime stack (official)
 ```bash
 uvicorn pakistan_flood_monitor.api.main:app --reload
 ```

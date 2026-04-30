@@ -1,8 +1,11 @@
 from datetime import UTC, datetime
+import warnings
 
 from fastapi.testclient import TestClient
 
-from app.api.main import app
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", DeprecationWarning)
+    from app.api.main import app
 
 
 def test_dashboard_view_and_map_layers() -> None:
