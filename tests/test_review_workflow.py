@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from app.api.routers.admin import generate_review_queue, review_action, review_audit
 from app.schemas.review import ReviewActionRequest, ReviewCandidateInput
 from app.services.review import ReviewCandidate, review_service
@@ -109,14 +111,23 @@ def test_admin_review_functions() -> None:
     )
     assert queue_response[0]["candidate_id"] == "api-1"
 
-    action_response = review_action(
-        "api-1",
-        ReviewActionRequest(action="accept", actor="analyst-a", notes="ok"),
-    )
+    action_response = review_action("api-1", ReviewActionRequest(action="accept", actor="ignored", notes="ok"), "analyst-a")
     assert action_response["status"] == "accepted"
 
     audit = review_audit()
     assert audit[-1]["new_status"] == "accepted"
+    assert audit[-1]["actor"] == "analyst-a"
+
+
+def test_review_transition_rules_block_invalid_publish() -> None:
+    service = review_service
+    service._items.clear()  # noqa: SLF001
+    service._audit_log.clear()  # noqa: SLF001
+    now = datetime(2026, 1, 5, tzinfo=UTC)
+    service.generate_review_queue([_candidate("c-2", 0.8, now - timedelta(hours=2), 0.9, 5)], now=now)
+
+    with pytest.raises(ValueError, match="Invalid lifecycle transition"):
+        service.apply_action(candidate_id="c-2", action="publish_alert", actor="analyst-1")
 
 
 def test_review_queue_filters_operational_dimensions() -> None:

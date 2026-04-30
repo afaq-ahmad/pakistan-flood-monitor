@@ -6,6 +6,14 @@ from typing import Literal
 
 ReviewDecision = Literal["accepted", "rejected", "needs_revision", "published"]
 
+ALLOWED_TRANSITIONS: dict[str, set[str]] = {
+    "queued": {"accepted", "rejected", "needs_revision"},
+    "needs_revision": {"accepted", "rejected"},
+    "accepted": {"published", "needs_revision"},
+    "published": set(),
+    "rejected": set(),
+}
+
 
 @dataclass(slots=True)
 class ReviewCandidate:
@@ -202,20 +210,29 @@ class AnalystReviewService:
         if geometry is not None and item.geometry is not None:
             item.geometry.analyst_edited_geometry = geometry
 
+        status_change: str | None = None
         if action == "accept":
-            item.status = "accepted"
+            status_change = "accepted"
         elif action == "reject":
-            item.status = "rejected"
+            status_change = "rejected"
         elif action == "request_changes":
-            item.status = "needs_revision"
+            status_change = "needs_revision"
         elif action == "publish_alert":
-            item.status = "published"
+            status_change = "published"
             if item.geometry is not None:
                 item.geometry.final_published_geometry = item.geometry.analyst_edited_geometry or item.geometry.original_machine_geometry
         elif action in {"edit_geometry", "change_class", "add_notes", "assign_confidence"}:
             pass
         else:
             raise ValueError(f"Unsupported review action: {action}")
+
+        if status_change is not None:
+            allowed_next = ALLOWED_TRANSITIONS.get(old_status, set())
+            if status_change not in allowed_next:
+                raise ValueError(
+                    f"Invalid lifecycle transition from '{old_status}' to '{status_change}'. Allowed: {sorted(allowed_next)}"
+                )
+            item.status = status_change
 
         new_geometry = None
         if item.geometry is not None:

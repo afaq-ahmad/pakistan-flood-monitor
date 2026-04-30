@@ -8,7 +8,7 @@ from pathlib import Path
 
 from shapely.geometry import LineString, MultiPolygon, Polygon, mapping
 
-from app.services.review import review_service
+from app.services.review import ALLOWED_TRANSITIONS, review_service
 
 
 @dataclass
@@ -129,6 +129,18 @@ class DashboardService:
             confidence_band=confidence_band,
         )
 
+        def _qa_flags(item) -> list[str]:
+            flags: list[str] = []
+            if item.candidate.confidence < 0.65:
+                flags.append("low_confidence")
+            if item.candidate.breach_suspicion >= 0.7:
+                flags.append("high_breach_suspicion")
+            if item.candidate.optical_support_url is None:
+                flags.append("missing_optical_support")
+            if item.status == "needs_revision":
+                flags.append("analyst_requested_revision")
+            return flags
+
         queue = [
             {
                 "candidate_id": item.candidate.candidate_id,
@@ -141,6 +153,11 @@ class DashboardService:
                 "confidence_band": self._confidence_band(item.candidate.confidence),
                 "breach_suspicion": round(item.candidate.breach_suspicion, 3),
                 "analyst_confidence": item.analyst_confidence,
+                "qa_flags": _qa_flags(item),
+                "source_scene_references": item.candidate.source_scene_references,
+                "confidence_breakdown": item.candidate.confidence_breakdown,
+                "exposure_summary": item.candidate.exposure_summary,
+                "allowed_actions": sorted(ALLOWED_TRANSITIONS.get(item.status, set())),
                 "context_links": {
                     "before_sar": item.candidate.before_sar_url,
                     "after_sar": item.candidate.after_sar_url,

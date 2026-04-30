@@ -74,6 +74,11 @@ class ReviewQueueItem(BaseModel):
     confidence_band: str
     breach_suspicion: float
     analyst_confidence: float | None = None
+    qa_flags: list[str]
+    source_scene_references: list[str]
+    confidence_breakdown: dict[str, float]
+    exposure_summary: dict[str, float]
+    allowed_actions: list[str]
     context_links: ReviewContextLinks
 
 
