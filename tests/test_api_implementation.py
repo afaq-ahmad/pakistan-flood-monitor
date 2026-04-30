@@ -106,7 +106,11 @@ def test_monitoring_and_event_endpoints() -> None:
 
     event_response = client.get(f"/public/events/{event_id}")
     assert event_response.status_code == 200
-    assert "confidence_breakdown" in event_response.json()
+    event_payload = event_response.json()
+    assert "confidence_breakdown" in event_payload
+    assert event_payload["lineage"]["source_scene_ids"]
+    assert event_payload["lineage"]["processing_version"] == "sar-preprocess-v1"
+    assert "thresholds" in event_payload["lineage"]
 
     exposure_response = client.get(f"/public/events/{event_id}/exposure")
     assert exposure_response.status_code == 200

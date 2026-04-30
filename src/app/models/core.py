@@ -15,6 +15,7 @@ class ProvenanceMixin:
     code_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
     threshold_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
     model_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    lineage_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     review_status: Mapped[str] = mapped_column(String(50), default="pending", nullable=False)
     reviewer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

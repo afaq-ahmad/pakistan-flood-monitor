@@ -86,3 +86,11 @@ Troubleshooting: check API logs, PostGIS connectivity, and restore from latest s
 - Snapshot schema fields: `run_id`, `aoi_name`, `processing_version`, `threshold_version`, `source_scene_ids`, `parameters`, `thresholds`, `derived_features`.
 - Lineage requirements: snapshot stores processing and threshold versions plus source scene IDs for reproducibility and replay.
 - Reproducibility guarantee: for identical scene IDs/assets and support-layer references, derived features are stable across replays.
+
+
+## Lineage metadata contract
+- Event responses now include `lineage` with STAC-like fields: `schema`, `run_id`, `source_scene_ids`, `source_scenes[]`, `processing_version`, `threshold_version`, `thresholds`, `model`, `generated_at`.
+- Run responses include top-level `run_lineage` with the same structure plus `aoi`.
+- `source_scenes[]` include `scene_id`, `sensor`, `acquired_at`, and `assets` (href + roles).
+- Troubleshooting missing lineage: verify scene discovery provided `scene_id` and acquisition date, and SAR preprocessing populated scene assets before `run_daily`.
+

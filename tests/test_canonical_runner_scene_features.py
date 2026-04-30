@@ -23,3 +23,15 @@ def test_runner_uses_scene_derived_features_not_fixed_literals(tmp_path) -> None
     assert indicators["sar_drop_db"] != 3.0
     assert indicators["ndwi"] != 0.31
     assert indicators["rainfall_mm_72h"] != 120
+
+
+def test_runner_emits_run_and_event_lineage(tmp_path) -> None:
+    pipeline = FloodMonitoringPipeline()
+    pipeline.catalog = StubCatalog()
+    pipeline.feature_extractor = pipeline.feature_extractor.__class__(snapshot_root=tmp_path / "snaps")
+
+    report = pipeline.run_daily("Indus-Lower")
+    assert report.run_lineage.source_scene_ids == ["SCENE-REAL-001"]
+    assert report.run_lineage.processing_version == "sar-preprocess-v1"
+    assert report.published_outputs.review_queue_event.lineage is not None
+    assert report.published_outputs.review_queue_event.lineage.model["model_id"] == "rules-v1"
