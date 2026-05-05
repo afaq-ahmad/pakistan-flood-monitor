@@ -1,0 +1,11 @@
+run_id,pipeline_name,aoi_name,started_at,completed_at,status,scenes_ingested,candidates_generated,alerts_published,duration_seconds,error_message
+RUN-2026-0501-001,daily_monitoring,Indus-Lower,2026-05-01T06:00:00Z,2026-05-01T06:12:34Z,completed,3,2,1,754,
+RUN-2026-0501-002,daily_monitoring,Chenab-Middle,2026-05-01T06:15:00Z,2026-05-01T06:22:18Z,completed,2,1,0,438,
+RUN-2026-0501-003,daily_monitoring,Jhelum-Lower,2026-05-01T06:25:00Z,2026-05-01T06:31:45Z,completed,1,1,0,405,
+RUN-2026-0501-004,daily_monitoring,Sutlej-Lower,2026-05-01T06:35:00Z,2026-05-01T06:40:12Z,completed,1,1,0,312,
+RUN-2026-0430-001,daily_monitoring,Indus-Lower,2026-04-30T06:00:00Z,2026-04-30T06:15:22Z,completed,4,3,2,922,
+RUN-2026-0430-002,daily_monitoring,Chenab-Middle,2026-04-30T06:20:00Z,2026-04-30T06:28:10Z,completed,2,1,0,490,
+RUN-2026-0430-003,hydromet_ingestion,ALL,2026-04-30T07:00:00Z,2026-04-30T07:05:33Z,completed,0,0,0,333,
+RUN-2026-0430-004,scene_discovery,ALL,2026-04-30T05:00:00Z,2026-04-30T05:08:15Z,completed,8,0,0,495,
+RUN-2026-0429-001,daily_monitoring,Indus-Lower,2026-04-29T06:00:00Z,2026-04-29T06:14:00Z,failed,2,0,0,840,STAC endpoint timeout after 3 retries
+RUN-2026-0429-002,daily_monitoring,Indus-Upper,2026-04-29T06:20:00Z,2026-04-29T06:25:00Z,completed,1,0,0,300,

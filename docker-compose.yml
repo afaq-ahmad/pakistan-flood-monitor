@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3-alpine
+    environment:
+      POSTGRES_USER: flood_monitor_user
+      POSTGRES_PASSWORD: flood_monitor_password
+      POSTGRES_DB: flood_monitor_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flood_monitor_user -d flood_monitor_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn src.pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://flood_monitor_user:flood_monitor_password@db:5432/flood_monitor_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./storage:/app/storage
+      - ./data:/app/data
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -m streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      DATABASE_URL: postgresql+psycopg://flood_monitor_user:flood_monitor_password@db:5432/flood_monitor_db
+      API_BASE_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      - .:/app
+      - ./storage:/app/storage
+      - ./data:/app/data
+
+volumes:
+  postgres_data:

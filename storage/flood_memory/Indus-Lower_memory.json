@@ -1,0 +1,18 @@
+[
+  {
+    "scene_id": "S2B_41RRJ_20260430_0_L2A",
+    "water_pct": 13.5,
+    "local_path": "storage\\satellite\\sentinel2_thumbnails\\Indus-Lower\\S2B_41RRJ_20260430_0_L2A.jpg",
+    "mask_path": "storage\\ml\\water_masks\\S2B_41RRJ_20260430_0_L2A_water_mask.png",
+    "analysis_type": "kmeans_clustering",
+    "saved_at": "2026-05-01T19:11:22.120538"
+  },
+  {
+    "scene_id": "S2B_41RRJ_20260430_0_L2A",
+    "water_pct": 13.5,
+    "local_path": "storage\\satellite\\sentinel2_thumbnails\\Indus-Lower\\S2B_41RRJ_20260430_0_L2A.jpg",
+    "mask_path": "storage\\ml\\water_masks\\S2B_41RRJ_20260430_0_L2A_water_mask.png",
+    "analysis_type": "kmeans_clustering",
+    "saved_at": "2026-05-01T19:23:24.249340"
+  }
+]

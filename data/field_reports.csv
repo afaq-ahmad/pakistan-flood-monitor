@@ -1,0 +1,9 @@
+report_id,event_id,observed_at,latitude,longitude,reporter_channel,evidence_urls,notes,status,trusted,moderation_reason,moderation_tags
+REP-0991,evt-indus-001,2026-04-30T12:00:00Z,26.74,67.79,sms_citizen,,Water level rising near main road Mehar,submitted,false,,
+REP-0992,evt-indus-001,2026-04-30T14:30:00Z,26.72,67.80,ngo_redcrescent,https://example.com/assessment_dadu.pdf,Formal damage assessment completed for Mehar tehsil,approved,true,Verified by partner organization,verified_ngo
+REP-0993,evt-indus-001,2026-04-30T16:00:00Z,26.75,67.77,sms_citizen,,Fields completely submerged west of Dadu city,approved,true,Corroborated by satellite imagery,corroborated
+REP-0994,evt-chenab-001,2026-05-01T03:00:00Z,31.73,72.99,whatsapp,,Water seeping through embankment near KM-42 Chiniot,submitted,false,,
+REP-0995,evt-chenab-001,2026-05-01T04:00:00Z,31.71,72.97,sms_citizen,,No flooding observed near our village - contradicts alert,submitted,false,,conflicting
+REP-0996,evt-indus-002,2026-05-01T05:30:00Z,26.43,67.87,phone_call,,Main bridge to Sehwan partially submerged,needs_more_info,false,Needs photo evidence,needs_evidence
+REP-0997,evt-indus-001,2026-04-30T11:00:00Z,26.70,67.75,sms_citizen,,FREE PRIZE WINNER CLICK HERE,flagged_spam,false,Spam content detected,spam
+REP-0998,evt-indus-003,2026-04-30T18:00:00Z,27.70,68.85,ngo_partner,https://example.com/sukkur_field_report.pdf,Sukkur barrage area experiencing high water levels,approved,true,Verified by field team,verified_ngo

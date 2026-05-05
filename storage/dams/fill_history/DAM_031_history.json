@@ -1,0 +1,251 @@
+[
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:53.229025",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:47.316751",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:49.068754",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:30.080881",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:13.132682",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:22.018362",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:48.117706",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:57.516387",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:50.819621",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:55.084668",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:36.481208",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:20.813251",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:29.893407",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:53.495829",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_031",
+    "dam_name": "Salal Dam",
+    "water_pct": 53.42,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:03.004225",
+    "image_path": "storage\\dams\\imagery\\DAM_031_S2B_43SDS_20260501_0_L2A.jpg",
+    "capacity_mcm": 124,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:33.978388",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:00.021520",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:18.172720",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:34.186492",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:42.974046",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:33.147543",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:39.742232",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:57.245774",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:13.837365",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:32.078627",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:17.655095",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:35.425041",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:59.957182",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:14.784155",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:40.629805",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:57.574940",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:42.893743",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:59.251715",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:16.154450",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:33.294383",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:17.293322",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:34.675255",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:46.389524",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:04.320404",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:19.621391",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:35.249130",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:23.109925",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:38.909282",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:05.185657",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:21.524672",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:48.882123",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:05.732918",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:48.502337",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:04.584933",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:21.687699",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:40.014044",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:20.462576",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_003",
+    "dam_name": "Ghazi-Barotha Dam",
+    "water_pct": 19.36,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:35.515898",
+    "image_path": "storage\\dams\\imagery\\DAM_003_S2C_42SYC_20260502_0_L2A.jpg",
+    "capacity_mcm": 80,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

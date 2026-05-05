@@ -1,0 +1,47 @@
+[
+  {
+    "dam_id": "DAM_033",
+    "dam_name": "Bhakra Dam",
+    "water_pct": 0.04,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:25.716335",
+    "image_path": "storage\\dams\\imagery\\DAM_033_S2C_43RFQ_20260426_0_L2A.jpg",
+    "capacity_mcm": 9621
+  },
+  {
+    "dam_id": "DAM_033",
+    "dam_name": "Bhakra Dam",
+    "water_pct": 0.04,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:02.895157",
+    "image_path": "storage\\dams\\imagery\\DAM_033_S2C_43RFQ_20260426_0_L2A.jpg",
+    "capacity_mcm": 9621,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_033",
+    "dam_name": "Bhakra Dam",
+    "water_pct": 0.04,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:07.744739",
+    "image_path": "storage\\dams\\imagery\\DAM_033_S2C_43RFQ_20260426_0_L2A.jpg",
+    "capacity_mcm": 9621,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

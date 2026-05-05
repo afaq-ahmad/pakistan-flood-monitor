@@ -1,0 +1,7 @@
+notification_id,event_id,channel,recipient_id,status,attempted_at,completed_at,provider_message_id,failure_reason
+NOTIF-001,evt-indus-001,sms,+92300XXXXXXX,succeeded,2026-04-30T10:35:00Z,2026-04-30T10:35:02Z,sms-msg-001,
+NOTIF-002,evt-indus-001,email,officer@ndma.gov.pk,succeeded,2026-04-30T10:35:00Z,2026-04-30T10:35:05Z,email-msg-001,
+NOTIF-003,evt-indus-001,whatsapp,+92321XXXXXXX,failed,2026-04-30T10:35:00Z,2026-04-30T10:35:10Z,,Provider timeout after 3 retries
+NOTIF-004,evt-indus-001,sms,+92333XXXXXXX,blocked,2026-04-30T10:35:00Z,2026-04-30T10:35:01Z,,Recipient not opted-in for SMS channel
+NOTIF-005,evt-indus-003,email,analyst@pdma.gop.pk,succeeded,2026-05-01T08:05:00Z,2026-05-01T08:05:03Z,email-msg-002,
+NOTIF-006,evt-indus-003,sms,+92345XXXXXXX,retryable_failed,2026-05-01T08:05:00Z,2026-05-01T08:05:15Z,,Temporary provider error - retry scheduled

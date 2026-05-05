@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:42.254853",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:04.975598",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:22.358295",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:38.193383",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:46.943833",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:38.424214",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:44.956518",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:01.679534",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:18.680006",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:37.476490",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:22.055668",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:38.918873",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:03.725126",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:19.428105",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:46.025886",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:02.028847",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:46.257315",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:04.393140",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:21.281448",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:37.768803",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:21.211967",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:39.254818",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:51.378840",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:08.326746",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:23.060613",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:39.337924",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:26.729290",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:44.375923",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:08.683677",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:24.846418",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:53.206609",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:09.622516",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:52.304296",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:08.924428",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:25.057878",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:43.928957",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:23.748263",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_005",
+    "dam_name": "Taunsa Barrage",
+    "water_pct": 15.13,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:39.658994",
+    "image_path": "storage\\dams\\imagery\\DAM_005_S2B_42RXU_20260504_0_L2A.jpg",
+    "capacity_mcm": 350,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

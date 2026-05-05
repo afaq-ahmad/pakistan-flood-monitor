@@ -1,0 +1,115 @@
+[
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:07.822609",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:53.877314",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:28.357730",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:03.605767",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:58.061190",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:36.252030",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_032",
+    "dam_name": "Uri Dam",
+    "water_pct": 46.0,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:09.766439",
+    "image_path": "storage\\dams\\imagery\\DAM_032_S2B_43SCT_20260424_0_L2A.jpg",
+    "capacity_mcm": 40,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

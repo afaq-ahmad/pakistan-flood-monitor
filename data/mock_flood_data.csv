@@ -1,0 +1,7 @@
+event_id,district,latitude,longitude,severity,confidence,affected_population,status,timestamp
+EVT-001,Swat,35.2227,72.4258,high,0.85,15000,active,2026-05-01T10:00:00Z
+EVT-002,Nowshera,34.0153,71.9747,medium,0.72,5000,review,2026-05-01T11:30:00Z
+EVT-003,Dadu,26.7323,67.7766,critical,0.95,45000,active,2026-05-01T09:15:00Z
+EVT-004,Sukkur,27.7052,68.8574,low,0.45,1200,draft,2026-05-01T14:20:00Z
+EVT-005,Rajanpur,29.1035,70.3298,high,0.81,21000,active,2026-05-01T08:00:00Z
+EVT-006,Jacobabad,28.2769,68.4514,critical,0.91,32000,active,2026-05-01T07:45:00Z

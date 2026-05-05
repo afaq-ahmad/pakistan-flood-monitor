@@ -1,0 +1,47 @@
+[
+  {
+    "dam_id": "DAM_034",
+    "dam_name": "Pong Dam",
+    "water_pct": 20.94,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:29.572300",
+    "image_path": "storage\\dams\\imagery\\DAM_034_S2B_43SER_20260501_0_L2A.jpg",
+    "capacity_mcm": 8570
+  },
+  {
+    "dam_id": "DAM_034",
+    "dam_name": "Pong Dam",
+    "water_pct": 20.94,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:04.175924",
+    "image_path": "storage\\dams\\imagery\\DAM_034_S2B_43SER_20260501_0_L2A.jpg",
+    "capacity_mcm": 8570,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_034",
+    "dam_name": "Pong Dam",
+    "water_pct": 20.94,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:09.081940",
+    "image_path": "storage\\dams\\imagery\\DAM_034_S2B_43SER_20260501_0_L2A.jpg",
+    "capacity_mcm": 8570,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

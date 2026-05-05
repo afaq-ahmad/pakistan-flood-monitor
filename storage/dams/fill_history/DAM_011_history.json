@@ -1,0 +1,115 @@
+[
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:17.967408",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:59.850344",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:34.793328",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:09.994769",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:04.533755",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:42.571716",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_011",
+    "dam_name": "Rasul Barrage",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:14.330824",
+    "image_path": "storage\\dams\\imagery\\DAM_011_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 120,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

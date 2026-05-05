@@ -1,0 +1,8 @@
+event_id,district,tehsil,flooded_area_sqkm,population_exposed,roads_exposed_km,roads_total_km,road_impact_ratio,routing_blocked,health_facilities_exposed,schools_exposed,cropland_sqkm,shelters_in_flood_zone,nearest_safe_shelter_m,safe_shelters_within_threshold,housing_damage_class,infrastructure_damage_class,confidence,uncertainty
+evt-indus-001,Dadu,Mehar,96.2,32100,58.4,210.0,0.278,true,3,8,45.3,1,2400,3,major,moderate,0.82,0.18
+evt-indus-001,Jamshoro,Sehwan,46.3,13100,28.9,145.0,0.199,false,1,4,22.9,0,1200,5,moderate,minor,0.82,0.18
+evt-indus-002,Jamshoro,Sehwan,52.8,12300,23.1,145.0,0.159,false,1,5,22.4,0,800,4,moderate,minor,0.67,0.33
+evt-chenab-001,Chiniot,Chiniot,38.6,8900,14.2,98.0,0.145,true,2,3,15.7,0,3500,2,moderate,moderate,0.74,0.26
+evt-indus-003,Sukkur,Sukkur,85.3,28500,45.6,180.0,0.253,true,3,8,38.9,2,1800,4,major,major,0.71,0.29
+evt-jhelum-001,Jhelum,Pind Dadan Khan,18.2,3200,8.5,75.0,0.113,false,0,2,9.1,0,500,6,minor,none,0.55,0.45
+evt-sutlej-001,Bahawalpur,Uch Sharif,12.1,1800,4.2,60.0,0.070,false,0,1,5.5,0,300,8,none,none,0.48,0.52

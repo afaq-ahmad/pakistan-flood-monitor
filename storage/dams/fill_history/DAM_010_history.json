@@ -1,0 +1,109 @@
+[
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:13.209445",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:56.853281",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:30.959931",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:06.843777",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:01.810700",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:39.679811",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_010",
+    "dam_name": "Mangla Dam",
+    "water_pct": 51.6,
+    "fill_level": "medium",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:12.053828",
+    "image_path": "storage\\dams\\imagery\\DAM_010_S2C_43SCS_20260429_0_L2A.jpg",
+    "capacity_mcm": 7253,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  }
+]

@@ -1,0 +1,666 @@
+[
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:21.615931",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:23.540540",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:29.638764",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:58.208050",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:15.943718",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:32.582825",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:41.181871",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:30.384154",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:32.280905",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:34.682802",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:37.628403",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:55.664460",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:11.708386",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:29.565943",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:15.559657",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:33.389684",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:57.709523",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:13.226874",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:38.953459",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:55.921752",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:40.904794",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:57.201787",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:13.886012",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:31.643535",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:14.722444",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:33.023807",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:37.612665",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:39.964652",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:44.250308",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:02.273881",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:18.069085",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:33.152406",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:21.045953",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:36.786285",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:03.040581",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:20.035114",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:47.407177",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:04.208479",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:47.051807",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:02.606497",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:19.198975",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:37.511992",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:18.954769",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  },
+  {
+    "dam_id": "DAM_002",
+    "dam_name": "Tarbela Dam",
+    "water_pct": 30.1,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:33.549632",
+    "image_path": "storage\\dams\\imagery\\DAM_002_S2C_43SBT_20260502_0_L2A.jpg",
+    "capacity_mcm": 13690,
+    "has_eav_curve": true,
+    "limitations": [
+      "EAV curve available for this dam."
+    ]
+  }
+]

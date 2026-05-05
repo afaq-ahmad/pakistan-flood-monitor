@@ -1,0 +1,115 @@
+[
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:31:22.040039",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:01.132526",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:37.118983",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:11.823653",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:06.395604",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:43.819995",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_012",
+    "dam_name": "Trimmu Barrage",
+    "water_pct": 22.57,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:15.604689",
+    "image_path": "storage\\dams\\imagery\\DAM_012_S2B_42RYV_20260504_0_L2A.jpg",
+    "capacity_mcm": 150,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

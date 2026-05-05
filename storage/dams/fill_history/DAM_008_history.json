@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:53.777137",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:12.999601",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:29.556814",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:45.913878",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:54.185082",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:46.708056",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:51.684312",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:07.925752",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:25.401628",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:43.268083",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:29.515229",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:45.301416",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:10.280197",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:25.917374",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:52.550662",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:08.935830",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:53.784055",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:10.431349",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:28.295485",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:44.267922",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:28.628207",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:46.266058",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:58.851566",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:14.682990",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:30.166498",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:45.431214",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:33.150815",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:51.344997",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:16.100916",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:32.526198",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:00.349317",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:16.170391",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:58.898517",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:16.484365",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:32.772741",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:50.090523",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:29.822557",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_008",
+    "dam_name": "Kotri Barrage",
+    "water_pct": 24.97,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:46.361994",
+    "image_path": "storage\\dams\\imagery\\DAM_008_S2C_42RVP_20260502_0_L2A.jpg",
+    "capacity_mcm": 200,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:27.383319",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:55.825016",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:14.616297",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:31.190608",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:39.184886",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:28.981104",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:36.291695",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:54.357552",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:09.935540",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:27.739623",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:13.674572",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:31.591752",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:56.375936",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:11.910943",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:37.165955",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:54.596580",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:39.118589",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:55.861312",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:12.554340",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:29.832265",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:13.393520",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:31.166801",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:41.949357",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:00.420924",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:16.230959",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:31.721205",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:19.062200",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:34.910793",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:01.221857",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:18.140474",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:45.117968",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:02.419892",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:45.315305",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:00.870356",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:17.930760",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:35.193653",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:17.092331",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_001",
+    "dam_name": "Diamer-Basha Dam",
+    "water_pct": 21.88,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:31.810609",
+    "image_path": "storage\\dams\\imagery\\DAM_001_S2A_43SCV_20260421_0_L2A.jpg",
+    "capacity_mcm": 8500,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

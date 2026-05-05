@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:50.243913",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:10.348608",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:27.228059",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:43.869958",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:51.409719",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:44.290312",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:49.764263",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:05.221931",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:23.117568",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:41.474504",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:26.784155",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:43.538714",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:08.316161",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:23.606218",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:50.763959",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:06.114838",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:50.900625",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:08.590578",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:25.929352",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:41.451877",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:26.343507",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:43.914894",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:55.979542",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:12.465882",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:27.784663",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:43.482624",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:30.803917",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:49.546862",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:13.819530",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:30.641732",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:58.133084",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:13.982938",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:56.247516",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:14.277065",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:30.563595",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:47.982217",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:27.641855",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_007",
+    "dam_name": "Sukkur Barrage",
+    "water_pct": 24.32,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:44.155766",
+    "image_path": "storage\\dams\\imagery\\DAM_007_S2C_42RVR_20260502_0_L2A.jpg",
+    "capacity_mcm": 320,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

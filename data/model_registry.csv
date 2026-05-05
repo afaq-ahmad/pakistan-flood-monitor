@@ -1,0 +1,8 @@
+model_id,model_name,model_version,hazard_type,status,f1_score,precision,recall,data_drift_pct,training_date,training_samples,config_path,notes
+ranker_v1_0,Candidate Ranker,1.0,flood,archived,0.60,0.65,0.56,0,2025-06-15,1200,configs/ranker_v1.yaml,Initial baseline model
+ranker_v1_5,Candidate Ranker,1.5,flood,archived,0.75,0.78,0.72,5,2025-09-20,2800,configs/ranker_v1_5.yaml,Added hydromet features
+ranker_v2_0,Candidate Ranker,2.0,flood,archived,0.82,0.84,0.80,8,2025-12-10,4500,configs/ranker_v2.yaml,Breach suspicion weighting
+ranker_v2_1,Candidate Ranker,2.1,flood,deployed,0.88,0.90,0.86,12,2026-03-15,6200,configs/ranker_v2_1.yaml,Production model with optical support
+breach_scorer_v1,Breach Scorer,1.0,flood,deployed,0.79,0.82,0.76,6,2026-02-01,3100,configs/breach_v1.yaml,Weighted evidence breach scorer
+landslide_stub,Landslide Detector,0.1,landslide,stub,0.0,0.0,0.0,0,,,configs/landslide_stub.yaml,Placeholder for multi-hazard expansion
+heat_stub,Heat Anomaly Detector,0.1,heat,stub,0.0,0.0,0.0,0,,,configs/heat_stub.yaml,Placeholder for multi-hazard expansion

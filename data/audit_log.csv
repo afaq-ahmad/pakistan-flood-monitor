@@ -1,0 +1,7 @@
+record_id,candidate_id,actor,action,old_status,new_status,timestamp,notes
+AUD-001,evt-indus-001,analyst-rashid,accept,queued,accepted,2026-04-30T09:00:00Z,SAR anomaly confirmed. Hydromet corroborates.
+AUD-002,evt-indus-001,analyst-rashid,publish_alert,accepted,published,2026-04-30T10:30:00Z,Approved for public alert. Dadu district high exposure.
+AUD-003,evt-indus-003,analyst-fatima,accept,queued,accepted,2026-05-01T07:30:00Z,Confidence upgraded after hydromet data received. Breach suspicion moderate.
+AUD-004,evt-chenab-001,analyst-fatima,request_changes,queued,needs_revision,2026-05-01T03:30:00Z,Need optical imagery before approval. Breach score very high.
+AUD-005,evt-chenab-001,analyst-rashid,accept,needs_revision,accepted,2026-05-01T05:00:00Z,Optical now available. Breach suspicion confirmed by SAR+optical.
+AUD-006,evt-jhelum-001,system,auto_queue,draft,queued,2026-05-01T06:50:00Z,Auto-queued by pipeline. Low confidence.

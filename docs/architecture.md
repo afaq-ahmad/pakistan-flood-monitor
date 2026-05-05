@@ -1,123 +1,88 @@
-# Pakistan Flood Monitor MVP Architecture
+# Architecture
 
-## 1) Target MVP behavior (implemented architecture target)
-The MVP is designed to:
-- monitor selected river corridors daily,
-- pull Sentinel-1 scenes for corridor AOIs,
-- pull IMERG rainfall and GloFAS forecasts,
-- compare new observations against a historical baseline,
-- produce flood anomaly polygons,
-- flag embankment/breach candidates,
-- estimate district and asset-class exposure,
-- publish map layers, event tables, alert summaries, and API outputs.
+The Pakistan Flood Monitor is built as a hybrid Python application using **Streamlit** for the frontend dashboard, supported by several modular backend services and data pipelines.
 
-### MVP output products
-1. Flood candidate map
-2. Confirmed flood extent after analyst review
-3. Breach suspicion layer
-4. Asset exposure report
-5. Alert feed with confidence score
-6. Historical event dashboard
+## High-Level Architecture Diagram
 
-## 2) Explicitly out of scope for MVP
-- Full national wall-to-wall daily processing
-- Public mobile app
-- Complex hydrodynamic simulation
-- High-frequency social media ingestion
-- Enterprise IAM / multi-tenant stack
-- Expensive streaming geospatial stack
-- Sophisticated deep-learning serving infrastructure
-- Kubernetes before proven scale bottlenecks
-
-## 3) Architecture layers
-### Layer A — monitoring
-Discovers and ingests Sentinel-1, optical support imagery, rainfall, forecast, DEM, and static masks.
-
-### Layer B — analytics
-Computes flood anomalies, breach suspicion, confidence scoring, and exposure summaries.
-
-### Layer C — delivery
-Stores reviewed events, serves APIs, powers dashboard/map layers, and emits alert-ready outputs.
-
-### Operational decomposition in Python modules
-The implementation is modular (not one large script) and organized around five responsibilities:
-- fetch metadata and source data,
-- preprocess raster/vector inputs,
-- compute detections and confidence,
-- manage review and publication state,
-- expose outputs through APIs and map services.
-
-### Supporting implementation views
-
-### End-to-end operational flow
 ```mermaid
-flowchart LR
-    A[Daily scheduler\ncron / Prefect] --> B[Scene + hydromet discovery]
-    B --> C[Ingestion + preprocessing\nSAR, optical support, masks]
-    C --> D[Baseline anomaly detection]
-    D --> E[Breach suspicion scoring\nweighted evidence]
-    E --> F[Exposure estimation\ndistrict + assets]
-    F --> G[Review queue creation]
-    G --> H[Analyst review + status updates]
-    H --> I[Publication + alert feed]
-    I --> J[Dashboard + APIs]
+graph TD
+    subgraph "External Data Providers"
+        STAC[Earth Search STAC<br/>Sentinel 1/2]
+        NASA[NASA POWER API<br/>Rainfall/Climate]
+        METEO[Open-Meteo API<br/>14-day Forecasts]
+    end
+
+    subgraph "Backend Services (Python)"
+        SML[Satellite ML Service<br/>Spectral Water Indices]
+        DAM[Dam Service<br/>Reservoir Fill Proxy]
+        FOR[Forecast Service<br/>LSTM & Baselines]
+        ADV[Advanced ML Service<br/>SAR Simulation]
+        NAS[NASA Service<br/>Hydromet APIs]
+    end
+
+    subgraph "Data Storage"
+        CSV[(CSV Storage<br/>data/)]
+        IMG[(Local Image Storage<br/>storage/)]
+        INMEM[(In-Memory State<br/>FastAPI)]
+    end
+
+    subgraph "User Interfaces"
+        STRM[Streamlit Application<br/>streamlit_app.py + pages/]
+        FAST[FastAPI Interface<br/>api/main.py]
+    end
+
+    STAC --> SML
+    STAC --> ADV
+    NASA --> NAS
+    METEO --> FOR
+
+    SML --> IMG
+    ADV --> IMG
+    DAM --> IMG
+
+    NAS --> STRM
+    SML --> STRM
+    DAM --> STRM
+    FOR --> STRM
+    ADV --> STRM
+
+    CSV --> STRM
+    INMEM <--> FAST
 ```
 
-### Decision flow for flood-event confidence
+## Module Interaction Flow
+
+When an analyst reviews an area, the data flows across modules to generate a complete situational picture:
+
 ```mermaid
-flowchart TD
-    S[Candidate anomaly polygon] --> Q{SAR anomaly above threshold?}
-    Q -- No --> R[Reject or hold\nlow-confidence artifact]
-    Q -- Yes --> O{Optical/hydromet corroboration available?}
-    O -- No --> P[Keep as SAR-led candidate\nmedium confidence]
-    O -- Yes --> W[Apply weighted evidence model]
-    W --> X{Protected-side + embankment proximity?}
-    X -- Yes --> Y[Raise breach suspicion score]
-    X -- No --> Z[Classify as likely overflow]
-    Y --> U[Send to analyst review queue]
-    Z --> U
-    P --> U
-    U --> V{Analyst confirmed?}
-    V -- Yes --> AA[Publish confirmed event + alerts]
-    V -- No --> AB[Archive with review notes]
+sequenceDiagram
+    participant UI as Streamlit Dashboard
+    participant Dam as Dam Service
+    participant SML as Satellite ML Service
+    participant FC as Forecast Service
+    
+    UI->>Dam: Get Upstream Risk for Corridor
+    Dam-->>UI: Dam Fill & Travel Times
+    UI->>SML: Request Satellite Water Mask
+    SML-->>UI: Spectral Water Indices Mask
+    UI->>FC: Request 14-Day Forecast
+    FC-->>UI: LSTM & Linear Leaderboard
 ```
 
-## 4) Core data model (recommended)
-- `aoi_corridors`
-- `river_reaches`
-- `embankments`
-- `satellite_scenes`
-- `scene_processing_runs`
-- `flood_candidates`
-- `flood_events`
-- `breach_candidates`
-- `breach_reviews`
-- `exposure_results`
-- `alert_log`
-- `model_versions`
-- `review_queue_events`
-- `validation_samples`
+## Storage Layer
 
-Design rule: separate raw observations, intermediate masks, candidate detections, reviewed detections, and published alerts.
+Unlike traditional enterprise stacks that require complex database setups (e.g., PostgreSQL/PostGIS), this project currently relies on a lightweight, file-based storage architecture:
 
-## 5) Detection strategy
-- Sentinel-1 baseline anomaly detection is the primary operational method.
-- Optical support (NDWI, MNDWI, AWEI) is secondary and opportunistic.
-- Multi-sensor fusion uses weighted evidence (transparent scoring) before advanced ML.
+1. **CSV Data (`data/`)**: Core tabular data (events, historical regions, corridors, mock data) is stored in standard CSV and JSON files. This is queried heavily by the Streamlit application via `backend_service.py`.
+2. **File Storage (`storage/`)**: Downloaded satellite imagery, ML-generated water masks, and historical flood snapshots are stored directly on the local filesystem. This prevents database bloat and ensures easy ML training dataset portability.
+3. **In-Memory Store**: The FastAPI module (`src/pakistan_flood_monitor/api/main.py`) stores operational state (like run history, event lifecycle, and review queues) in memory. This is primarily for runtime operations and prototype testing without database overhead.
 
-## 6) Breach logic
-Classify candidates as:
-- likely overflow,
-- possible breach / protected-side flooding,
-- uncertain anomaly.
+> **Note**: A known limitation of the current architecture is the "split-brain" syndrome. Streamlit queries services and storage directly, bypassing the FastAPI application. Future iterations will route Streamlit requests through FastAPI using `httpx`.
 
-Use weighted confidence with evidence from sensor anomaly, protected-side location, embankment proximity, growth direction, hydromet stress, terrain plausibility, persistence, and SAR/optical corroboration. Maintain probabilistic language in publications (e.g., "possible breach", "high-confidence protected-side flooding", "likely overflow").
+## Core Modules
 
-## 7) MVP deployment preference
-Prefer one strong VM or two low-cost nodes (DB/storage + worker/API). Keep operational stack simple: Python + PostGIS + FastAPI + cron/Prefect OSS + Docker.
-
-
-## 8) Serving and MLOps posture
-- Inference runs inside batch processing for MVP; outputs are persisted and then served by API.
-- No separate real-time ML inference service is required early.
-- Minimal MLOps assets include model registry metadata, snapshot versioning, config + thresholds, evaluation archive, reproducible training script, and rollback reference.
+- `satellite_ml_service.py`: Discovers images via STAC and runs Spectral Index processing (NDWI/MNDWI/AWEI) to distinguish water from land.
+- `dam_service.py`: Computes haversine distances to map river flow, fetches bounding box imagery, and scores flood risk based on upstream dam surface area fills.
+- `advanced_ml_service.py`: A simulated module to evaluate SAR (Synthetic Aperture Radar) inputs which penetrate clouds, and real topography logic using Copernicus DEM/HAND metrics.
+- `forecast_service.py`: Integrates with external weather APIs to provide look-ahead river level predictions via a model leaderboard (Persistence vs Linear vs LSTM).
+- `backend_service.py`: Provides read interfaces for Streamlit to parse the `data/` directory CSV files seamlessly.

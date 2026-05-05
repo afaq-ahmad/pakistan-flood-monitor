@@ -1,0 +1,251 @@
+[
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:59.852833",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:51.256233",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:52.939647",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:33.477098",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:16.549583",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:25.312082",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:52.045574",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:00.918916",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:54.812381",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:57.968666",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:41.327172",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:24.091202",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:33.112274",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:57.203661",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_021",
+    "dam_name": "Khanki Barrage",
+    "water_pct": 0.85,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:05.755286",
+    "image_path": "storage\\dams\\imagery\\DAM_021_S2B_43SDR_20260504_0_L2A.jpg",
+    "capacity_mcm": 90,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

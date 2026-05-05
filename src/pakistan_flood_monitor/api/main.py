@@ -14,6 +14,11 @@ from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
+from pakistan_flood_monitor.models.database import SessionLocal
+from pakistan_flood_monitor.models.db_models import FloodEvent as DBFloodEvent
+from pakistan_flood_monitor.models.db_models import PipelineRun as DBPipelineRun
+from pakistan_flood_monitor.models.db_models import AuditLog as DBAuditLog
+
 from app.services.observability import metrics_registry
 
 from pakistan_flood_monitor.config import settings
@@ -175,6 +180,26 @@ def _build_audit_entry(*, chain_name: str, action: str, principal_id: str, resou
 
 def _append_audit_entry(log: list[dict[str, Any]], entry: dict[str, Any]) -> None:
     log.append(entry)
+    
+    # Persist to database
+    try:
+        db = SessionLocal()
+        audit_db = DBAuditLog(
+            chain=entry.get("chain"),
+            action=entry.get("action"),
+            principal_id=entry.get("principal_id"),
+            resource_type=entry.get("resource_type"),
+            resource_id=entry.get("resource_id"),
+            details=entry.get("details", {}),
+            previous_hash=entry.get("previous_hash"),
+            entry_hash=entry.get("entry_hash"),
+        )
+        db.add(audit_db)
+        db.commit()
+    except Exception as e:
+        print(f"Database audit persist error: {e}")
+    finally:
+        db.close()
 
 
 def _verify_audit_chain(log: list[dict[str, Any]], chain_name: str) -> tuple[bool, str | None]:
@@ -467,15 +492,70 @@ def _record_run(report: dict[str, Any]) -> None:
         event = _event_record_from_run(report)
         event_store[event["event_id"]] = event
         _upsert_historical_event_from_event(event)
+        
+        # Persist to database
+        try:
+            db = SessionLocal()
+            run_db = DBPipelineRun(
+                id=report["run_id"],
+                corridor_aoi=corridor,
+                run_metadata=report,
+            )
+            db.add(run_db)
+            
+            event_db = DBFloodEvent(
+                id=event["event_id"],
+                run_id=report["run_id"],
+                corridor_aoi=event["aoi"],
+                event_class=event["event_class"],
+                status=event["status"],
+                queue_status=event["queue_status"],
+                machine_confidence=event["machine_confidence"],
+                geometry_geojson=event["geometry"],
+                event_area_km2=event["event_area_km2"],
+                notes=event["notes"],
+            )
+            db.merge(event_db)
+            db.commit()
+        except Exception as e:
+            print(f"Database persist error: {e}")
+        finally:
+            db.close()
+            
     metrics_registry.increment("pipeline.alerts_published")
     metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
 
 
 def _all_events() -> list[dict[str, Any]]:
-    return sorted(event_store.values(), key=lambda event: event["timestamps"]["detected_at"], reverse=True)
+    # Also attempt to load from DB if memory is empty
+    if not event_store:
+        try:
+            db = SessionLocal()
+            db_events = db.query(DBFloodEvent).all()
+            for evt in db_events:
+                # Basic reconstruction (in reality we would map all fields correctly)
+                if evt.id not in event_store:
+                    event_store[evt.id] = {
+                        "event_id": evt.id,
+                        "aoi": evt.corridor_aoi,
+                        "status": evt.status,
+                        "queue_status": evt.queue_status,
+                        "machine_confidence": evt.machine_confidence,
+                        "geometry": evt.geometry_geojson,
+                        "event_area_km2": evt.event_area_km2,
+                        "notes": evt.notes,
+                        "timestamps": {"detected_at": evt.detected_at.isoformat() if evt.detected_at else ""},
+                    }
+        except Exception:
+            pass
+        finally:
+            if 'db' in locals():
+                db.close()
+    return sorted(event_store.values(), key=lambda event: event.get("timestamps", {}).get("detected_at", ""), reverse=True)
 
 
 def _event_by_id(event_id: str) -> dict[str, Any] | None:
+    _all_events() # Trigger DB load if empty
     return event_store.get(event_id)
 
 
@@ -1076,6 +1156,12 @@ def corridor_events(
         })
         for event in records
     ]
+
+
+@public_router.get("/events")
+def list_public_events() -> dict[str, Any]:
+    events = _all_events()
+    return {"schema": "event-collection/v1", "events": events}
 
 
 @public_router.get("/events/{event_id}")

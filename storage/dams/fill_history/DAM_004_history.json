@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:38.344198",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:02.164011",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:20.462831",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:36.290651",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:44.769008",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:36.019103",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:41.931303",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:58.827987",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:15.893884",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:34.668439",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:19.751582",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:37.032752",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:01.718856",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:17.410622",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:43.496420",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:00.175823",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:44.441030",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:01.401064",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:18.840605",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:35.382872",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:18.835561",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:36.844719",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:48.459890",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:06.494542",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:21.219269",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:37.360051",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:24.808323",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:41.475436",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:06.814254",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:23.051758",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:50.402657",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:07.271263",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:50.551249",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:06.626371",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:23.294672",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:41.497470",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:21.995735",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_004",
+    "dam_name": "Chashma Barrage",
+    "water_pct": 39.93,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:37.958239",
+    "image_path": "storage\\dams\\imagery\\DAM_004_S2B_42SYA_20260504_0_L2A.jpg",
+    "capacity_mcm": 870,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]

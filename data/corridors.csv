@@ -1,0 +1,6 @@
+corridor_id,corridor_name,river,start_lat,start_lon,end_lat,end_lon,priority,status,monitoring_since
+Indus-Lower,Indus Lower Corridor,Indus,25.30,68.24,25.82,68.70,1,active,2024-01-15
+Indus-Upper,Indus Upper Corridor,Indus,33.80,72.30,34.20,73.10,2,active,2024-02-01
+Chenab-Middle,Chenab Middle Corridor,Chenab,31.00,72.40,31.33,72.70,1,active,2024-01-15
+Jhelum-Lower,Jhelum Lower Corridor,Jhelum,32.50,73.60,32.90,73.90,3,active,2024-03-10
+Sutlej-Lower,Sutlej Lower Corridor,Sutlej,29.20,71.00,29.80,71.50,4,watch,2024-06-01

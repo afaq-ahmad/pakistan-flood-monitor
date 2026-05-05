@@ -1,0 +1,612 @@
+[
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:29:47.063420",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:08.486943",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:25.337877",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:30:41.543400",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:52:49.972617",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T04:53:42.448042",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:21:47.884259",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:03.963133",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:21.294803",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:22:40.189993",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:24.447320",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:23:41.649850",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:06.024262",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:22.244954",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:24:49.465023",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:04.824855",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:25:49.010060",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:07.261245",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:24.643696",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:26:40.131816",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:24.535954",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:27:42.074390",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:31:54.638147",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:11.099279",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:25.370906",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:32:41.610666",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:29.517456",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:33:47.160297",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:12.019539",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:28.177359",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:34:55.819698",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:12.220029",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:35:54.884707",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:11.949932",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:28.295472",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:36:46.697195",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:25.861198",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  },
+  {
+    "dam_id": "DAM_006",
+    "dam_name": "Guddu Barrage",
+    "water_pct": 19.05,
+    "fill_level": "low",
+    "measurement_type": "satellite_surface_extent_proxy",
+    "trend": "stable",
+    "confidence": 0.85,
+    "timestamp": "2026-05-05T05:37:42.311205",
+    "image_path": "storage\\dams\\imagery\\DAM_006_S2C_42RWS_20260502_0_L2A.jpg",
+    "capacity_mcm": 280,
+    "has_eav_curve": false,
+    "limitations": [
+      "Surface area is a proxy, not a direct volume measurement.",
+      "Cloud cover may degrade satellite observations."
+    ]
+  }
+]
