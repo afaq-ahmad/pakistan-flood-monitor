@@ -2,6 +2,14 @@
 
 Thank you for your interest in contributing to the Pakistan Flood Monitor. This project aims to provide free, open-source flood situational awareness using Earth Observation data.
 
+## AI Agent Operating Contract
+
+AI coding agents must read and follow the repository-wide [`AGENTS.md`](../AGENTS.md) before
+planning or changing files. It defines the canonical package, environmental-data integrity,
+CRS/unit handling, provenance, human decision gates, testing, scope, and pull-request evidence
+required for every agent-authored task. The contract supplements this human contribution guide and
+the accepted architecture decision records.
+
 ## Getting Started
 
 1. Fork the repository.
