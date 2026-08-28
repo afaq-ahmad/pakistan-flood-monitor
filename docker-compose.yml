@@ -4,15 +4,15 @@ services:
   db:
     image: postgis/postgis:15-3.3-alpine
     environment:
-      POSTGRES_USER: flood_monitor_user
-      POSTGRES_PASSWORD: flood_monitor_password
-      POSTGRES_DB: flood_monitor_db
+      POSTGRES_USER: ${POSTGRES_USER:-flood_monitor_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Compose}
+      POSTGRES_DB: ${POSTGRES_DB:-flood_monitor_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flood_monitor_user -d flood_monitor_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,11 +21,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: uvicorn src.pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+psycopg://flood_monitor_user:flood_monitor_password@db:5432/flood_monitor_db
+      APP_MODE: demo
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-flood_monitor_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Compose}@db:5432/${POSTGRES_DB:-flood_monitor_db}"
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +43,8 @@ services:
     ports:
       - "8501:8501"
     environment:
-      DATABASE_URL: postgresql+psycopg://flood_monitor_user:flood_monitor_password@db:5432/flood_monitor_db
+      APP_MODE: demo
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-flood_monitor_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Compose}@db:5432/${POSTGRES_DB:-flood_monitor_db}"
       API_BASE_URL: http://api:8000
     depends_on:
       api:

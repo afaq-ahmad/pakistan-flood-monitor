@@ -23,6 +23,9 @@ def test_runner_uses_scene_derived_features_not_fixed_literals(tmp_path) -> None
     assert indicators["sar_drop_db"] != 3.0
     assert indicators["ndwi"] != 0.31
     assert indicators["rainfall_mm_72h"] != 120
+    assert report.product_label == "SIMULATED"
+    assert report.contains_synthetic is True
+    assert report.watermark == "SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS"
 
 
 def test_runner_emits_run_and_event_lineage(tmp_path) -> None:
@@ -35,3 +38,5 @@ def test_runner_emits_run_and_event_lineage(tmp_path) -> None:
     assert report.run_lineage.processing_version == "sar-preprocess-v1"
     assert report.published_outputs.review_queue_event.lineage is not None
     assert report.published_outputs.review_queue_event.lineage.model["model_id"] == "rules-v1"
+    assert report.published_outputs.review_queue_event.lineage.contains_synthetic is True
+    assert report.run_lineage.observations["rainfall_mm_72h"].status == "SIMULATED"

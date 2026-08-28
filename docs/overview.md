@@ -20,7 +20,7 @@ The system aims to combine free Earth Observation data (Sentinel-1, Sentinel-2, 
 ## System Interfaces
 
 1. **Streamlit UI (`streamlit_app.py`)**: The primary interface. It loads data from a CSV-backed backend service and provides a 15-page dashboard.
-2. **FastAPI Backend (`src/pakistan_flood_monitor/api/main.py`)**: A parallel REST API offering programmatic access to internal monitoring endpoints and public feed data. It uses an in-memory data store for events and configurations.
+2. **Canonical FastAPI Backend (`pakistan_flood_monitor.api.main:app`)**: The supported runtime for programmatic access to internal monitoring endpoints and public feed data. It currently uses an in-memory data store for events and configurations.
 
 ## Limitations and Disclaimers
 

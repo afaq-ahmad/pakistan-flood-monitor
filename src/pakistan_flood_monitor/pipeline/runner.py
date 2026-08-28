@@ -2,11 +2,16 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from app.services.observability import log_failure, log_structured, metrics_registry
-
-from pakistan_flood_monitor.config import settings
+from pakistan_flood_monitor.config import AppMode, settings
 from pakistan_flood_monitor.core.detection import FloodDetector
 from pakistan_flood_monitor.core.exposure import ExposureAnalyzer
 from pakistan_flood_monitor.data.sources import DataCatalog
+from pakistan_flood_monitor.hazards.base import HazardModule, StubHazardModule
+from pakistan_flood_monitor.hazards.registry import HazardRegistry
+from pakistan_flood_monitor.models.observations import (
+    DataIntegritySummary,
+    ScientificObservation,
+)
 from pakistan_flood_monitor.models.schemas import (
     AlertLevel,
     AlertSummary,
@@ -16,28 +21,26 @@ from pakistan_flood_monitor.models.schemas import (
     ConfirmedFloodExtent,
     EventClass,
     EventDecision,
+    EventLineage,
     FloodCandidateMap,
     FloodDetectionResult,
     HistoricalEventRecord,
+    LineageSceneAsset,
     ModelVersion,
     MVPOutputs,
     ProcessingReport,
-    EventLineage,
-    RunLineage,
-    SourceSceneLineage,
-    LineageSceneAsset,
     ReviewQueueEvent,
     ReviewStatus,
+    RunLineage,
+    SourceSceneLineage,
 )
+from pakistan_flood_monitor.pipeline.feature_generation import SceneFeatureExtractor
 from pakistan_flood_monitor.services.alerts import AlertService
 from pakistan_flood_monitor.services.probabilistic_forecast import (
     build_probabilistic_forecast,
     compute_calibration_stats,
 )
 from pakistan_flood_monitor.services.triggers import EventTriggerService, TriggerInputs
-from pakistan_flood_monitor.pipeline.feature_generation import SceneFeatureExtractor
-from pakistan_flood_monitor.hazards.registry import HazardRegistry
-from pakistan_flood_monitor.hazards.base import HazardModule, StubHazardModule
 
 
 class FloodHazardModule(HazardModule):
@@ -45,13 +48,14 @@ class FloodHazardModule(HazardModule):
     def hazard_type(self) -> str:
         return "flood"
 
-    def __init__(self) -> None:
-        self.catalog = DataCatalog()
+    def __init__(self, app_mode: AppMode | None = None) -> None:
+        self.app_mode = app_mode or settings.app_mode
+        self.catalog = DataCatalog(app_mode=self.app_mode)
         self.detector = FloodDetector()
         self.alerts = AlertService()
         self.exposure = ExposureAnalyzer()
         self.triggers = EventTriggerService()
-        self.feature_extractor = SceneFeatureExtractor()
+        self.feature_extractor = SceneFeatureExtractor(app_mode=self.app_mode)
 
     def _pilot_corridor_enabled(self, aoi_name: str) -> bool:
         return aoi_name in {corridor.name for corridor in settings.pilot_corridors}
@@ -120,11 +124,26 @@ class FloodHazardModule(HazardModule):
                     sensor=scene.sensor,
                     acquired_at=datetime.combine(scene.acquisition_date, datetime.min.time(), tzinfo=UTC),
                     assets=assets,
+                    observation_status=scene.observation_status,
+                    availability_status=scene.availability_status,
+                    synthetic=scene.synthetic,
+                    source_uri=scene.stac_item_url,
                 )
             )
         return output
 
-    def _build_event_lineage(self, *, run_id: str, source_scenes: list[SourceSceneLineage], thresholds: dict[str, float], processing_version: str, threshold_version: str, model: ModelVersion) -> EventLineage:
+    def _build_event_lineage(
+        self,
+        *,
+        run_id: str,
+        source_scenes: list[SourceSceneLineage],
+        thresholds: dict[str, float],
+        processing_version: str,
+        threshold_version: str,
+        model: ModelVersion,
+        observations: dict[str, ScientificObservation],
+        integrity: DataIntegritySummary,
+    ) -> EventLineage:
         return EventLineage(
             run_id=run_id,
             source_scene_ids=[scene.scene_id for scene in source_scenes],
@@ -134,6 +153,11 @@ class FloodHazardModule(HazardModule):
             thresholds=thresholds,
             model=model.model_dump(),
             generated_at=datetime.now(UTC),
+            observations=observations,
+            contains_synthetic=integrity.contains_synthetic,
+            data_availability=integrity.data_availability,
+            product_label=integrity.product_label,
+            watermark=integrity.watermark,
         )
 
     def _build_outputs(
@@ -147,6 +171,7 @@ class FloodHazardModule(HazardModule):
         source_scenes: list[str],
         exposure_report: dict,
         lineage: EventLineage,
+        integrity: DataIntegritySummary,
     ) -> MVPOutputs:
         polygon_ids = [f"{aoi_name}-candidate-001", f"{aoi_name}-candidate-002"]
         breach_category = (
@@ -187,6 +212,9 @@ class FloodHazardModule(HazardModule):
                 alert_level=alert_level,
                 confidence_score=round(confidence_score * 100, 2),
                 summary=f"{alert_level.value} flood signal for {aoi_name}",
+                product_label=integrity.product_label,
+                data_availability=integrity.data_availability,
+                watermark=integrity.watermark,
             ),
             model_version=self._active_model_version(),
             review_queue_event=ReviewQueueEvent(
@@ -253,6 +281,11 @@ class FloodHazardModule(HazardModule):
                 thresholds=thresholds,
                 model=active_model.model_dump(),
                 generated_at=datetime.now(UTC),
+                observations=extracted.observations,
+                contains_synthetic=extracted.integrity.contains_synthetic,
+                data_availability=extracted.integrity.data_availability,
+                product_label=extracted.integrity.product_label,
+                watermark=extracted.integrity.watermark,
             )
             event_lineage = self._build_event_lineage(
                 run_id=run_id,
@@ -261,8 +294,12 @@ class FloodHazardModule(HazardModule):
                 processing_version=processing_version,
                 threshold_version=threshold_version,
                 model=active_model,
+                observations=extracted.observations,
+                integrity=extracted.integrity,
             )
             features = extracted.features
+            source_sensors = sorted({scene.sensor for scene in scenes}) + ["imerg", "glofas"]
+            source_identifiers = extracted.source_scene_ids + ["imerg", "glofas"]
 
             checkpoint = "event_trigger"
             should_process, trigger_reason = self.triggers.should_process(
@@ -291,11 +328,16 @@ class FloodHazardModule(HazardModule):
                         calibration=self._calibration_reference(),
                         model_lineage=self._active_model_version().model_dump(),
                     ),
+                    observation_statuses={
+                        name: observation.status for name, observation in extracted.observations.items()
+                    },
+                    data_availability=extracted.integrity.data_availability,
+                    product_label=extracted.integrity.product_label,
                 )
                 exposure = self.exposure.estimate(0.0)
                 report = ProcessingReport(
                     run_id=run_id,
-                    source_sensors=extracted.source_scene_ids + ["imerg", "glofas"],
+                    source_sensors=source_sensors,
                     detections=[detection],
                     exposure={aoi_name: exposure},
                     trigger_reason=trigger_reason,
@@ -306,11 +348,18 @@ class FloodHazardModule(HazardModule):
                         AlertLevel.watch,
                         0.0,
                         0.0,
-                        extracted.source_scene_ids + ["imerg", "glofas"],
+                        source_identifiers,
                         exposure.model_dump(),
                         event_lineage,
+                        extracted.integrity,
                     ),
                     run_lineage=run_lineage,
+                    app_mode=self.app_mode,
+                    data_availability=extracted.integrity.data_availability,
+                    product_label=extracted.integrity.product_label,
+                    contains_synthetic=extracted.integrity.contains_synthetic,
+                    watermark=extracted.integrity.watermark,
+                    observations=extracted.observations,
                 )
             else:
                 flood_probability = self.detector.rule_based_probability(features)
@@ -346,8 +395,12 @@ class FloodHazardModule(HazardModule):
                         calibration=self._calibration_reference(),
                         model_lineage=active_model.model_dump(),
                     ),
+                    observation_statuses={
+                        name: observation.status for name, observation in extracted.observations.items()
+                    },
+                    data_availability=extracted.integrity.data_availability,
+                    product_label=extracted.integrity.product_label,
                 )
-                source_sensors = ["sentinel-1", "sentinel-2", "landsat", "hls", "imerg", "glofas"]
                 exposure = self.exposure.estimate(flood_area_km2)
                 report = ProcessingReport(
                     run_id=run_id,
@@ -362,18 +415,28 @@ class FloodHazardModule(HazardModule):
                         alert_level,
                         confidence_score,
                         breach_risk,
-                        source_sensors,
+                        source_identifiers,
                         exposure.model_dump(),
                         event_lineage,
+                        extracted.integrity,
                     ),
                     run_lineage=run_lineage,
+                    app_mode=self.app_mode,
+                    data_availability=extracted.integrity.data_availability,
+                    product_label=extracted.integrity.product_label,
+                    contains_synthetic=extracted.integrity.contains_synthetic,
+                    watermark=extracted.integrity.watermark,
+                    observations=extracted.observations,
                 )
 
             delay_hours = max(0.0, (datetime.utcnow() - detection.timestamp).total_seconds() / 3600)
-            metrics_registry.increment("product.alerts_produced")
-            metrics_registry.increment("product.exposure_outputs_delivered")
-            metrics_registry.observe_latency_ms("product.scene_to_alert_delay_ms", delay_hours * 3600 * 1000)
-            metrics_registry.increment("pipeline.alerts_published")
+            if extracted.integrity.contains_synthetic:
+                metrics_registry.increment("pipeline.demo_previews_produced")
+            else:
+                metrics_registry.increment("product.alerts_produced")
+                metrics_registry.increment("product.exposure_outputs_delivered")
+                metrics_registry.observe_latency_ms("product.scene_to_alert_delay_ms", delay_hours * 3600 * 1000)
+                metrics_registry.increment("pipeline.alerts_published")
             log_structured(
                 "pipeline_run",
                 run_id=run_id,
@@ -405,9 +468,10 @@ class FloodHazardModule(HazardModule):
 class FloodMonitoringPipeline:
     """Compatibility wrapper preserving the flood-first API while enabling multi-hazard plugins."""
 
-    def __init__(self) -> None:
+    def __init__(self, app_mode: AppMode | None = None) -> None:
+        self.app_mode = app_mode or settings.app_mode
         self.registry = HazardRegistry()
-        self.register_module(FloodHazardModule())
+        self.register_module(FloodHazardModule(app_mode=self.app_mode))
         self.register_module(StubHazardModule("landslide"))
         self.register_module(StubHazardModule("heat"))
 
@@ -416,6 +480,29 @@ class FloodMonitoringPipeline:
 
     def registered_hazards(self) -> list[str]:
         return self.registry.registered_hazards()
+
+    @property
+    def _flood_module(self) -> FloodHazardModule:
+        module = self.registry.get("flood")
+        if not isinstance(module, FloodHazardModule):  # pragma: no cover - defensive registry guard
+            raise TypeError("Registered flood module does not implement FloodHazardModule")
+        return module
+
+    @property
+    def catalog(self) -> DataCatalog:
+        return self._flood_module.catalog
+
+    @catalog.setter
+    def catalog(self, value: DataCatalog) -> None:
+        self._flood_module.catalog = value
+
+    @property
+    def feature_extractor(self) -> SceneFeatureExtractor:
+        return self._flood_module.feature_extractor
+
+    @feature_extractor.setter
+    def feature_extractor(self, value: SceneFeatureExtractor) -> None:
+        self._flood_module.feature_extractor = value
 
     def run_hazard_daily(self, hazard_type: str, aoi_name: str) -> ProcessingReport:
         return self.registry.get(hazard_type).run_daily(aoi_name)

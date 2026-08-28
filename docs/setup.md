@@ -82,6 +82,6 @@ The application will start and be available at `http://localhost:8501`.
 If you are developing API integrations or internal toolchains, you can run the FastAPI server:
 
 ```bash
-uvicorn src.pakistan_flood_monitor.api.main:app --reload --port 8000
+APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --reload --port 8000
 ```
 This API will be available at `http://localhost:8000`, with interactive Swagger documentation at `http://localhost:8000/docs`.

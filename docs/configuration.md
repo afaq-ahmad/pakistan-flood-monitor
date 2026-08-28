@@ -4,11 +4,16 @@ The Pakistan Flood Monitor uses two main configuration sources: environment vari
 
 ## 1. Environment Variables
 
-Environment files (`.env.local`, `.env.staging`, `.env.prod`) are used for secrets and environment-specific toggles.
+Environment files (`.env.local`, `.env.staging`, `.env.prod`) contain non-secret,
+environment-specific toggles. Inject credentials such as `DATABASE_DSN` from the
+deployment platform's secret manager; never commit them to these files.
 
 ### Example `.env.local`
 
 ```env
+# Required safety boundary: test | demo | operational
+APP_MODE=demo
+
 # NASA Earthdata (Required for HLS/IMERG)
 NASA_EARTHDATA_USERNAME=your_username
 NASA_BEARER_TOKEN=your_token
@@ -20,6 +25,9 @@ STAC_ENDPOINT=https://earth-search.aws.element84.com/v1
 FLOOD_MONITOR_ADMIN_TOKEN=secret_admin_token
 FLOOD_MONITOR_ANALYST_TOKEN=secret_analyst_token
 ```
+
+Production deployments must use `APP_MODE=operational`. In that mode, unavailable scientific inputs
+produce an explicit `UNAVAILABLE` response; the application never substitutes hash/random/stub data.
 
 > **Security Note:** Never commit `.env` files with actual secrets to version control. Use secret managers for production.
 

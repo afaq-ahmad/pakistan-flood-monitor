@@ -1,31 +1,35 @@
 from __future__ import annotations
 
 import base64
-from datetime import UTC, datetime
 import hashlib
 import json
 import os
-from threading import Lock
 import time
+from copy import deepcopy
+from datetime import UTC, datetime
+from threading import Lock
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
+from app.services.damage_classification import (
+    DamageBenchmarkValidator,
+    DamageClassificationRequest,
+    DamageClassificationService,
+)
+from app.services.observability import metrics_registry
+from pakistan_flood_monitor.config import settings
 from pakistan_flood_monitor.models.database import SessionLocal
+from pakistan_flood_monitor.models.db_models import AuditLog as DBAuditLog
 from pakistan_flood_monitor.models.db_models import FloodEvent as DBFloodEvent
 from pakistan_flood_monitor.models.db_models import PipelineRun as DBPipelineRun
-from pakistan_flood_monitor.models.db_models import AuditLog as DBAuditLog
-
-from app.services.observability import metrics_registry
-
-from pakistan_flood_monitor.config import settings
+from pakistan_flood_monitor.models.observations import OperationalDataIntegrityError
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
-from pakistan_flood_monitor.services.gis_qa import publication_gate
 from pakistan_flood_monitor.services.alert_templates import render_alert_template
-from app.services.damage_classification import DamageClassificationRequest, DamageClassificationService, DamageBenchmarkValidator
+from pakistan_flood_monitor.services.gis_qa import publication_gate
 
 app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
@@ -410,6 +414,11 @@ def _event_record_from_run(report: dict[str, Any]) -> dict[str, Any]:
         "confidence_bucket": _confidence_bucket(review_event["machine_confidence"]),
         "source_scenes": review_event["source_scenes"],
         "lineage": review_event.get("lineage"),
+        "app_mode": report.get("app_mode", settings.app_mode.value),
+        "data_availability": report.get("data_availability"),
+        "product_label": report.get("product_label"),
+        "contains_synthetic": report.get("contains_synthetic", False),
+        "watermark": report.get("watermark"),
         "district_overlays": [review_event["aoi"]],
         "notes": review_event["notes"],
         "timestamps": {
@@ -522,7 +531,10 @@ def _record_run(report: dict[str, Any]) -> None:
         finally:
             db.close()
             
-    metrics_registry.increment("pipeline.alerts_published")
+    if report.get("contains_synthetic"):
+        metrics_registry.increment("pipeline.demo_previews_produced")
+    else:
+        metrics_registry.increment("pipeline.candidates_recorded")
     metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
 
 
@@ -947,6 +959,14 @@ async def enforce_rate_limit(request: Request, call_next):
     return await call_next(request)
 
 
+@app.exception_handler(OperationalDataIntegrityError)
+async def operational_data_integrity_error_handler(
+    _request: Request,
+    exc: OperationalDataIntegrityError,
+) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content=exc.as_dict())
+
+
 def _require_role(*allowed_roles: str):
     def _verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)) -> dict[str, str]:
         if credentials is None:
@@ -968,7 +988,12 @@ def _ensure_published_event(event: dict[str, Any]) -> None:
 @app.get("/health")
 def health() -> dict[str, str | float]:
     metrics_registry.set_gauge("ops.api_uptime", 1.0)
-    return {"status": "ok", "api_uptime": 1.0}
+    return {
+        "status": "ok",
+        "api_uptime": 1.0,
+        "app_mode": settings.app_mode.value,
+        "operational_data_policy": "fail_closed",
+    }
 
 
 @public_router.get("/limitations")
@@ -1414,16 +1439,17 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, auth_context:
     old_status = event["status"]
     requested_state = _normalize_lifecycle_action(payload.action)
     _validate_lifecycle_transition(old_status, requested_state)
-    event["status"] = requested_state
-    event["analyst_confidence"] = payload.analyst_confidence
+    candidate_event = deepcopy(event)
+    candidate_event["status"] = requested_state
+    candidate_event["analyst_confidence"] = payload.analyst_confidence
     if payload.notes:
-        event["notes"] = payload.notes
+        candidate_event["notes"] = payload.notes
     if payload.reviewed_geometry:
-        event["geometry"] = payload.reviewed_geometry
+        candidate_event["geometry"] = payload.reviewed_geometry
     if payload.label_metadata:
-        event["label_metadata"] = payload.label_metadata
+        candidate_event["label_metadata"] = payload.label_metadata
     if payload.mapping_rules:
-        event["mapping_rules"] = payload.mapping_rules
+        candidate_event["mapping_rules"] = payload.mapping_rules
 
     if payload.reviewed_geometry and (not payload.label_metadata or not payload.mapping_rules):
         raise HTTPException(
@@ -1431,11 +1457,16 @@ def admin_review_event(event_id: str, payload: ReviewEventRequest, auth_context:
             detail="reviewed_geometry requires both label_metadata and mapping_rules.",
         )
 
-    qa_result = publication_gate(event)
+    qa_result = publication_gate(candidate_event, app_mode=settings.app_mode)
     if requested_state == "published" and not qa_result.passed:
         raise HTTPException(status_code=400, detail={"qa_failed": qa_result.errors})
     if qa_result.normalized_geometry:
-        event["geometry"] = qa_result.normalized_geometry
+        candidate_event["geometry"] = qa_result.normalized_geometry
+
+    # Commit the transition only after the publication gate succeeds. A rejected
+    # request must never leave the shared event object in a published state.
+    event.clear()
+    event.update(candidate_event)
 
     _upsert_historical_event_from_event(event)
     historical_record = HistoricalEventRecord.model_validate(historical_event_library[event_id])

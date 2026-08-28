@@ -9,10 +9,18 @@ from __future__ import annotations
 
 import json
 import warnings
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, List, Optional
+
+from pakistan_flood_monitor.config import AppMode, settings
+from pakistan_flood_monitor.models.observations import (
+    ObservationStatus,
+    OperationalDataIntegrityError,
+    ScientificObservation,
+    SourceAvailabilityStatus,
+)
 
 STAC_ENDPOINT = "https://earth-search.aws.element84.com/v1"
 
@@ -46,12 +54,16 @@ class SceneMetadata:
     bbox: Optional[List[float]] = None
     stac_item_url: Optional[str] = None
     properties: Dict = field(default_factory=dict)
+    observation_status: ObservationStatus = ObservationStatus.OBSERVED
+    availability_status: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    synthetic: bool = False
 
 
 class DataCatalog:
     """
     Real Earth Observation data catalog backed by the free Earth Search STAC API.
-    No credentials required. Falls back to stub data if the network is unavailable.
+    No credentials required. Test/demo mode can use clearly labelled stubs when the
+    network is unavailable; operational mode fails closed.
     """
 
     sensors = ("sentinel-1", "sentinel-2", "landsat", "hls")
@@ -63,9 +75,26 @@ class DataCatalog:
         "landsat":    COLLECTION_LANDSAT,
     }
 
-    def __init__(self, stac_endpoint: str = STAC_ENDPOINT):
+    def __init__(self, stac_endpoint: str = STAC_ENDPOINT, app_mode: AppMode | None = None):
         self.stac_endpoint = stac_endpoint
+        self.app_mode = app_mode or settings.app_mode
         self._client = None
+
+    def _unavailable_source(self, sensor: str) -> OperationalDataIntegrityError:
+        observation = ScientificObservation(
+            name=f"{sensor}_scene",
+            value=None,
+            units="scene",
+            status=ObservationStatus.UNAVAILABLE,
+            availability=SourceAvailabilityStatus.UNAVAILABLE,
+            source_uri=self.stac_endpoint,
+            processing_version="earth-search-discovery-v1",
+            quality_status="source_unavailable",
+        )
+        return OperationalDataIntegrityError(
+            f"Operational scene discovery failed for {sensor}; no synthetic fallback is permitted.",
+            observations={observation.name: observation},
+        )
 
     def _get_client(self):
         """Lazily initialise the STAC client."""
@@ -95,7 +124,8 @@ class DataCatalog:
     ) -> List[SceneMetadata]:
         """
         Query Earth Search for real satellite scenes over the given corridor.
-        Falls back to stub data if the network is unavailable.
+        Test/demo mode falls back to labelled stub data. Operational mode returns
+        an explicit unavailable state through ``OperationalDataIntegrityError``.
         """
         collection = self._COLLECTION_MAP.get(sensor)
         if collection is None:
@@ -103,6 +133,8 @@ class DataCatalog:
 
         client = self._get_client()
         if client is None:
+            if self.app_mode is AppMode.OPERATIONAL:
+                raise self._unavailable_source(sensor)
             return self._stub_scenes(sensor, aoi_name, start)
 
         bbox = self._corridor_bbox(aoi_name)
@@ -122,7 +154,9 @@ class DataCatalog:
             results = client.search(**search_kwargs)
             items = list(results.items())
         except Exception as exc:
-            warnings.warn(f"STAC search failed: {exc}. Returning stub data.")
+            if self.app_mode is AppMode.OPERATIONAL:
+                raise self._unavailable_source(sensor) from exc
+            warnings.warn(f"STAC search failed: {exc}. Returning labelled demo data.")
             return self._stub_scenes(sensor, aoi_name, start)
 
         scenes: List[SceneMetadata] = []
@@ -143,6 +177,9 @@ class DataCatalog:
                 bbox=list(item.bbox) if item.bbox else bbox,
                 stac_item_url=item.get_self_href(),
                 properties=dict(item.properties),
+                observation_status=ObservationStatus.OBSERVED,
+                availability_status=SourceAvailabilityStatus.AVAILABLE,
+                synthetic=False,
             ))
         return scenes
 
@@ -179,17 +216,19 @@ class DataCatalog:
         """
         bbox = self._corridor_bbox(aoi_name)
         return {
-            "imerg":         f"https://gpm.nasa.gov/data/imerg",
-            "glofas":        f"https://cds.climate.copernicus.eu/cdsapp#!/dataset/cems-glofas-historical",
-            "dem":           f"https://earth-search.aws.element84.com/v1/collections/cop-dem-glo-30",
-            "water_history": f"https://global-surface-water.appspot.com/download",
+            "imerg":         "https://gpm.nasa.gov/data/imerg",
+            "glofas":        "https://cds.climate.copernicus.eu/cdsapp#!/dataset/cems-glofas-historical",
+            "dem":           "https://earth-search.aws.element84.com/v1/collections/cop-dem-glo-30",
+            "water_history": "https://global-surface-water.appspot.com/download",
             "bbox":          json.dumps(bbox),
         }
 
     def _stub_scenes(
         self, sensor: str, aoi_name: str, start: date
     ) -> List[SceneMetadata]:
-        """Offline fallback stubs so the pipeline never hard-crashes."""
+        """Offline test/demo fixture; never returned in operational mode."""
+        if self.app_mode is AppMode.OPERATIONAL:
+            raise self._unavailable_source(sensor)
         return [
             SceneMetadata(
                 sensor=sensor,
@@ -200,7 +239,10 @@ class DataCatalog:
                 thumbnail_url="",
                 visual_url="",
                 bbox=self._corridor_bbox(aoi_name),
-                properties={"stub": True},
+                properties={"stub": True, "watermark": "SIMULATED / DEMO DATA"},
+                observation_status=ObservationStatus.SIMULATED,
+                availability_status=SourceAvailabilityStatus.DEGRADED,
+                synthetic=True,
             )
         ]
 
