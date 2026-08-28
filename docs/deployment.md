@@ -48,8 +48,9 @@ To deploy the current prototype to a single cloud VM (e.g., Ubuntu 22.04):
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -e ".[dev]"
-   cp .env.local.example .env.prod
-   # Add your NASA Earthdata credentials and other secrets to .env.prod
+   # Configure non-secret production values in .env.prod.
+   # Inject DATABASE_DSN, NASA Earthdata credentials, and other secrets through
+   # the process manager or deployment platform's secret manager.
    ```
 
 3. **Run via Process Manager (e.g., PM2 or Systemd)**:
@@ -57,7 +58,7 @@ To deploy the current prototype to a single cloud VM (e.g., Ubuntu 22.04):
 
    *FastAPI*:
    ```bash
-   uvicorn src.pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000
+   APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000
    ```
 
    *Streamlit*:

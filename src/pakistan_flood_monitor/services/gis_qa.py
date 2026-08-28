@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from pakistan_flood_monitor.config import AppMode, settings
+from pakistan_flood_monitor.models.observations import (
+    ObservationStatus,
+    SourceAvailabilityStatus,
+)
+
 
 @dataclass(slots=True)
 class QAResult:
@@ -141,11 +147,50 @@ def semantic_qa(event: dict[str, Any]) -> list[str]:
     return errors
 
 
-def publication_gate(event: dict[str, Any]) -> QAResult:
+def lineage_integrity_qa(event: dict[str, Any], app_mode: AppMode) -> list[str]:
+    """Reject public publication when provenance is missing, simulated or unavailable."""
+
+    if app_mode is AppMode.TEST:
+        return []
+
+    lineage = event.get("lineage") or {}
+    if not lineage:
+        return ["Scientific lineage is required before publication outside test mode."]
+
+    observations = lineage.get("observations") or {}
+    contains_synthetic = bool(lineage.get("contains_synthetic")) or any(
+        observation.get("synthetic") is True
+        or observation.get("status") == ObservationStatus.SIMULATED.value
+        for observation in observations.values()
+        if isinstance(observation, dict)
+    )
+    if contains_synthetic:
+        return ["Synthetic lineage cannot be published as a public or operational event."]
+
+    unavailable = sorted(
+        name
+        for name, observation in observations.items()
+        if isinstance(observation, dict)
+        and (
+            observation.get("status") == ObservationStatus.UNAVAILABLE.value
+            or observation.get("availability") == SourceAvailabilityStatus.UNAVAILABLE.value
+        )
+    )
+    errors: list[str] = []
+    if unavailable:
+        errors.append(f"Required observations are unavailable: {', '.join(unavailable)}.")
+    if app_mode is AppMode.OPERATIONAL and not observations:
+        errors.append("Operational publication requires per-observation provenance metadata.")
+    return errors
+
+
+def publication_gate(event: dict[str, Any], app_mode: AppMode | str | None = None) -> QAResult:
+    resolved_mode = AppMode(app_mode) if isinstance(app_mode, str) else (app_mode or settings.app_mode)
     errors = []
     geometry_result = geometry_qa(event.get("geometry"))
     errors.extend(geometry_result.errors)
     errors.extend(semantic_qa(event))
     errors.extend(enforce_review_sop(event.get("label_metadata"), event.get("mapping_rules")))
+    errors.extend(lineage_integrity_qa(event, resolved_mode))
 
     return QAResult(not errors, errors, geometry_result.normalized_geometry)

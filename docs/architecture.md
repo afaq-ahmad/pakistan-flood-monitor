@@ -1,5 +1,23 @@
 # Architecture
 
+> **Canonical runtime:** `pakistan_flood_monitor.api.main:app`. See
+> [ADR-001](adr/ADR-001-canonical-runtime.md). The `src/app` tree and standalone Streamlit services
+> are migration/demo surfaces; they are not a second operational runtime.
+
+## Runtime data-safety modes
+
+Set `APP_MODE` explicitly:
+
+| Mode | Synthetic fixtures | Publication behaviour |
+|---|---|---|
+| `test` | Allowed and labelled | Allowed for automated fixture tests |
+| `demo` | Allowed and visibly watermarked | Synthetic lineage cannot become a public event |
+| `operational` | Prohibited | Missing data fail closed as `UNAVAILABLE` |
+
+Every scientific input carries an observation label, availability state, units, source URI/time,
+processing version, and quality status. The current default is `demo`, which prevents an unset local
+environment from being mistaken for an operational deployment.
+
 The Pakistan Flood Monitor is built as a hybrid Python application using **Streamlit** for the frontend dashboard, supported by several modular backend services and data pipelines.
 
 ## High-Level Architecture Diagram

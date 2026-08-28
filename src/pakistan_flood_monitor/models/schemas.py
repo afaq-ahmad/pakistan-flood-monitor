@@ -4,6 +4,13 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel, Field
 
+from pakistan_flood_monitor.config import AppMode
+from pakistan_flood_monitor.models.observations import (
+    ObservationStatus,
+    ScientificObservation,
+    SourceAvailabilityStatus,
+)
+
 
 class AlertLevel(str, Enum):
     watch = "watch"
@@ -53,6 +60,10 @@ class SourceSceneLineage(BaseModel):
     sensor: str
     acquired_at: datetime
     assets: Dict[str, LineageSceneAsset] = Field(default_factory=dict)
+    observation_status: ObservationStatus = ObservationStatus.OBSERVED
+    availability_status: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    synthetic: bool = False
+    source_uri: str | None = None
 
 
 class EventLineage(BaseModel):
@@ -65,6 +76,11 @@ class EventLineage(BaseModel):
     thresholds: Dict[str, float] = Field(default_factory=dict)
     model: Dict[str, Any] = Field(default_factory=dict)
     generated_at: datetime
+    observations: Dict[str, ScientificObservation] = Field(default_factory=dict)
+    contains_synthetic: bool = False
+    data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    product_label: ObservationStatus = ObservationStatus.OBSERVED
+    watermark: str | None = None
 
 
 class RunLineage(BaseModel):
@@ -78,6 +94,11 @@ class RunLineage(BaseModel):
     thresholds: Dict[str, float] = Field(default_factory=dict)
     model: Dict[str, Any] = Field(default_factory=dict)
     generated_at: datetime
+    observations: Dict[str, ScientificObservation] = Field(default_factory=dict)
+    contains_synthetic: bool = False
+    data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    product_label: ObservationStatus = ObservationStatus.OBSERVED
+    watermark: str | None = None
 
 
 class FloodDetectionResult(BaseModel):
@@ -91,6 +112,9 @@ class FloodDetectionResult(BaseModel):
     review_status: ReviewStatus
     indicators: Dict[str, float]
     probabilistic_forecast: Dict[str, Any] = Field(default_factory=dict)
+    observation_statuses: Dict[str, ObservationStatus] = Field(default_factory=dict)
+    data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    product_label: ObservationStatus = ObservationStatus.OBSERVED
 
 
 class FloodCandidateMap(BaseModel):
@@ -134,6 +158,9 @@ class AlertSummary(BaseModel):
     alert_level: AlertLevel
     confidence_score: float
     summary: str
+    product_label: ObservationStatus = ObservationStatus.OBSERVED
+    data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    watermark: str | None = None
 
 
 class ModelVersion(BaseModel):
@@ -186,3 +213,9 @@ class ProcessingReport(BaseModel):
     trigger_reason: str
     published_outputs: MVPOutputs
     run_lineage: RunLineage
+    app_mode: AppMode = AppMode.DEMO
+    data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
+    product_label: ObservationStatus = ObservationStatus.OBSERVED
+    contains_synthetic: bool = False
+    watermark: str | None = None
+    observations: Dict[str, ScientificObservation] = Field(default_factory=dict)

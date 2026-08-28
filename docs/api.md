@@ -7,7 +7,7 @@ The project contains a programmatic REST API built with **FastAPI**. While the p
 ## Starting the API
 
 ```bash
-uvicorn src.pakistan_flood_monitor.api.main:app --reload --port 8000
+APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --reload --port 8000
 ```
 
 ## Authorization

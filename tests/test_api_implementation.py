@@ -1,6 +1,6 @@
-import os
-import json
 import base64
+import json
+import os
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
@@ -8,17 +8,16 @@ from fastapi.testclient import TestClient
 from pakistan_flood_monitor.api.main import (
     app,
     event_store,
+    field_report_audit_log,
+    field_reports,
     historical_event_library,
     model_registry,
     privileged_audit_log,
-    field_reports,
-    field_report_audit_log,
     retraining_decisions,
     review_audit_log,
     run_history,
     threshold_registry,
 )
-
 
 ADMIN_TOKEN = "test-admin-token"
 ANALYST_TOKEN = "test-analyst-token"
@@ -511,6 +510,25 @@ def test_publish_requires_qa_and_sop_fields() -> None:
 
     assert publish_response.status_code == 400
     assert publish_response.json()["detail"]["error"] == "invalid_lifecycle_transition"
+
+
+def test_failed_publication_gate_does_not_mutate_event_state() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    run_response = client.get("/internal/run/Indus-Lower", headers=_admin_headers())
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+    _lifecycle_transition(client, event_id, "review", "begin review")
+    _lifecycle_transition(client, event_id, "approved", "approval without publication metadata")
+
+    rejected = client.post(
+        f"/internal/admin/review-event?event_id={event_id}",
+        json={"action": "published", "notes": "missing SOP metadata"},
+        headers=_analyst_headers(),
+    )
+
+    assert rejected.status_code == 400
+    assert event_store[event_id]["status"] == "approved"
 
 
 def test_privileged_endpoints_ignore_or_absorb_missing_actor_and_bind_principal() -> None:

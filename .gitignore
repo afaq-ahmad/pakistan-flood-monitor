@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.cache/
 .env.local
 .env.prod
 .env.staging
