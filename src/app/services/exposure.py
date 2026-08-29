@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 from shapely.geometry import shape
 
+from pakistan_flood_monitor.geo.measurements import area_sqkm, distance_m, length_km
 
 GeometryDict = dict[str, Any]
 
@@ -253,8 +254,8 @@ def _overlay_metric(*, event_geom, layer: AssetLayer) -> dict[str, float]:
         blocked = False
         for feature in layer.features:
             geom = shape(feature.geometry)
-            total_m += geom.length
-            seg_exposed = event_geom.intersection(geom).length
+            total_m += length_km(geom) * 1_000.0
+            seg_exposed = length_km(event_geom.intersection(geom)) * 1_000.0
             exposed_m += seg_exposed
             if feature.properties.get("evacuation_priority") and seg_exposed > 0:
                 blocked = True
@@ -288,7 +289,7 @@ def _overlay_metric(*, event_geom, layer: AssetLayer) -> dict[str, float]:
             if not event_geom.is_empty:
                 boundary = event_geom.boundary if not event_geom.boundary.is_empty else event_geom
                 for safe_pt in safe_points:
-                    dist = boundary.distance(safe_pt)
+                    dist = distance_m(boundary, safe_pt)
                     if nearest is None or dist < nearest:
                         nearest = dist
                     if dist <= threshold_m:
@@ -378,7 +379,7 @@ def _build_uncertainty(
 
 
 def _area_sqkm(geom) -> float:
-    return float(geom.area)
+    return area_sqkm(geom)
 
 
 def compute_exposure(event_id: int) -> dict:

@@ -1,7 +1,7 @@
 # Implementation status
 
-Last verified: **2026-08-29**, against `main` at `448fddd` plus the unmerged
-`feat/canonical-runtime-foundation` workstream. Read this file with root
+Last verified: **2026-08-29**, against `main` at `cc109c6`; the focused
+`feat/metric-gis-contracts` workstream is not yet merged. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -30,8 +30,8 @@ choose between them.
 | Prompt | State | Evidence / scope |
 |---|---|---|
 | 00 | COMPLETE | Repository operating contract merged in [PR #69](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/69); ledger and ADR policy added by the current Prompt 00 follow-up PR |
-| 01 | PARTIAL | [PR #68](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/68) merged the first observation-state contract. The current unmerged branch adds canonical API/CLI/worker wiring, explicit demo-only fixture/product helpers, typed `NO_DATA`/`STALE`/`PARTIAL` availability, reusable publication eligibility, and durable run/task persistence. Mark COMPLETE only after this branch is reviewed and merged. |
-| 02 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
+| 01 | COMPLETE | [PR #68](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/68) merged the first observation-state contract and [PR #71](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/71) merged canonical API/CLI/worker wiring, explicit demo-only helpers, typed availability, publication eligibility, and durable run/task persistence. |
+| 02 | IN_PROGRESS | `feat/metric-gis-contracts` adds the canonical geodesic/local-projection measurement helpers, compact product provenance/quality/freshness/asset contracts, and targeted legacy migration-source call-site corrections. No migration is required: the canonical persistence boundary already stores composed metadata in JSON. |
 | 03 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 04 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 05 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
@@ -97,7 +97,13 @@ Focused checks on the unmerged canonical-runtime workstream:
 - Root migration modules were syntax-parsed — **passed**.
 - `tests/test_workflow_foundation.py` — **not run** because this workspace has no virtual environment and its available base runtime lacks `pytest`, `SQLAlchemy`, and raster dependencies. The new `dev` extra supplies `pytest`; no broad dependency install or full-suite run was performed for this workstream.
 
+Focused checks on the unmerged metric-GIS contracts workstream:
+
+- `PYTHONPATH=src uv run --no-project --with 'shapely>=2.0' --with 'pyproj>=3.6' --with 'pytest>=8.0' --with 'pydantic>=2.6' python -m pytest tests/test_geo_measurements.py tests/test_lineage_schema.py -q` — **4 passed**. Pakistan-latitude geometry assertions confirm plausible km/km² values; the two existing Pydantic `schema`-field warnings remain.
+- `python -m compileall -q src/pakistan_flood_monitor/geo src/pakistan_flood_monitor/models src/pakistan_flood_monitor/pipeline/runner.py src/app/services src/app/db/spatial.py` — **passed**.
+- Static call-site check confirms scene ingestion, exposure, preprocessing, and corridor buffer services import `pakistan_flood_monitor.geo.measurements`; no raw Shapely metric calculation remains outside the helper implementation.
+
 ## Next recommended prompt
 
-**Stop after Prompt 01 review/merge.** The next prompt must begin only after this workstream's focused
-checks and review are accepted; it should preserve the fail-closed runtime and durable task contract.
+**Stop after Prompt 02 review/merge.** The next prompt must preserve these metric and metadata
+contracts when migrating additional GIS services or introducing real EO products.

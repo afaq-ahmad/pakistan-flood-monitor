@@ -8,6 +8,8 @@ import geopandas as gpd
 from shapely.geometry import LineString, MultiLineString, MultiPolygon
 from shapely.ops import linemerge
 
+from pakistan_flood_monitor.geo.measurements import buffer_m
+
 
 @dataclass(slots=True)
 class CorridorProductBundle:
@@ -77,14 +79,13 @@ def derive_corridor_products(
 ) -> CorridorProductBundle:
     """Generate corridor bbox, buffer, basin/district overlays, and optional asset masks."""
     corridors = corridors.to_crs("EPSG:4326")
-    projected = corridors.to_crs("EPSG:3857")
-
     bbox = corridors.copy()
     bbox["geometry"] = corridors.geometry.envelope
 
-    monitoring_buffer = projected.copy()
-    monitoring_buffer["geometry"] = projected.geometry.buffer(monitoring_buffer_meters)
-    monitoring_buffer = monitoring_buffer.to_crs("EPSG:4326")
+    monitoring_buffer = corridors.copy()
+    monitoring_buffer["geometry"] = monitoring_buffer.geometry.apply(
+        lambda geometry: buffer_m(geometry, monitoring_buffer_meters)
+    )
 
     basin_overlay = None
     if basins is not None:
@@ -123,7 +124,7 @@ def derive_embankment_side_polygons(
     if protected_side not in {"left", "right"}:
         raise ValueError("protected_side must be either 'left' or 'right'")
 
-    lines = embankments.to_crs("EPSG:3857").copy()
+    lines = embankments.to_crs("EPSG:4326").copy()
     lines["geometry"] = lines.geometry.make_valid()
     lines = lines[lines.geometry.geom_type.isin(["LineString", "MultiLineString"])].copy()
     lines["geometry"] = lines.geometry.apply(_as_multiline)
@@ -138,8 +139,8 @@ def derive_embankment_side_polygons(
             line_parts = [merged] if merged.geom_type == "LineString" else list(merged.geoms)
 
         for idx, line in enumerate(line_parts, start=1):
-            left_side = line.buffer(side_buffer_meters, single_sided=True)
-            right_side = line.buffer(-side_buffer_meters, single_sided=True)
+            left_side = buffer_m(line, side_buffer_meters, single_sided=True)
+            right_side = buffer_m(line, -side_buffer_meters, single_sided=True)
             sides = {"left": left_side, "right": right_side}
 
             for side_name, geom in sides.items():
@@ -154,7 +155,7 @@ def derive_embankment_side_polygons(
                     }
                 )
 
-    side_polygons = gpd.GeoDataFrame(side_rows, crs="EPSG:3857").to_crs("EPSG:4326")
+    side_polygons = gpd.GeoDataFrame(side_rows, crs="EPSG:4326")
     return side_polygons
 
 
