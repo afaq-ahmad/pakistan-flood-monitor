@@ -1,7 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from app.services.observability import log_failure, log_structured, metrics_registry
 from pakistan_flood_monitor.config import AppMode, settings
 from pakistan_flood_monitor.core.detection import FloodDetector
 from pakistan_flood_monitor.core.exposure import ExposureAnalyzer
@@ -35,7 +34,9 @@ from pakistan_flood_monitor.models.schemas import (
     SourceSceneLineage,
 )
 from pakistan_flood_monitor.pipeline.feature_generation import SceneFeatureExtractor
+from pakistan_flood_monitor.pipeline.demo_fixtures import DemoFloodProductSimulator
 from pakistan_flood_monitor.services.alerts import AlertService
+from pakistan_flood_monitor.services.observability import log_failure, log_structured, metrics_registry
 from pakistan_flood_monitor.services.probabilistic_forecast import (
     build_probabilistic_forecast,
     compute_calibration_stats,
@@ -53,7 +54,8 @@ class FloodHazardModule(HazardModule):
         self.catalog = DataCatalog(app_mode=self.app_mode)
         self.detector = FloodDetector()
         self.alerts = AlertService()
-        self.exposure = ExposureAnalyzer()
+        self.exposure = ExposureAnalyzer(app_mode=self.app_mode)
+        self.demo_products = DemoFloodProductSimulator() if self.app_mode is not AppMode.OPERATIONAL else None
         self.triggers = EventTriggerService()
         self.feature_extractor = SceneFeatureExtractor(app_mode=self.app_mode)
 
@@ -240,8 +242,8 @@ class FloodHazardModule(HazardModule):
             ],
         )
 
-    def run_daily(self, aoi_name: str) -> ProcessingReport:
-        run_id = str(uuid4())
+    def run_daily(self, aoi_name: str, run_id: str | None = None) -> ProcessingReport:
+        run_id = run_id or str(uuid4())
         started = datetime.utcnow()
         checkpoint = "validate_aoi"
         if not self._pilot_corridor_enabled(aoi_name):
@@ -301,6 +303,15 @@ class FloodHazardModule(HazardModule):
             source_sensors = sorted({scene.sensor for scene in scenes}) + ["imerg", "glofas"]
             source_identifiers = extracted.source_scene_ids + ["imerg", "glofas"]
 
+            if self.app_mode is AppMode.OPERATIONAL:
+                raise OperationalDataIntegrityError(
+                    "Operational flood detection is unavailable until a validated EO hazard processor, "
+                    "flood-extent generator, and exposure overlay processor are configured.",
+                    observations=extracted.observations,
+                )
+            if self.demo_products is None:  # pragma: no cover - constructor invariant
+                raise RuntimeError("Test/demo runs require the explicit demo product simulator")
+
             checkpoint = "event_trigger"
             should_process, trigger_reason = self.triggers.should_process(
                 TriggerInputs(
@@ -334,7 +345,7 @@ class FloodHazardModule(HazardModule):
                     data_availability=extracted.integrity.data_availability,
                     product_label=extracted.integrity.product_label,
                 )
-                exposure = self.exposure.estimate(0.0)
+                exposure = self.exposure.estimate_demo(0.0)
                 report = ProcessingReport(
                     run_id=run_id,
                     source_sensors=source_sensors,
@@ -364,7 +375,7 @@ class FloodHazardModule(HazardModule):
             else:
                 flood_probability = self.detector.rule_based_probability(features)
                 breach_risk = self.detector.detect_breach_risk(expansion_rate=0.62, embankment_side_water=0.7)
-                flood_area_km2 = round(25 + flood_probability * 70, 2)
+                flood_area_km2 = self.demo_products.flood_area_from_probability(flood_probability)
                 confidence_score = self.alerts.confidence(flood_probability, breach_risk)
                 alert_level = self.alerts.classify(flood_probability, breach_risk)
                 review_status = self.alerts.review_status(confidence_score)
@@ -401,7 +412,7 @@ class FloodHazardModule(HazardModule):
                     data_availability=extracted.integrity.data_availability,
                     product_label=extracted.integrity.product_label,
                 )
-                exposure = self.exposure.estimate(flood_area_km2)
+                exposure = self.exposure.estimate_demo(flood_area_km2)
                 report = ProcessingReport(
                     run_id=run_id,
                     source_sensors=source_sensors,
@@ -504,8 +515,11 @@ class FloodMonitoringPipeline:
     def feature_extractor(self, value: SceneFeatureExtractor) -> None:
         self._flood_module.feature_extractor = value
 
-    def run_hazard_daily(self, hazard_type: str, aoi_name: str) -> ProcessingReport:
-        return self.registry.get(hazard_type).run_daily(aoi_name)
+    def run_hazard_daily(self, hazard_type: str, aoi_name: str, run_id: str | None = None) -> ProcessingReport:
+        module = self.registry.get(hazard_type)
+        if hazard_type == "flood" and isinstance(module, FloodHazardModule):
+            return module.run_daily(aoi_name, run_id=run_id)
+        return module.run_daily(aoi_name)
 
-    def run_daily(self, aoi_name: str) -> ProcessingReport:
-        return self.run_hazard_daily("flood", aoi_name)
+    def run_daily(self, aoi_name: str, run_id: str | None = None) -> ProcessingReport:
+        return self.run_hazard_daily("flood", aoi_name, run_id=run_id)

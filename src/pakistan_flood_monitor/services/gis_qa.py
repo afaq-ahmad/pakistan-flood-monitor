@@ -5,10 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from pakistan_flood_monitor.config import AppMode, settings
-from pakistan_flood_monitor.models.observations import (
-    ObservationStatus,
-    SourceAvailabilityStatus,
-)
+from pakistan_flood_monitor.services.publication_eligibility import publication_eligibility
 
 
 @dataclass(slots=True)
@@ -158,27 +155,8 @@ def lineage_integrity_qa(event: dict[str, Any], app_mode: AppMode) -> list[str]:
         return ["Scientific lineage is required before publication outside test mode."]
 
     observations = lineage.get("observations") or {}
-    contains_synthetic = bool(lineage.get("contains_synthetic")) or any(
-        observation.get("synthetic") is True
-        or observation.get("status") == ObservationStatus.SIMULATED.value
-        for observation in observations.values()
-        if isinstance(observation, dict)
-    )
-    if contains_synthetic:
-        return ["Synthetic lineage cannot be published as a public or operational event."]
-
-    unavailable = sorted(
-        name
-        for name, observation in observations.items()
-        if isinstance(observation, dict)
-        and (
-            observation.get("status") == ObservationStatus.UNAVAILABLE.value
-            or observation.get("availability") == SourceAvailabilityStatus.UNAVAILABLE.value
-        )
-    )
-    errors: list[str] = []
-    if unavailable:
-        errors.append(f"Required observations are unavailable: {', '.join(unavailable)}.")
+    eligibility = publication_eligibility(observations, app_mode=app_mode)
+    errors = list(eligibility.errors)
     if app_mode is AppMode.OPERATIONAL and not observations:
         errors.append("Operational publication requires per-observation provenance metadata.")
     return errors

@@ -103,6 +103,26 @@ def test_operational_catalog_never_returns_stub_scenes(monkeypatch) -> None:
     assert raised.value.as_dict()["observations"]["sentinel-1_scene"]["status"] == "UNAVAILABLE"
 
 
+def test_operational_catalog_reports_no_data_for_an_empty_provider_result(monkeypatch) -> None:
+    class EmptySearch:
+        def items(self):
+            return []
+
+    class EmptyClient:
+        def search(self, **_kwargs):
+            return EmptySearch()
+
+    catalog = DataCatalog(app_mode=AppMode.OPERATIONAL)
+    monkeypatch.setattr(catalog, "_get_client", lambda: EmptyClient())
+
+    with pytest.raises(OperationalDataIntegrityError) as raised:
+        catalog.fetch_scenes("sentinel-1", "Indus-Lower", date(2026, 8, 27), date(2026, 8, 28))
+
+    observation = raised.value.observations["sentinel-1_scene"]
+    assert observation.availability is SourceAvailabilityStatus.NO_DATA
+    assert observation.value is None
+
+
 def test_canonical_api_returns_structured_unavailable_response(monkeypatch) -> None:
     rainfall = ScientificObservation(
         name="rainfall_mm_72h",
