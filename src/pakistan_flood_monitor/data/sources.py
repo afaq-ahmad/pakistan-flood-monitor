@@ -90,9 +90,28 @@ class DataCatalog:
             source_uri=self.stac_endpoint,
             processing_version="earth-search-discovery-v1",
             quality_status="source_unavailable",
+            availability_reason_code="provider_unreachable",
         )
         return OperationalDataIntegrityError(
             f"Operational scene discovery failed for {sensor}; no synthetic fallback is permitted.",
+            observations={observation.name: observation},
+        )
+
+    def _no_data_source(self, sensor: str, start: date, end: date) -> OperationalDataIntegrityError:
+        observation = ScientificObservation(
+            name=f"{sensor}_scene",
+            value=None,
+            units="scene",
+            status=ObservationStatus.UNAVAILABLE,
+            availability=SourceAvailabilityStatus.NO_DATA,
+            source_uri=self.stac_endpoint,
+            processing_version="earth-search-discovery-v1",
+            quality_status="no_scenes_returned",
+            availability_reason_code="no_scenes_in_requested_window",
+            freshness_rule=f"scene acquisition between {start.isoformat()} and {end.isoformat()}",
+        )
+        return OperationalDataIntegrityError(
+            f"No {sensor} scenes were available for the requested operational window.",
             observations={observation.name: observation},
         )
 
@@ -159,6 +178,12 @@ class DataCatalog:
             warnings.warn(f"STAC search failed: {exc}. Returning labelled demo data.")
             return self._stub_scenes(sensor, aoi_name, start)
 
+        if not items:
+            if self.app_mode is AppMode.OPERATIONAL:
+                raise self._no_data_source(sensor, start, end)
+            warnings.warn("STAC search returned no scenes. Returning labelled demo data.")
+            return self._stub_scenes(sensor, aoi_name, start)
+
         scenes: List[SceneMetadata] = []
         for item in items:
             assets_raw = {k: v.href for k, v in item.assets.items()}
@@ -202,6 +227,8 @@ class DataCatalog:
                     cloud_cover_max=cloud_cover_max,
                 )
             except Exception as exc:
+                if self.app_mode is AppMode.OPERATIONAL:
+                    raise
                 warnings.warn(f"Failed to fetch {sensor} for {corridor}: {exc}")
                 result[corridor] = []
         return result

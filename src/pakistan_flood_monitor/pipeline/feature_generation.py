@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -19,6 +18,7 @@ from pakistan_flood_monitor.models.observations import (
     SourceAvailabilityStatus,
     summarize_integrity,
 )
+from pakistan_flood_monitor.pipeline.demo_fixtures import DeterministicDemoFeatureFixtures
 
 
 @dataclass(slots=True)
@@ -49,9 +49,13 @@ class SceneFeatureExtractor:
         self,
         snapshot_root: str | Path = ".cache/feature_snapshots",
         app_mode: AppMode | None = None,
+        demo_fixtures: DeterministicDemoFeatureFixtures | None = None,
     ) -> None:
         self._snapshot_root = Path(snapshot_root)
         self._app_mode = app_mode or settings.app_mode
+        self._demo_fixtures = demo_fixtures if self._app_mode is not AppMode.OPERATIONAL else None
+        if self._app_mode is not AppMode.OPERATIONAL and self._demo_fixtures is None:
+            self._demo_fixtures = DeterministicDemoFeatureFixtures()
 
     def extract(
         self,
@@ -71,47 +75,47 @@ class SceneFeatureExtractor:
             "sar_drop_db": self._observed_or_fallback(
                 name="sar_drop_db",
                 observed_value=sar_drop,
-                simulated_value=round(1.5 + self._unit_hash("|".join(source_scene_ids)) * 3.0, 3),
                 units="dB",
                 source_uri=self._first_asset_uri(scenes, "vv"),
                 source_timestamp=source_timestamp,
                 processing_version=processing_version,
+                fixture_seed="|".join(source_scene_ids),
             ),
             "ndwi": self._observed_or_fallback(
                 name="ndwi",
                 observed_value=None,
-                simulated_value=self._derive_ndwi(source_scene_ids),
                 units="unitless_index",
                 source_uri=None,
                 source_timestamp=source_timestamp,
                 processing_version=processing_version,
+                fixture_seed="|".join(source_scene_ids),
             ),
             "rainfall_mm_72h": self._observed_or_fallback(
                 name="rainfall_mm_72h",
                 observed_value=None,
-                simulated_value=self._derive_imerg_mm_72h(support_layers.get("imerg", ""), source_scene_ids),
                 units="mm",
                 source_uri=support_layers.get("imerg") or None,
                 source_timestamp=None,
                 processing_version=processing_version,
+                fixture_seed=f"{support_layers.get('imerg', '')}:{'|'.join(source_scene_ids)}",
             ),
             "glofas_return_period": self._observed_or_fallback(
                 name="glofas_return_period",
                 observed_value=None,
-                simulated_value=self._derive_glofas_rp(support_layers.get("glofas", ""), source_scene_ids),
                 units="years",
                 source_uri=support_layers.get("glofas") or None,
                 source_timestamp=None,
                 processing_version=processing_version,
+                fixture_seed=f"{support_layers.get('glofas', '')}:{'|'.join(source_scene_ids)}",
             ),
             "floodplain_distance_m": self._observed_or_fallback(
                 name="floodplain_distance_m",
                 observed_value=None,
-                simulated_value=self._derive_floodplain_distance_m(aoi_name),
                 units="m",
                 source_uri=support_layers.get("floodplain") or None,
                 source_timestamp=None,
                 processing_version=processing_version,
+                fixture_seed=aoi_name,
             ),
         }
         integrity = summarize_integrity(observations, self._app_mode)
@@ -140,7 +144,15 @@ class SceneFeatureExtractor:
             processing_version=processing_version,
             threshold_version=threshold_version,
             source_scene_ids=source_scene_ids,
-            parameters={"feature_hash_algo": "sha256", "ndwi_bounds_min": 0.05, "ndwi_bounds_max": 0.45},
+            parameters={
+                "fixture_generator": (
+                    DeterministicDemoFeatureFixtures.processing_version
+                    if integrity.contains_synthetic
+                    else "none"
+                ),
+                "ndwi_bounds_min": 0.05,
+                "ndwi_bounds_max": 0.45,
+            },
             thresholds=thresholds,
             derived_features=derived,
             observations={name: value.model_dump(mode="json") for name, value in observations.items()},
@@ -180,11 +192,11 @@ class SceneFeatureExtractor:
         *,
         name: str,
         observed_value: float | None,
-        simulated_value: float,
         units: str,
         source_uri: str | None,
         source_timestamp: datetime | None,
         processing_version: str,
+        fixture_seed: str,
     ) -> ScientificObservation:
         if observed_value is not None:
             return ScientificObservation(
@@ -209,18 +221,17 @@ class SceneFeatureExtractor:
                 source_timestamp=source_timestamp,
                 processing_version=processing_version,
                 quality_status="source_unavailable",
+                availability_reason_code="required_processor_not_implemented",
             )
-        return ScientificObservation(
+        if self._demo_fixtures is None:  # pragma: no cover - constructor invariant
+            raise RuntimeError("A test/demo fixture provider is required outside operational mode")
+        return self._demo_fixtures.observation(
             name=name,
-            value=simulated_value,
             units=units,
-            status=ObservationStatus.SIMULATED,
-            availability=SourceAvailabilityStatus.DEGRADED,
             source_uri=source_uri,
             source_timestamp=source_timestamp,
             processing_version=processing_version,
-            quality_status="simulated_fixture",
-            synthetic=True,
+            seed=fixture_seed,
         )
 
     @staticmethod
@@ -236,20 +247,3 @@ class SceneFeatureExtractor:
             if scene.assets and scene.assets.get(asset_name):
                 return scene.assets[asset_name]
         return None
-
-    def _derive_ndwi(self, scene_ids: list[str]) -> float:
-        return round(0.05 + self._unit_hash("ndwi:" + "|".join(scene_ids)) * 0.4, 3)
-
-    def _derive_imerg_mm_72h(self, imerg_ref: str, scene_ids: list[str]) -> float:
-        return round(20.0 + self._unit_hash(f"imerg:{imerg_ref}:{'|'.join(scene_ids)}") * 180.0, 2)
-
-    def _derive_glofas_rp(self, glofas_ref: str, scene_ids: list[str]) -> float:
-        return round(1.0 + self._unit_hash(f"glofas:{glofas_ref}:{'|'.join(scene_ids)}") * 9.0, 2)
-
-    def _derive_floodplain_distance_m(self, aoi_name: str) -> float:
-        return round(200.0 + self._unit_hash("floodplain:" + aoi_name) * 2600.0, 2)
-
-    @staticmethod
-    def _unit_hash(seed: str) -> float:
-        digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
-        return int(digest[:8], 16) / 0xFFFFFFFF

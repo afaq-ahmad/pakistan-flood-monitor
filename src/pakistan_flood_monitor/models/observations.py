@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Mapping
 
@@ -23,7 +23,10 @@ class ObservationStatus(str, Enum):
 
 class SourceAvailabilityStatus(str, Enum):
     AVAILABLE = "AVAILABLE"
+    NO_DATA = "NO_DATA"
     DEGRADED = "DEGRADED"
+    STALE = "STALE"
+    PARTIAL = "PARTIAL"
     UNAVAILABLE = "UNAVAILABLE"
 
 
@@ -40,6 +43,9 @@ class ScientificObservation(BaseModel):
     processing_version: str
     quality_status: str
     synthetic: bool = False
+    availability_reason_code: str | None = None
+    evaluated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    freshness_rule: str | None = None
 
     @model_validator(mode="after")
     def _validate_integrity(self) -> "ScientificObservation":
@@ -47,10 +53,12 @@ class ScientificObservation(BaseModel):
             raise ValueError("SIMULATED observations must set synthetic=true")
         if self.synthetic and self.status is not ObservationStatus.SIMULATED:
             raise ValueError("synthetic=true is only valid for SIMULATED observations")
-        if self.availability is SourceAvailabilityStatus.UNAVAILABLE and self.value is not None:
-            raise ValueError("UNAVAILABLE observations cannot contain a numerical value")
-        if self.status is ObservationStatus.UNAVAILABLE and self.availability is not SourceAvailabilityStatus.UNAVAILABLE:
-            raise ValueError("UNAVAILABLE status requires UNAVAILABLE availability")
+        if self.availability in {SourceAvailabilityStatus.UNAVAILABLE, SourceAvailabilityStatus.NO_DATA} and self.value is not None:
+            raise ValueError("UNAVAILABLE and NO_DATA observations cannot contain a numerical value")
+        if self.status is ObservationStatus.UNAVAILABLE and self.availability is SourceAvailabilityStatus.AVAILABLE:
+            raise ValueError("UNAVAILABLE status requires a non-available availability state")
+        if self.availability_reason_code is None:
+            self.availability_reason_code = self.availability.value.lower()
         return self
 
 
@@ -68,15 +76,39 @@ def summarize_integrity(
     observations: Mapping[str, ScientificObservation],
     app_mode: AppMode,
 ) -> DataIntegritySummary:
-    missing = sorted(
+    unavailable = sorted(
         name
         for name, observation in observations.items()
         if observation.availability is SourceAvailabilityStatus.UNAVAILABLE
     )
+    no_data = sorted(
+        name
+        for name, observation in observations.items()
+        if observation.availability is SourceAvailabilityStatus.NO_DATA
+    )
+    stale = sorted(
+        name
+        for name, observation in observations.items()
+        if observation.availability is SourceAvailabilityStatus.STALE
+    )
+    partial = sorted(
+        name
+        for name, observation in observations.items()
+        if observation.availability is SourceAvailabilityStatus.PARTIAL
+    )
     synthetic = sorted(name for name, observation in observations.items() if observation.synthetic)
 
-    if missing:
+    if unavailable:
         availability = SourceAvailabilityStatus.UNAVAILABLE
+        label = ObservationStatus.UNAVAILABLE
+    elif no_data:
+        availability = SourceAvailabilityStatus.NO_DATA
+        label = ObservationStatus.UNAVAILABLE
+    elif stale:
+        availability = SourceAvailabilityStatus.STALE
+        label = ObservationStatus.UNAVAILABLE
+    elif partial:
+        availability = SourceAvailabilityStatus.PARTIAL
         label = ObservationStatus.UNAVAILABLE
     elif synthetic:
         availability = SourceAvailabilityStatus.DEGRADED
@@ -91,7 +123,7 @@ def summarize_integrity(
         data_availability=availability,
         product_label=label,
         contains_synthetic=bool(synthetic),
-        missing_required_inputs=missing,
+        missing_required_inputs=unavailable + no_data + stale + partial,
         synthetic_inputs=synthetic,
         watermark=watermark,
     )

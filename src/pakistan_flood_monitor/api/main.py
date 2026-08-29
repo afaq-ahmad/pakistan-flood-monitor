@@ -15,13 +15,12 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
-from app.services.damage_classification import (
+from pakistan_flood_monitor.services.damage_classification import (
     DamageBenchmarkValidator,
     DamageClassificationRequest,
     DamageClassificationService,
 )
-from app.services.observability import metrics_registry
-from pakistan_flood_monitor.config import settings
+from pakistan_flood_monitor.config import AppMode, settings
 from pakistan_flood_monitor.models.database import SessionLocal
 from pakistan_flood_monitor.models.db_models import AuditLog as DBAuditLog
 from pakistan_flood_monitor.models.db_models import FloodEvent as DBFloodEvent
@@ -30,6 +29,9 @@ from pakistan_flood_monitor.models.observations import OperationalDataIntegrityE
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
 from pakistan_flood_monitor.services.alert_templates import render_alert_template
 from pakistan_flood_monitor.services.gis_qa import publication_gate
+from pakistan_flood_monitor.services.observability import metrics_registry
+from pakistan_flood_monitor.workflow.flood_daily import run_flood_daily_workflow
+from pakistan_flood_monitor.workflow.repository import WorkflowRepository
 
 app = FastAPI(title="Pakistan Flood Monitor API", version="0.3.0")
 pipeline = FloodMonitoringPipeline()
@@ -494,7 +496,7 @@ def _build_damage_classifications(event_id: str, exposure: dict[str, Any], detec
     validation = damage_benchmark_validator.evaluate(classifications, benchmark_rows)
     return {"schema": "damage-classification/v1", "rows": classifications, "benchmark_validation": validation}
 
-def _record_run(report: dict[str, Any]) -> None:
+def _record_run(report: dict[str, Any], *, persist_pipeline_run: bool = True) -> None:
     corridor = report["detections"][0]["aoi"]
     with state_lock:
         run_history.setdefault(corridor, []).append(report)
@@ -505,12 +507,13 @@ def _record_run(report: dict[str, Any]) -> None:
         # Persist to database
         try:
             db = SessionLocal()
-            run_db = DBPipelineRun(
-                id=report["run_id"],
-                corridor_aoi=corridor,
-                run_metadata=report,
-            )
-            db.add(run_db)
+            if persist_pipeline_run:
+                db.merge(DBPipelineRun(
+                    id=report["run_id"],
+                    corridor_aoi=corridor,
+                    status="success",
+                    run_metadata=report,
+                ))
             
             event_db = DBFloodEvent(
                 id=event["event_id"],
@@ -536,6 +539,17 @@ def _record_run(report: dict[str, Any]) -> None:
     else:
         metrics_registry.increment("pipeline.candidates_recorded")
     metrics_registry.set_gauge("ops.queue_backlog", float(sum(len(v) for v in run_history.values())))
+
+
+def _workflow_report(execution: Any) -> dict[str, Any]:
+    for task in execution.tasks:
+        report = task.result.get("report")
+        if isinstance(report, dict):
+            return report
+    raise RuntimeError(
+        f"Workflow run {execution.run.id} completed without a flood processing report; "
+        "inspect /internal/workflow-runs/{run_id} for its typed task state."
+    )
 
 
 def _all_events() -> list[dict[str, Any]]:
@@ -1006,9 +1020,38 @@ def public_limitations() -> dict[str, Any]:
 
 @internal_router.get("/run/{aoi_name}", dependencies=[Depends(_require_role("admin"))])
 def run_pipeline(aoi_name: str):
-    report = pipeline.run_daily(aoi_name).model_dump()
-    _record_run(report)
+    execution = run_flood_daily_workflow(aoi_name, pipeline=pipeline)
+    report = _workflow_report(execution)
+    _record_run(report, persist_pipeline_run=False)
     return report
+
+
+@internal_router.get("/workflow-runs/{run_id}", dependencies=[Depends(_require_role("admin"))])
+def get_workflow_run(run_id: str) -> dict[str, Any]:
+    repository = WorkflowRepository(auto_create_for_non_operational=settings.app_mode is not AppMode.OPERATIONAL)
+    run = repository.get_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Workflow run not found.")
+    tasks = repository.list_tasks(run_id)
+    return {
+        "run_id": run.id,
+        "aoi_name": run.aoi_name,
+        "status": run.status.value,
+        "metadata": run.metadata,
+        "tasks": [
+            {
+                "task_id": task.id,
+                "name": task.name,
+                "status": task.status.value,
+                "dependencies": list(task.dependencies),
+                "attempt_count": task.attempt_count,
+                "max_attempts": task.max_attempts,
+                "data_availability": task.data_availability,
+                "error_code": task.error_code,
+            }
+            for task in tasks
+        ],
+    }
 
 
 @public_router.get("/publish/{aoi_name}")
@@ -1418,8 +1461,9 @@ def monitoring_metrics() -> dict[str, Any]:
     }
 @internal_router.post("/admin/reprocess-scene")
 def admin_reprocess_scene(aoi_name: str, auth_context: dict[str, str] = Depends(_require_role("admin"))) -> dict:
-    report = pipeline.run_daily(aoi_name).model_dump()
-    _record_run(report)
+    execution = run_flood_daily_workflow(aoi_name, pipeline=pipeline, retry=True)
+    report = _workflow_report(execution)
+    _record_run(report, persist_pipeline_run=False)
     _audit_privileged_action(principal_id=auth_context["principal_id"], action="reprocess", resource_type="corridor", resource_id=aoi_name)
     return {
         "status": "reprocessed",

@@ -53,14 +53,18 @@ graph TB
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
-pip install -e ".[dev]"
+# 1. Install the canonical API, CLI, test, and dashboard dependencies
+pip install -e ".[dev,dashboard]"
 
-# 2. Set credentials (optional — only NASA POWER needs them for auth)
-cp .env.local.example .env.local
-# Edit .env.local with your NASA Earthdata credentials
+# 2. Create local configuration. Do not commit this file.
+cp .env.example .env
+# Set APP_MODE=demo for demonstrations or APP_MODE=operational only with real providers configured.
 
-# 3. Run the dashboard
+# 3. Run the canonical API or a durable daily workflow
+uvicorn pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000
+flood-monitor run --aoi Indus-Lower
+
+# 4. Run the dashboard
 python -m streamlit run streamlit_app.py
 
 # Dashboard available at http://localhost:8501

@@ -1,6 +1,7 @@
 # Implementation status
 
-Last verified: **2026-08-29**, against `main` at `3c28501`. Read this file with root
+Last verified: **2026-08-29**, against `main` at `448fddd` plus the unmerged
+`feat/canonical-runtime-foundation` workstream. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -11,10 +12,10 @@ claims against code and Git history; update this ledger in each consolidated-pro
 | Canonical package | `src/pakistan_flood_monitor/` |
 | Supported API runtime | `pakistan_flood_monitor.api.main:app` |
 | Legacy migration source | `src/app/`; deprecated API entrypoint warns of removal after 2026-12-31 |
-| Runtime modes | `test`, `demo`, `operational` via `APP_MODE`; default is `demo` |
+| Runtime modes | `test`, `demo`, `operational` via `APP_MODE`; default is `demo`; mode is persisted in canonical run metadata |
 | Accepted ADRs | [ADR-001: canonical runtime and operational data integrity](../adr/ADR-001-canonical-runtime.md) |
 | Package version | `0.1.0` in `pyproject.toml` |
-| Canonical DB migration head | Root Alembic chain: `f46f1d9e187b` (initial schema) |
+| Canonical DB migration head | Root Alembic chain: `b4d9d93f2a10` (durable canonical pipeline tasks) |
 | Legacy DB migration head | `src/app/db/alembic`: `0005_add_lineage_metadata_to_provenance` |
 | CI | No workflow exists under `.github/workflows/` |
 
@@ -29,7 +30,7 @@ choose between them.
 | Prompt | State | Evidence / scope |
 |---|---|---|
 | 00 | COMPLETE | Repository operating contract merged in [PR #69](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/69); ledger and ADR policy added by the current Prompt 00 follow-up PR |
-| 01 | COMPLETE | Operational observation-state contract merged in [PR #68](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/68) |
+| 01 | PARTIAL | [PR #68](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/68) merged the first observation-state contract. The current unmerged branch adds canonical API/CLI/worker wiring, explicit demo-only fixture/product helpers, typed `NO_DATA`/`STALE`/`PARTIAL` availability, reusable publication eligibility, and durable run/task persistence. Mark COMPLETE only after this branch is reviewed and merged. |
 | 02 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 03 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 04 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
@@ -47,18 +48,20 @@ choose between them.
 
 ## Current limitations and deprecated work
 
-- Operational execution fails closed because real required IMERG, GloFAS, optical, floodplain, and
-  sufficient Sentinel-1 inputs are not all implemented. This structured `UNAVAILABLE` response is a
-  safety behavior, not an operational capability.
+- Operational execution fails closed because real required IMERG, GloFAS, optical, floodplain,
+  flood-extent, and exposure-overlay processors are not all implemented. This structured unavailable
+  response is a safety behavior, not an operational capability.
 - Advanced SAR remains simulated, optical water detection uses RGB proxies, forecast LSTM weights are
   untrained, and dam surface extent is only a fill proxy. None is validated for warning authority.
-- Streamlit, standalone services, CSV/file stores, and much functionality under `src/app` bypass or
-  remain disconnected from the canonical API. The canonical runner still imports legacy
-  `app.services.observability`.
-- Canonical API state is primarily in memory. The optional database persistence path currently emits
-  datetime JSON-serialization errors in tests; restart-safe audit/state durability is not established.
-- Availability has `AVAILABLE`, `DEGRADED`, and `UNAVAILABLE`; a first-class scientific `STALE` state
-  with reason/freshness metadata is required by the contract but is not implemented.
+- The canonical runner and API no longer import `app.*`; `src/app` remains a deprecated compatibility
+  source for prototype routes, analyst tooling, and workflow shims. Its separate Alembic history is
+  still unreconciled and must not receive new canonical runtime features.
+- Canonical pipeline runs and dependency-aware tasks now persist with signature-based idempotency and
+  retry counts. Event, review, audit, and dashboard state remain partly in memory; full restart-safe
+  API-state migration is still outstanding.
+- Availability now represents `AVAILABLE`, `NO_DATA`, `UNAVAILABLE`, `DEGRADED`, `STALE`, and
+  `PARTIAL` with a reason code, evaluation time, and optional freshness rule. Real source adapters
+  must populate these fields rather than relying on default values.
 - Code, routes, dashboards, or tests existing in the tree do not establish operational readiness.
 
 ## Known P0/P1 defects
@@ -69,9 +72,9 @@ Severity reflects current evidence, not an exhaustive safety assessment.
 |---|---|---|
 | P0 | None formally triaged | Do not interpret this as evidence of operational safety or readiness |
 | P1 | Repository test baseline is red | 24 failures: shared rate-limit/test state, lifecycle/resilience contract mismatches, and database datetime JSON serialization |
-| P1 | CI and reproducible test environment are absent | No workflow; `pytest` is not declared by `pyproject.toml`, so the documented test command fails in a fresh base environment |
+| P1 | CI and reproducible test environment are absent | No workflow is configured. `pytest` is now declared in the `dev` extra, but the full baseline has not been rerun from a fresh environment on this branch |
 | P1 | Runtime and migration split-brain remains | Canonical and legacy packages plus two independent Alembic histories require incremental reconciliation |
-| P1 | Scientific stale-state contract is not implemented | Freshness may appear as UI/service strings, but canonical observation availability lacks `STALE` |
+| P1 | Canonical durable task migration must be applied before operational use | Root Alembic head is `b4d9d93f2a10`; demo/test may initialize local tables, but operational deployments must use Alembic |
 
 ## Test and validation status
 
@@ -86,8 +89,15 @@ Baseline verified before this documentation change:
   24 failed, 569 warnings**; the same 24 pre-existing failure set remains.
 - No repository documentation-lint command or CI workflow is configured.
 
+Focused checks on the unmerged canonical-runtime workstream:
+
+- `python -m compileall -q src/pakistan_flood_monitor src/app/pipelines src/app/workers scripts alembic/versions tests/test_workflow_foundation.py` — **passed**.
+- Canonical configuration loaded with `APP_MODE=test` and `APP_MODE=demo` — **passed**.
+- Canonical `DataCatalog` in `APP_MODE=operational` returned a typed `UNAVAILABLE` observation for a provider outage and typed `NO_DATA` for an empty provider response — **passed**; neither observation contained a value or synthetic lineage.
+- Root migration modules were syntax-parsed — **passed**.
+- `tests/test_workflow_foundation.py` — **not run** because this workspace has no virtual environment and its available base runtime lacks `pytest`, `SQLAlchemy`, and raster dependencies. The new `dev` extra supplies `pytest`; no broad dependency install or full-suite run was performed for this workstream.
+
 ## Next recommended prompt
 
-**Prompt 02: build/dependency cleanup, hermetic CI, and baseline stabilization.** Prompt 01 already
-merged out of sequence in PR #68; do not repeat it. Prompt 02 should preserve operational fail-closed
-behavior while making the declared test command reproducible and triaging the 24 known failures.
+**Stop after Prompt 01 review/merge.** The next prompt must begin only after this workstream's focused
+checks and review are accepted; it should preserve the fail-closed runtime and durable task contract.
