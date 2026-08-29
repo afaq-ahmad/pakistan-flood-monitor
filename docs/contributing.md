@@ -7,8 +7,10 @@ Thank you for your interest in contributing to the Pakistan Flood Monitor. This 
 AI coding agents must read and follow the repository-wide [`AGENTS.md`](../AGENTS.md) before
 planning or changing files. It defines the canonical package, environmental-data integrity,
 CRS/unit handling, provenance, human decision gates, testing, scope, and pull-request evidence
-required for every agent-authored task. The contract supplements this human contribution guide and
-the accepted architecture decision records.
+required for every agent-authored task. At task start, also read the concise
+[`IMPLEMENTATION_STATUS.md`](engineering/IMPLEMENTATION_STATUS.md) ledger and applicable
+[architecture decision records](adr/README.md). The contract supplements this human contribution
+guide and the accepted architecture decision records.
 
 ## Getting Started
 

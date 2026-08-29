@@ -11,8 +11,10 @@ records (ADRs) define repository architecture.
   `src/pakistan_flood_monitor/` and `src/app/`, plus migrations, tests, documentation, CI/configuration,
   and any existing implementation of the requested capability. When GitHub access is available,
   inspect current open issues and pull requests for conflicts or prior work.
-- Read the applicable ADRs first. Record material assumptions and distinguish observed repository
-  facts from inferences.
+- Read [`docs/engineering/IMPLEMENTATION_STATUS.md`](docs/engineering/IMPLEMENTATION_STATUS.md) and
+  the applicable ADRs first. Record material assumptions and distinguish observed repository facts
+  from inferences. Treat the ledger as a navigation aid, then verify its claims against code and Git
+  history before relying on them.
 - Work on a descriptive dedicated branch. Make only the requested change and its necessary tests,
   migrations, schemas, and documentation. Do not silently begin another roadmap item, repair an
   unrelated defect, or hide unrelated refactoring in the same pull request.
@@ -35,6 +37,11 @@ records (ADRs) define repository architecture.
 
 ## 3. Environmental data truth and availability
 
+- Runtime behavior has exactly three safety modes: `test`, `demo`, and `operational`, selected by
+  `APP_MODE` as defined by ADR-001. Do not add an implicit fourth mode or infer operational mode from
+  a deployment environment. Tests may use deterministic fixtures; demos must carry the visible
+  `SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS` label; operational execution must use real,
+  traceable inputs or fail closed.
 - Never fabricate an environmental observation in operational code. Hash-derived, random, synthetic,
   stub, or plausibly hard-coded measurements are prohibited as fallbacks for missing live data.
 - Synthetic data may exist only in explicit automated-test or demo fixtures. Label it in code and in
@@ -44,6 +51,9 @@ records (ADRs) define repository architecture.
   `DEGRADED` states with a reason. Fail closed where the missing input is required. Do not replace an
   unknown value with zero, a historical average, or a realistic-looking proxy unless the product is
   explicitly an estimate and the method and uncertainty are exposed.
+- Represent data that exceeded its defined freshness window as a typed `STALE` state, not merely a UI
+  string. Availability states must include a stable reason code, the relevant source/acquisition time,
+  the evaluation time, and the freshness or quality rule that produced the state.
 - Preserve source semantics and units through ingestion, processing, persistence, APIs, exports, and
   UI. Never upgrade a field report, model output, or proxy into an observation by renaming it.
 
@@ -84,8 +94,14 @@ and expose the relevant timestamp meaning.
 ## 6. Scientific and decision semantics
 
 - Keep these concepts separate in domain models, persistence, APIs, tests, and user-facing language:
-  public observation, forecast, exposure, estimated impact, and verified damage. Links between them
-  must be explicit lineage or associations, not silent status promotion.
+  public observation, forecast, model inference, exposure, estimated impact, verified damage, and
+  warning. Links between them must be explicit lineage or associations, not silent status promotion.
+- An **observation** reports a measured or reported condition at a stated place and time. A
+  **forecast** describes a future valid time. A **model inference** is a derived classification,
+  probability, or estimate and is not itself an observation. **Exposure** is the intersection of a
+  hazard extent/scenario with people or assets; it does not prove loss. **Damage** must say whether it
+  is estimated or field/officially verified. A **warning** is an authorized communication, not a
+  synonym for an alert score or candidate detection.
 - A machine risk/anomaly/damage score supports analyst triage; it is not verified damage and is not an
   authoritative emergency decision.
 - Never automatically publish an emergency warning, evacuation instruction, or insurance eligibility/
@@ -126,7 +142,22 @@ and expose the relevant timestamp meaning.
   Leave the repository passing; if an unrelated pre-existing failure remains, report it precisely and
   demonstrate that focused checks for the task pass.
 
-## 9. Review, commits, and pull requests
+## 9. ADRs and implementation ledger
+
+- Use [`docs/adr/ADR-TEMPLATE.md`](docs/adr/ADR-TEMPLATE.md) for decisions that materially constrain
+  later implementation or are expensive to reverse. This includes SAR RTC-versus-GRD processing,
+  metric CRS strategy, alert-authority boundaries, flood-depth maturity, and changes to the canonical
+  runtime or migration strategy. Do not hide such decisions in code comments.
+- ADRs are immutable decision history once accepted. Supersede an accepted ADR with a new ADR; do not
+  rewrite its decision or status to make current code appear compliant. A proposed ADR is not accepted
+  until review/merge records that status.
+- Update `docs/engineering/IMPLEMENTATION_STATUS.md` in every consolidated-prompt PR. Keep it concise,
+  evidence-based, and explicit about partial work, blockers, deprecated code, schema heads, P0/P1
+  defects, exact test/CI results, and the next recommended prompt. Code presence alone is not evidence
+  that a capability is operational. Use only `NOT_STARTED`, `IN_PROGRESS`, `PARTIAL`, `BLOCKED`, or
+  `COMPLETE` in the prompt table, and never mark `COMPLETE` without merged acceptance evidence.
+
+## 10. Review, commits, and pull requests
 
 - Self-review the diff for task scope, GIS CRS/units, timezone semantics, provenance, data truth,
   scientific terminology, security/privacy, backward compatibility, migrations, failure modes,
