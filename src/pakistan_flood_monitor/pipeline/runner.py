@@ -10,6 +10,15 @@ from pakistan_flood_monitor.hazards.registry import HazardRegistry
 from pakistan_flood_monitor.models.observations import (
     DataIntegritySummary,
     ScientificObservation,
+    SourceAvailabilityStatus,
+)
+from pakistan_flood_monitor.models.product_metadata import (
+    LineageReference,
+    ProcessingMetadata,
+    ProductMetadata,
+    QualityGrade,
+    SourceIdentity,
+    TemporalMetadata,
 )
 from pakistan_flood_monitor.models.schemas import (
     AlertLevel,
@@ -130,9 +139,56 @@ class FloodHazardModule(HazardModule):
                     availability_status=scene.availability_status,
                     synthetic=scene.synthetic,
                     source_uri=scene.stac_item_url,
+                    provider="earth-search-stac",
                 )
             )
         return output
+
+    def _product_metadata(
+        self,
+        *,
+        run_id: str,
+        source_scenes: list[SourceSceneLineage],
+        processing_version: str,
+        threshold_version: str,
+        model: ModelVersion,
+        integrity: DataIntegritySummary,
+        generated_at: datetime,
+    ) -> ProductMetadata:
+        if integrity.data_availability in {
+            SourceAvailabilityStatus.NO_DATA,
+            SourceAvailabilityStatus.UNAVAILABLE,
+        }:
+            quality = QualityGrade.NO_DATA
+        elif integrity.contains_synthetic or integrity.data_availability is not SourceAvailabilityStatus.AVAILABLE:
+            quality = QualityGrade.C
+        else:
+            quality = QualityGrade.B
+
+        limitations: list[str] = []
+        if integrity.contains_synthetic:
+            limitations.append("SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS")
+        if integrity.data_availability is not SourceAvailabilityStatus.AVAILABLE:
+            limitations.append(f"data_state={integrity.data_availability.value}")
+
+        return ProductMetadata(
+            source=SourceIdentity(provider="canonical-data-catalog", item_id=run_id),
+            temporal=TemporalMetadata(processed_at=generated_at),
+            processing=ProcessingMetadata(
+                processing_version=processing_version,
+                model_version=model.model_id,
+                threshold_version=threshold_version,
+            ),
+            runtime_mode=self.app_mode,
+            quality=quality,
+            data_state=integrity.data_availability,
+            limitations=limitations,
+            parent_inputs=[
+                LineageReference(identifier=scene.scene_id, relationship="source_scene")
+                for scene in source_scenes
+            ],
+            assets=[asset for scene in source_scenes for asset in scene.assets.values()],
+        )
 
     def _build_event_lineage(
         self,
@@ -146,6 +202,7 @@ class FloodHazardModule(HazardModule):
         observations: dict[str, ScientificObservation],
         integrity: DataIntegritySummary,
     ) -> EventLineage:
+        generated_at = datetime.now(UTC)
         return EventLineage(
             run_id=run_id,
             source_scene_ids=[scene.scene_id for scene in source_scenes],
@@ -154,12 +211,21 @@ class FloodHazardModule(HazardModule):
             threshold_version=threshold_version,
             thresholds=thresholds,
             model=model.model_dump(),
-            generated_at=datetime.now(UTC),
+            generated_at=generated_at,
             observations=observations,
             contains_synthetic=integrity.contains_synthetic,
             data_availability=integrity.data_availability,
             product_label=integrity.product_label,
             watermark=integrity.watermark,
+            product_metadata=self._product_metadata(
+                run_id=run_id,
+                source_scenes=source_scenes,
+                processing_version=processing_version,
+                threshold_version=threshold_version,
+                model=model,
+                integrity=integrity,
+                generated_at=generated_at,
+            ),
         )
 
     def _build_outputs(
@@ -273,6 +339,7 @@ class FloodHazardModule(HazardModule):
             )
             active_model = self._active_model_version()
             scene_lineage = self._scene_lineage(scenes)
+            generated_at = datetime.now(UTC)
             run_lineage = RunLineage(
                 run_id=run_id,
                 aoi=aoi_name,
@@ -282,12 +349,21 @@ class FloodHazardModule(HazardModule):
                 threshold_version=threshold_version,
                 thresholds=thresholds,
                 model=active_model.model_dump(),
-                generated_at=datetime.now(UTC),
+                generated_at=generated_at,
                 observations=extracted.observations,
                 contains_synthetic=extracted.integrity.contains_synthetic,
                 data_availability=extracted.integrity.data_availability,
                 product_label=extracted.integrity.product_label,
                 watermark=extracted.integrity.watermark,
+                product_metadata=self._product_metadata(
+                    run_id=run_id,
+                    source_scenes=scene_lineage,
+                    processing_version=processing_version,
+                    threshold_version=threshold_version,
+                    model=active_model,
+                    integrity=extracted.integrity,
+                    generated_at=generated_at,
+                ),
             )
             event_lineage = self._build_event_lineage(
                 run_id=run_id,

@@ -15,6 +15,8 @@ from rasterio.transform import from_origin
 from rasterio.warp import reproject
 from shapely.geometry import shape
 
+from pakistan_flood_monitor.geo.measurements import area_sqkm, buffer_m, intersection_area_sqkm
+
 
 @dataclass(slots=True)
 class Sentinel1SceneCandidate:
@@ -101,8 +103,8 @@ class OpticalPreprocessor:
 
         for candidate in candidates:
             scene_geom = shape(candidate.geometry)
-            overlap = corridor_geom.intersection(scene_geom)
-            overlap_ratio = 0.0 if corridor_geom.area == 0 else float(overlap.area / corridor_geom.area)
+            corridor_area_sqkm = area_sqkm(corridor_geom)
+            overlap_ratio = 0.0 if corridor_area_sqkm == 0 else intersection_area_sqkm(corridor_geom, scene_geom) / corridor_area_sqkm
             selected_assets = self._extract_optical_assets(candidate.assets)
 
             if overlap_ratio < min_overlap_ratio:
@@ -158,10 +160,10 @@ class OpticalPreprocessor:
 
         for band, src_path in normalized.items():
             with rasterio.open(src_path) as src:
-                clip_geometry = corridor_projected.to_crs(src.crs)
-                buffered = clip_geometry.to_crs("EPSG:3857")
-                buffered["geometry"] = buffered.geometry.buffer(self._clip_buffer_meters)
-                buffered = buffered.to_crs(src.crs)
+                buffered = gpd.GeoDataFrame(
+                    {"geometry": [buffer_m(self._corridor.geometry.iloc[0], self._clip_buffer_meters)]},
+                    crs="EPSG:4326",
+                ).to_crs(src.crs)
 
                 clipped, clipped_transform = mask(src, buffered.geometry, crop=True)
                 clipped_array = clipped[0].astype(np.float32)
@@ -285,8 +287,10 @@ class OpticalPreprocessor:
             dst.write(array.astype(np.float32), 1)
 
     def _build_corridor_grid(self) -> tuple[rasterio.Affine, int, int]:
-        projected = self._corridor.to_crs(self._working_crs)
-        buffered = projected.geometry.buffer(self._clip_buffer_meters)
+        buffered = gpd.GeoSeries(
+            [buffer_m(self._corridor.geometry.iloc[0], self._clip_buffer_meters)],
+            crs="EPSG:4326",
+        ).to_crs(self._working_crs)
         minx, miny, maxx, maxy = buffered.total_bounds
         width = max(1, int(np.ceil((maxx - minx) / self._resolution)))
         height = max(1, int(np.ceil((maxy - miny) / self._resolution)))
@@ -340,8 +344,8 @@ class Sentinel1Preprocessor:
                 continue
 
             scene_geom = shape(candidate.geometry)
-            overlap = corridor_geom.intersection(scene_geom)
-            overlap_ratio = 0.0 if corridor_geom.area == 0 else float(overlap.area / corridor_geom.area)
+            corridor_area_sqkm = area_sqkm(corridor_geom)
+            overlap_ratio = 0.0 if corridor_area_sqkm == 0 else intersection_area_sqkm(corridor_geom, scene_geom) / corridor_area_sqkm
 
             selected_assets = self._extract_sar_assets(candidate.assets)
             if overlap_ratio < min_overlap_ratio:
@@ -392,14 +396,14 @@ class Sentinel1Preprocessor:
 
         corridor_projected = self._corridor.to_crs(self._working_crs)
         corridor_geom = corridor_projected.geometry.iloc[0]
-        corridor_area_sqkm = corridor_geom.area / 1_000_000
+        corridor_area_sqkm = area_sqkm(corridor_geom, source_crs=self._working_crs)
 
         for polarization, src_path in normalized.items():
             with rasterio.open(src_path) as src:
-                clip_geometry = corridor_projected.to_crs(src.crs)
-                buffered = clip_geometry.to_crs("EPSG:3857")
-                buffered["geometry"] = buffered.geometry.buffer(self._clip_buffer_meters)
-                buffered = buffered.to_crs(src.crs)
+                buffered = gpd.GeoDataFrame(
+                    {"geometry": [buffer_m(self._corridor.geometry.iloc[0], self._clip_buffer_meters)]},
+                    crs="EPSG:4326",
+                ).to_crs(src.crs)
                 clipped, clipped_transform = mask(src, buffered.geometry, crop=True)
                 clipped_array = clipped[0]
 
@@ -505,8 +509,10 @@ class Sentinel1Preprocessor:
         return selected
 
     def _build_corridor_grid(self) -> tuple[rasterio.Affine, int, int]:
-        projected = self._corridor.to_crs(self._working_crs)
-        buffered = projected.geometry.buffer(self._clip_buffer_meters)
+        buffered = gpd.GeoSeries(
+            [buffer_m(self._corridor.geometry.iloc[0], self._clip_buffer_meters)],
+            crs="EPSG:4326",
+        ).to_crs(self._working_crs)
         minx, miny, maxx, maxy = buffered.total_bounds
         width = max(1, int(np.ceil((maxx - minx) / self._resolution)))
         height = max(1, int(np.ceil((maxy - miny) / self._resolution)))

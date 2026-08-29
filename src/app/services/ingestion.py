@@ -7,6 +7,7 @@ from typing import Iterable, Protocol
 from shapely.geometry import shape
 
 from app.services.observability import log_failure, log_structured, metrics_registry
+from pakistan_flood_monitor.geo.measurements import intersection_area_sqkm as metric_intersection_area_sqkm
 
 
 @dataclass(slots=True)
@@ -221,9 +222,7 @@ class STACDiscoveryService:
 
     @staticmethod
     def _intersection_area_sqkm(corridor_shape, scene_shape) -> float:
-        # Shapely area in geographic coordinates is not exact, but adequate for lightweight filtering.
-        intersection = corridor_shape.intersection(scene_shape)
-        return max(0.0, float(intersection.area) * 12_321.0)
+        return metric_intersection_area_sqkm(corridor_shape, scene_shape)
 
     def _should_skip(
         self,
@@ -293,7 +292,7 @@ class InMemorySceneRepository:
             if row["corridor_id"] != corridor_id:
                 continue
             known_geom = shape(row["scene"].geometry)
-            overlap_sqkm = float(known_geom.intersection(scene_geom).area) * 12_321.0
+            overlap_sqkm = metric_intersection_area_sqkm(known_geom, scene_geom)
             if overlap_sqkm >= overlap_threshold:
                 return True
         return False

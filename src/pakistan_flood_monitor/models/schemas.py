@@ -10,6 +10,7 @@ from pakistan_flood_monitor.models.observations import (
     ScientificObservation,
     SourceAvailabilityStatus,
 )
+from pakistan_flood_monitor.models.product_metadata import AssetReference, AssetStage, ProductMetadata
 
 
 class AlertLevel(str, Enum):
@@ -50,9 +51,10 @@ class AOI(BaseModel):
     geometry_wkt: str
 
 
-class LineageSceneAsset(BaseModel):
-    href: str
-    roles: List[str] = Field(default_factory=list)
+class LineageSceneAsset(AssetReference):
+    """Backward-compatible raw-asset reference within a source-scene lineage."""
+
+    stage: AssetStage = AssetStage.RAW
 
 
 class SourceSceneLineage(BaseModel):
@@ -64,6 +66,8 @@ class SourceSceneLineage(BaseModel):
     availability_status: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
     synthetic: bool = False
     source_uri: str | None = None
+    provider: str | None = None
+    product_metadata: ProductMetadata | None = None
 
 
 class EventLineage(BaseModel):
@@ -81,6 +85,7 @@ class EventLineage(BaseModel):
     data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
     product_label: ObservationStatus = ObservationStatus.OBSERVED
     watermark: str | None = None
+    product_metadata: ProductMetadata | None = None
 
 
 class RunLineage(BaseModel):
@@ -99,13 +104,14 @@ class RunLineage(BaseModel):
     data_availability: SourceAvailabilityStatus = SourceAvailabilityStatus.AVAILABLE
     product_label: ObservationStatus = ObservationStatus.OBSERVED
     watermark: str | None = None
+    product_metadata: ProductMetadata | None = None
 
 
 class FloodDetectionResult(BaseModel):
     aoi: str
     timestamp: datetime
     flood_probability: float
-    flood_area_km2: float
+    flood_area_km2: float = Field(description="Detected flood area in square kilometres", json_schema_extra={"unit": "km²"})
     breach_risk_score: float
     alert_level: AlertLevel
     confidence_score: float
