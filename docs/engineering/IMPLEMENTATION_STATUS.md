@@ -135,18 +135,15 @@ are not individual identities. Metadata validation does not verify source authen
 The public latest-run and advisory paths still bypass reviewed-product gating; workflow restart and
 concurrent retry ownership, CI, isolated offline tests, and operational data processing remain open.
 
-## Public output boundary follow-up (2026-11-17)
+## Workflow concurrency follow-up (2026-11-17)
 
-Public event, catalog, risk, and alert reads now filter to currently eligible published events.
-Internal alert variants are rejected by public endpoints. Raw latest-run/advisory/corridor status and
-cross-run history/imagery views fail closed outside test mode until linked to reviewed products;
-corridor listings expose unknown state in those modes. This is an availability reduction, not a
-reviewed-product implementation. In-memory publication state and partial database restoration remain
-unresolved; no operational publication readiness is implied.
+Atomic database claims prevent a retry from resetting a queued or running execution, and concurrent
+retries of a terminal run cannot both claim it while active. Retried processors receive the original
+persisted run ID. Duplicate active API requests return HTTP 409 with the run ID. This does not recover
+crashed workers: queued/running runs remain stuck until a separately designed, fenced recovery
+mechanism exists. PostgreSQL concurrency and real worker crashes remain unverified.
 
-Focused check: `DATABASE_URL=sqlite:////tmp/public_boundary_final.db .venv/bin/python -m pytest
-tests/test_publication_boundary.py tests/test_authentication_boundary.py
-tests/test_publication_lineage_boundary.py tests/test_operational_data_integrity.py
-tests/test_workflow_foundation.py tests/test_canonical_runtime_smoke.py -q --tb=short` — 26 passed.
-A broader API/resilience/GIS selection returned 4 passed and 6 failed, matching the same six failures
-when run against base `d40af2e` in a separate worktree and SQLite database.
+Focused workflow/security check: `DATABASE_URL=sqlite:////tmp/workflow_claim_final.db
+/workspace/scratch/b87b53edb69f/repo/.venv/bin/python -m pytest tests/test_workflow_concurrent_retry.py
+tests/test_workflow_foundation.py tests/test_operational_data_integrity.py tests/test_canonical_runtime_smoke.py
+tests/test_authentication_boundary.py tests/test_publication_lineage_boundary.py -q --tb=short` — 22 passed.

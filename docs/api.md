@@ -76,12 +76,13 @@ current, scientifically validated, or authorized for public warning. Existing pr
 lineage must populate these fields before publication. The separate latest-run and mobile-advisory
 routes still need a reviewed-product publication design and must not be relied on for operational use.
 
-### Public reviewed products
+### Concurrent workflow requests
 
-Public event collections, event details, historical catalog entries, and alerts only include events
-marked published that pass the current publication gate. Public alert routes accept only the
-`public_safe` template. Outside test mode, the latest raw-run, mobile advisory, corridor status,
-event history, and event imagery endpoints return HTTP 503 until reviewed products can be associated
-with these outputs. Corridor listings show an unknown state instead of disclosing a raw run. Event
-collections omit internal fields. These restrictions intentionally reduce availability; publication
-state and full event metadata are not yet reliably persisted across restarts.
+A workflow execution claims its persisted run before processing. A duplicate request observes the
+existing run; `GET /internal/run/{aoi}` returns HTTP 409 with `workflow_in_progress`, its run ID and
+status while the existing run is queued or running. Explicit retry claims only a terminal run, and
+uses its original persisted run ID. A queued or running run left after a crash cannot be reclaimed
+automatically: safe recovery requires worker ownership/fencing and an operator procedure, which are
+not implemented. Do not reset an active worker's state directly.
+A failed or degraded run without a successful report returns HTTP 503 with `workflow_not_successful`;
+a stale report from an earlier attempt is not returned as a successful result.

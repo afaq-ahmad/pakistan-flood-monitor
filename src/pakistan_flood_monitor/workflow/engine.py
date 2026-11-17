@@ -1,7 +1,7 @@
 """Dependency-aware, idempotent execution for canonical processors."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -58,12 +58,18 @@ class WorkflowEngine:
     ) -> WorkflowExecution:
         signature = workflow_signature(context)
         run, created = self._repository.create_or_get(definition=definition, context=context, signature=signature)
-        if not created:
-            if run.status is WorkflowStatus.SUCCESS and not retry:
-                return WorkflowExecution(run=run, tasks=tuple(self._repository.list_tasks(run.id)), reused=True)
-            if not retry:
-                return WorkflowExecution(run=run, tasks=tuple(self._repository.list_tasks(run.id)), reused=True)
-            run = self._repository.prepare_retry(run.id, force=True)
+        if created:
+            claimed = self._repository.claim_new_run(run.id)
+        elif retry:
+            claimed = self._repository.prepare_retry(run.id, force=True)
+        else:
+            claimed = None
+        if claimed is None:
+            current = self._repository.get_run(run.id) or run
+            return WorkflowExecution(run=current, tasks=tuple(self._repository.list_tasks(run.id)), reused=True)
+        run = claimed
+        # A retry belongs to the persisted run, not the new caller's request ID.
+        context = replace(context, run_id=run.id)
 
         failure: OperationalDataIntegrityError | None = None
         tasks_by_name = {task.name: task for task in self._repository.list_tasks(run.id)}
