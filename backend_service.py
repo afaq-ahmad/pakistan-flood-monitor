@@ -27,6 +27,7 @@ class DataService:
 
     def __init__(self):
         self._cache: dict[str, pd.DataFrame] = {}
+        self.event_api_error: str | None = None
 
     def _load(self, name: str) -> pd.DataFrame:
         path = DATA_DIR / f"{name}.csv"
@@ -48,10 +49,14 @@ class DataService:
     # ── Flood Events ─────────────────────────────────────
     def get_events(self) -> pd.DataFrame:
         if API_BASE_URL:
+            self.event_api_error = None
             try:
                 response = httpx.get(f"{API_BASE_URL}/public/events", timeout=2.0)
                 if response.status_code == 200:
-                    events = response.json().get("events", [])
+                    payload = response.json()
+                    if not isinstance(payload, dict) or not isinstance(payload.get("events"), list):
+                        raise ValueError("invalid event response")
+                    events = payload["events"]
                     if events:
                         # Map API dicts to CSV-like DataFrame
                         df = pd.DataFrame([{
@@ -72,8 +77,15 @@ class DataService:
                             "source_scenes": e.get("source_scenes", ""),
                         } for e in events])
                         return df
-            except Exception as e:
-                print(f"API fetch failed: {e}")
+                else:
+                    self.event_api_error = "Event service returned an error."
+            except (httpx.HTTPError, ValueError, TypeError, AttributeError, IndexError, KeyError):
+                self.event_api_error = "Event service unavailable or returned invalid data."
+            if self.event_api_error:
+                print(self.event_api_error)
+            # An empty response, HTTP error, or malformed payload is not a reason
+            # to present unrelated local data as published API results.
+            return pd.DataFrame(columns=["event_id", "corridor_id", "status", "severity", "confidence", "population_exposed", "updated_at", "published_at", "latitude", "longitude", "district", "event_class", "confidence_band", "breach_suspicion", "source_scenes"])
         return self._load("flood_events")
 
     def get_event(self, event_id: str) -> dict | None:
@@ -119,9 +131,10 @@ class DataService:
                 )
                 if response.status_code == 200:
                     return True
-            except Exception as e:
-                print(f"API update failed: {e}")
-                
+            except httpx.HTTPError:
+                print("Review API unavailable; no local update was made.")
+            return False
+
         df = self.get_events()
         idx = df.index[df["event_id"] == event_id]
         if len(idx) == 0:

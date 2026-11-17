@@ -169,3 +169,14 @@ and expose the relevant timestamp meaning.
   UI screenshots when applicable, backward-compatibility impact, rollback notes, pre-existing
   failures, and follow-up work explicitly out of scope.
 - Stop when the requested task and its definition of done are complete. Do not start the next task.
+
+## 11. Persistent task plan and session handoff
+
+- Before selecting work, read `docs/engineering/MASTER_TASK_PLAN.md` and the latest entry in
+  `docs/engineering/AGENT_SESSION_LOG.md`; verify status against current code, tests, and Git history.
+- Prioritize eligible existing pending tasks, claim a task before changing code, coordinate ownership,
+  and avoid duplicate work. Preserve task IDs, checked work, and other agents' changes.
+- Mark only independently verified subtasks complete, record evidence, blockers and exact next steps,
+  and update the plan and implementation ledger with the changes.
+- Append a reproducible session handoff, including branch, commit, tests, unfinished work and next task.
+  Do not claim acceptance without meeting its criteria or hide blocked work.

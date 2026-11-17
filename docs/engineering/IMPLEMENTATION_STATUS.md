@@ -174,3 +174,11 @@ tests/test_authentication_boundary.py tests/test_publication_lineage_boundary.py
 - **Services & ML**: Added missing `import numpy as np`, guarded optional `torch` imports with a pure-NumPy Otsu thresholding fallback in `advanced_ml_service.py`, and added offline test bypass and timeouts for `_fetch_dam_thumbnail` in `dam_service.py`.
 - **Historical Backtesting**: Replaced tautological assertions in `tests/test_backtesting.py` with meaningful scenario-rainfall risk tests.
 - **Verification**: `python -m pytest tests/ -q` — **196 passed, 0 failed**. Full compilation check across canonical packages passed.
+
+## Persistent plan and dashboard audit (2026-11-17)
+
+The authoritative work tracker and session handoff are `MASTER_TASK_PLAN.md` and
+`AGENT_SESSION_LOG.md`. API-configured event reads no longer fall back to local CSV on empty/error;
+API review failures do not write local state (the implementation commit in this PR). Full offline suite: 204 passed, 475 warnings.
+Local-only CSV, local exposure, live scientific data, restart-safe review and fenced recovery remain
+open; see P0-003 and P1/DATA tasks. Streamlit browser verification, Docker and PostgreSQL not run.
