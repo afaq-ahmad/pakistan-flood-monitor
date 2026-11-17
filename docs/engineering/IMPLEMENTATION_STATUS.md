@@ -134,3 +134,14 @@ supported. Existing unsigned-token clients must migrate to configured secrets; r
 are not individual identities. Metadata validation does not verify source authenticity or freshness.
 The public latest-run and advisory paths still bypass reviewed-product gating; workflow restart and
 concurrent retry ownership, CI, isolated offline tests, and operational data processing remain open.
+
+## Focused offline CI follow-up (2026-11-17)
+
+A GitHub Actions job runs selected canonical security, integrity, workflow and GIS tests with
+network sockets disabled, an isolated SQLite database and Python 3.12. The ledger contract test now
+reads the actual Alembic head rather than hard-coding an obsolete revision. The full suite remains
+outside this focused job and has known failures; dependencies are not fully locked. Local equivalent
+with `pytest --disable-socket --allow-unix-socket` passed 26 tests. Hosted Actions, PostgreSQL,
+container builds, and the broader suite remain unverified.
+The same 26-test offline selection passed in a fresh Python 3.12 environment installed from the
+current project dependencies and `pytest-socket==0.8.1`; dependency resolution is still unpinned.
