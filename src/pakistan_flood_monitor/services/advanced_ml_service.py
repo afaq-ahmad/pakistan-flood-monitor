@@ -14,9 +14,29 @@ data rather than real Sentinel-1 GRD or full-band imagery:
 Do NOT use SAR or Foundation Model outputs as decision-grade signals
 until real data pipelines are connected.
 """
-import torch
-import torchvision.models.segmentation as segmentation
-from skimage.filters import threshold_otsu
+import numpy as np
+try:
+    import torch
+    import torchvision.models.segmentation as segmentation
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    segmentation = None
+    TORCH_AVAILABLE = False
+try:
+    from skimage.filters import threshold_otsu
+except ImportError:
+    def threshold_otsu(image: np.ndarray, nbins: int = 256) -> float:
+        """Pure NumPy fallback for Otsu thresholding when skimage is not installed."""
+        hist, bin_edges = np.histogram(image, bins=nbins)
+        hist = hist.astype(float)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+        weight1 = np.cumsum(hist)
+        weight2 = np.cumsum(hist[::-1])[::-1]
+        mean1 = np.cumsum(hist * bin_centers) / np.maximum(weight1, 1e-10)
+        mean2 = (np.cumsum((hist * bin_centers)[::-1])[::-1]) / np.maximum(weight2, 1e-10)
+        variance = weight1[:-1] * weight2[1:] * (mean1[:-1] - mean2[1:]) ** 2
+        return float(bin_centers[np.argmax(variance)])
 from pathlib import Path
 from PIL import Image
 import requests
@@ -221,6 +241,10 @@ class GeoFoundationModelWrapper:
     to demonstrate the architecture of inference without needing to download massive weights.
     """
     def __init__(self):
+        if not TORCH_AVAILABLE:
+            self.model = None
+            self.device = "cpu"
+            return
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Load a pre-trained segmentation model (simulating a geo-foundation model)
         self.model = segmentation.fcn_resnet50(pretrained=False, num_classes=2) 
@@ -250,4 +274,4 @@ class GeoFoundationModelWrapper:
         
         return pred_mask
 
-foundation_model = GeoFoundationModelWrapper()
+foundation_model = GeoFoundationModelWrapper() if TORCH_AVAILABLE else None

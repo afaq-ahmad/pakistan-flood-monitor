@@ -165,3 +165,12 @@ tests/test_authentication_boundary.py tests/test_publication_lineage_boundary.py
 - Docker, PostgreSQL, hosted Actions and live providers were not tested. Full dependency locking,
   fenced crash recovery, durable reviewed state, currently disabled raw public routes and operational
   EO products remain open. Synthetic historical replay is not accuracy validation.
+
+## Comprehensive functionality-gap remediation (2026-11-17; PR #79)
+
+- **API Layer**: Added `POST /internal/run/{aoi_name}`, `GET /internal/runs`, route alias `POST /internal/field-reports/{report_id}/moderate`, and body/query parameter duality for `POST /internal/admin/review-event`. Added `db.rollback()` in exception handlers before `db.close()`.
+- **Configuration**: Expanded `Settings.pilot_corridors` from 3 to all 6 monitored river corridors in `DataCatalog.CORRIDOR_BBOXES`.
+- **UI / Dashboard**: Streamlit `backend_service.py` now maps `district`, `event_class`, `confidence_band`, and `breach_suspicion`. Public dashboard (`pages/1_🌍_Public_Dashboard.py`) filters summary stats, alert cards, and exposure tables when a district is selected. Added UI fallback for optional ML packages (`torch`, `openmeteo-requests`). Fixed DOM element lookups in standalone dashboard (`dashboard/app.js` and `dashboard/index.html`).
+- **Services & ML**: Added missing `import numpy as np`, guarded optional `torch` imports with a pure-NumPy Otsu thresholding fallback in `advanced_ml_service.py`, and added offline test bypass and timeouts for `_fetch_dam_thumbnail` in `dam_service.py`.
+- **Historical Backtesting**: Replaced tautological assertions in `tests/test_backtesting.py` with meaningful scenario-rainfall risk tests.
+- **Verification**: `python -m pytest tests/ -q` — **196 passed, 0 failed**. Full compilation check across canonical packages passed.

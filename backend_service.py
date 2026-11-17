@@ -383,17 +383,27 @@ class DataService:
         return scenarios
 
     # ── Statistics Helpers ────────────────────────────────
-    def summary_stats(self) -> dict:
+    def summary_stats(self, district: str = None) -> dict:
         events = self.get_events()
+        if district and not events.empty and "district" in events.columns:
+            events = events[events["district"] == district]
         if events.empty:
-            return {}
+            return {
+                "total_events": 0,
+                "active_events": 0,
+                "critical_zones": 0,
+                "total_population": 0,
+                "avg_confidence": 0.0,
+                "corridors_monitored": 0,
+                "pending_review": 0,
+            }
         return {
             "total_events": len(events),
             "active_events": len(events[events["status"].isin(["active", "published"])]),
             "critical_zones": len(events[events["severity"] == "critical"]),
-            "total_population": int(events["population_exposed"].sum()),
-            "avg_confidence": round(events["confidence"].mean(), 2),
-            "corridors_monitored": events["corridor_id"].nunique(),
+            "total_population": int(events["population_exposed"].sum()) if "population_exposed" in events.columns else 0,
+            "avg_confidence": round(events["confidence"].mean(), 2) if "confidence" in events.columns and not events["confidence"].isna().all() else 0.0,
+            "corridors_monitored": events["corridor_id"].nunique() if "corridor_id" in events.columns else 0,
             "pending_review": len(events[events["status"].isin(["draft", "queued", "review"])]),
         }
 

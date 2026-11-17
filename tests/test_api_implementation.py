@@ -776,3 +776,37 @@ def test_field_report_moderate_route_alias() -> None:
     assert moderate_resp.status_code == 200
     assert moderate_resp.json()["status"] == "moderated"
     assert moderate_resp.json()["report"]["status"] == "approved"
+
+
+def test_backend_service_summary_stats_district_filter() -> None:
+    from backend_service import data_service
+
+    stats_all = data_service.summary_stats()
+    assert isinstance(stats_all, dict)
+    assert "total_events" in stats_all
+
+    # Filter by specific district
+    stats_filtered = data_service.summary_stats(district="Sukkur")
+    assert isinstance(stats_filtered, dict)
+    assert "total_events" in stats_filtered
+    assert stats_filtered["total_events"] <= stats_all["total_events"]
+
+
+def test_pilot_corridors_configuration() -> None:
+    from pakistan_flood_monitor.config import settings
+    from pakistan_flood_monitor.data.sources import CORRIDOR_BBOXES
+
+    corridor_names = {c.name for c in settings.pilot_corridors}
+    for expected_corridor in CORRIDOR_BBOXES:
+        assert expected_corridor in corridor_names, f"Missing pilot corridor: {expected_corridor}"
+
+
+def test_advanced_ml_service_detect_water_sar() -> None:
+    import numpy as np
+    from pakistan_flood_monitor.services.advanced_ml_service import detect_water_sar
+
+    test_arr = np.array([[10, 200], [220, 15]], dtype=np.uint8)
+    mask = detect_water_sar(test_arr)
+    assert isinstance(mask, np.ndarray)
+    assert mask.shape == (2, 2)
+

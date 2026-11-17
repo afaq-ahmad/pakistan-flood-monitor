@@ -203,6 +203,7 @@ def _append_audit_entry(log: list[dict[str, Any]], entry: dict[str, Any]) -> Non
         db.add(audit_db)
         db.commit()
     except Exception as e:
+        db.rollback()
         print(f"Database audit persist error: {e}")
     finally:
         db.close()
@@ -549,6 +550,7 @@ def _record_run(report: dict[str, Any], *, persist_pipeline_run: bool = True) ->
             db.merge(event_db)
             db.commit()
         except Exception as e:
+            db.rollback()
             print(f"Database persist error: {e}")
         finally:
             db.close()

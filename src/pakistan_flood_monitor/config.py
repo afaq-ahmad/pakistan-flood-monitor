@@ -71,7 +71,10 @@ class Settings(BaseModel):
     pilot_corridors: list[Corridor] = Field(
         default_factory=lambda: [
             Corridor(name="Indus-Lower", district="Sindh", priority=1),
+            Corridor(name="Indus-Upper", district="Khyber Pakhtunkhwa", priority=2),
             Corridor(name="Chenab-Middle", district="Punjab", priority=1),
+            Corridor(name="Jhelum-Lower", district="Punjab", priority=2),
+            Corridor(name="Sutlej-Lower", district="Punjab", priority=2),
             Corridor(name="Kabul-Nowshera", district="Khyber Pakhtunkhwa", priority=2),
         ]
     )
