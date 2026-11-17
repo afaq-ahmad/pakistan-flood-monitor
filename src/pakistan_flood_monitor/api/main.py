@@ -8,7 +8,7 @@ import time
 from copy import deepcopy
 from datetime import UTC, datetime
 from threading import Lock
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
@@ -676,7 +676,7 @@ def _summarize_risk_rows(
 ) -> list[dict[str, Any]]:
     buckets: dict[tuple[str, str, str], dict[str, Any]] = {}
     for event in _all_events():
-        if only_reviewed and event.get("status") not in {"approved", "published"}:
+        if only_reviewed and not _is_public_event(event):
             continue
         for admin in _admin_breakdown_for_event(event):
             admin_province = admin.get("province", "unknown")
@@ -968,9 +968,27 @@ def _require_role(*allowed_roles: str):
     return _verify_token
 
 
+def _is_public_event(event: dict[str, Any]) -> bool:
+    if event.get("status") != "published":
+        return False
+    # Test fixtures may lack operational lineage; outside tests, revalidate the
+    # full gate because state can be restored or reconstructed after a restart.
+    if settings.app_mode is AppMode.TEST:
+        return True
+    try:
+        return publication_gate(event, app_mode=settings.app_mode).passed
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return False
+
+
 def _ensure_published_event(event: dict[str, Any]) -> None:
-    if event["status"] != "published":
+    if not _is_public_event(event):
         raise HTTPException(status_code=404, detail="Event not found.")
+
+
+def _require_reviewed_product_path() -> None:
+    if settings.app_mode is not AppMode.TEST:
+        raise HTTPException(status_code=503, detail="Reviewed product publication is not available for this endpoint.")
 
 
 
@@ -1031,6 +1049,7 @@ def get_workflow_run(run_id: str) -> dict[str, Any]:
 
 @public_router.get("/publish/{aoi_name}")
 def get_published_outputs(aoi_name: str):
+    _require_reviewed_product_path()
     report = _latest_run(aoi_name)
     if not report:
         raise HTTPException(status_code=404, detail="No run found for AOI. Execute /run/{aoi_name} first.")
@@ -1053,6 +1072,7 @@ def mobile_advisory(
     low_bandwidth: bool = Query(default=False),
     language: str = Query(default="en"),
 ) -> dict[str, Any]:
+    _require_reviewed_product_path()
     report = _latest_run(aoi_name)
     if not report:
         raise HTTPException(status_code=404, detail="No run found for AOI.")
@@ -1121,20 +1141,16 @@ def mobile_advisory(
 
 
 @public_router.get("/alerts/feed")
-def alert_feed(variant: str = Query(default="public_safe"), language: str = Query(default="en")):
-    return [_attach_limitations(
-        _apply_language(render_alert_template(event=_event_record_from_run(run), variant=variant), language))
-        for runs in run_history.values()
-        for run in runs
-        if run["detections"][0]["review_status"] == "analyst_validated"
-    ]
+def alert_feed(variant: Literal["public_safe"] = Query(default="public_safe"), language: str = Query(default="en")):
+    return [_attach_limitations(_apply_language(render_alert_template(event=event, variant=variant), language))
+            for event in _all_events() if _is_public_event(event)]
 
 
 @public_router.get("/corridors")
 def corridors() -> list[dict]:
     response = []
     for corridor in settings.pilot_corridors:
-        latest = _latest_run(corridor.name)
+        latest = _latest_run(corridor.name) if settings.app_mode is AppMode.TEST else None
         detection = latest["detections"][0] if latest else None
         response.append(
             {
@@ -1154,6 +1170,7 @@ def corridors() -> list[dict]:
 
 @public_router.get("/corridors/{aoi_name}/status")
 def corridor_status(aoi_name: str) -> dict:
+    _require_reviewed_product_path()
     report = _latest_run(aoi_name)
     if not report:
         raise HTTPException(status_code=404, detail="No status found for AOI.")
@@ -1183,7 +1200,7 @@ def corridor_events(
         raise HTTPException(status_code=404, detail="No events found for AOI.")
 
     records = [event for event in _all_events() if event["aoi"] == aoi_name]
-    records = [event for event in records if event["status"] == "published"]
+    records = [event for event in records if _is_public_event(event)]
     if status:
         records = [event for event in records if event["status"] == status]
     if confidence_bucket:
@@ -1203,7 +1220,8 @@ def corridor_events(
 
 @public_router.get("/events")
 def list_public_events() -> dict[str, Any]:
-    events = _all_events()
+    fields = ("event_id", "event_class", "status", "geometry", "source_scenes", "lineage", "confidence_breakdown", "notes", "timestamps")
+    events = [{key: event.get(key) for key in fields} for event in _all_events() if _is_public_event(event)]
     return {"schema": "event-collection/v1", "events": events}
 
 
@@ -1247,6 +1265,7 @@ def get_event_historical(event_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail="Event not found.")
     _ensure_published_event(event)
 
+    _require_reviewed_product_path()
     history = _corridor_run_history(event["aoi"])
     trend = [
         {
@@ -1266,6 +1285,7 @@ def get_event_imagery(event_id: str) -> dict[str, Any]:
     if not event:
         raise HTTPException(status_code=404, detail="Event not found.")
     _ensure_published_event(event)
+    _require_reviewed_product_path()
     history = _corridor_run_history(event["aoi"])
     payload = _event_imagery_payload(event, history)
     payload["timeline"] = [
@@ -1288,7 +1308,8 @@ def get_event_imagery(event_id: str) -> dict[str, Any]:
 
 @public_router.get("/historical-events")
 def list_historical_events(corridor_reach: str | None = Query(default=None)) -> list[dict[str, Any]]:
-    records = [HistoricalEventRecord.model_validate(item) for item in historical_event_library.values()]
+    public_ids = {event["event_id"] for event in _all_events() if _is_public_event(event)}
+    records = [HistoricalEventRecord.model_validate(item) for event_id, item in historical_event_library.items() if event_id in public_ids]
     if corridor_reach:
         records = [record for record in records if record.catalog.corridor_reach == corridor_reach]
     return [_attach_limitations({
@@ -1308,6 +1329,10 @@ def get_historical_event(event_id: str) -> dict[str, Any]:
     record = historical_event_library.get(event_id)
     if not record:
         raise HTTPException(status_code=404, detail="Historical event not found.")
+    event = _event_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Historical event not found.")
+    _ensure_published_event(event)
     parsed = HistoricalEventRecord.model_validate(record)
     return _attach_limitations(parsed.model_dump())
 
@@ -1322,10 +1347,10 @@ def get_event_confidence(event_id: str) -> dict[str, Any]:
 
 
 @public_router.get("/alerts/latest")
-def latest_alerts(variant: str = Query(default="public_safe"), language: str = Query(default="en")) -> list[dict]:
+def latest_alerts(variant: Literal["public_safe"] = Query(default="public_safe"), language: str = Query(default="en")) -> list[dict]:
     return [_attach_limitations(_apply_language(render_alert_template(event=event, variant=variant), language))
         for event in _all_events()
-        if event["status"] == "published"
+        if _is_public_event(event)
     ]
 
 
