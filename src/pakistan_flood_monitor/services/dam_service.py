@@ -388,13 +388,16 @@ def _compute_trend(dam_id: str, current_pct: float) -> str:
 
 def _fetch_dam_thumbnail(dam: dict) -> Optional[str]:
     """Fetch latest Sentinel-2 thumbnail for a dam's reservoir bbox."""
+    if os.getenv("APP_MODE") == "test" or os.getenv("PYTEST_CURRENT_TEST"):
+        return None
     bbox = dam.get("reservoir_bbox")
     if not bbox:
         return None
     try:
         import pystac_client
         client = pystac_client.Client.open(
-            "https://earth-search.aws.element84.com/v1"
+            "https://earth-search.aws.element84.com/v1",
+            timeout=5,
         )
         end_dt = datetime.utcnow()
         start_dt = end_dt - timedelta(days=30)

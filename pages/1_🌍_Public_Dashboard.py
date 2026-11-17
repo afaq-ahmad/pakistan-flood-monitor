@@ -19,14 +19,14 @@ else:
 
 # Search my area
 st.subheader("🔍 Search My Area")
-events = data_service.get_events()
-districts = sorted(events["district"].dropna().unique().tolist()) if not events.empty else []
+all_events = data_service.get_events()
+districts = sorted(all_events["district"].dropna().unique().tolist()) if not all_events.empty and "district" in all_events.columns else []
 search = st.selectbox("Search by district", ["All"] + districts)
-if search != "All":
-    events = events[events["district"] == search]
+events = all_events[all_events["district"] == search] if search != "All" and not all_events.empty and "district" in all_events.columns else all_events
 
 # Stats
-stats = data_service.summary_stats()
+district_filter = None if search == "All" else search
+stats = data_service.summary_stats(district=district_filter)
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Active Alerts", stats.get("active_events", 0))
 c2.metric("Critical Zones", stats.get("critical_zones", 0))
@@ -35,7 +35,7 @@ c4.metric("Avg Confidence", f"{stats.get('avg_confidence',0)*100:.0f}%")
 
 # Map
 st.subheader("🗺️ Flood Map Overview")
-pub_events = data_service.get_events() if search == "All" else events
+pub_events = events
 sev_colors = {"critical": "red", "warning": "orange", "watch": "gold", "low": "blue"}
 
 m = folium.Map(location=[30.37, 69.34], zoom_start=5, tiles="CartoDB dark_matter")
@@ -58,6 +58,8 @@ st_folium(m, width=1200, height=500)
 # Public alert cards
 st.subheader("🚨 Active Alert Cards")
 published = data_service.get_events_by_status(["published", "active", "approved"])
+if search != "All" and not published.empty and "district" in published.columns:
+    published = published[published["district"] == search]
 if published.empty:
     st.info("No active alerts at this time.")
 else:
@@ -74,6 +76,8 @@ else:
 # Impact summary
 st.subheader("📊 Impact Summary")
 exposure = data_service.get_exposure()
+if search != "All" and not exposure.empty and "district" in exposure.columns:
+    exposure = exposure[exposure["district"] == search]
 if not exposure.empty:
     st.dataframe(exposure[["event_id","district","flooded_area_sqkm","population_exposed",
                            "roads_exposed_km","health_facilities_exposed","schools_exposed",
