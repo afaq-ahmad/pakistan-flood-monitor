@@ -15,6 +15,11 @@ APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --reload --port 8000
 Endpoints under `/internal` require a Bearer token in the `Authorization` header.
 - For Analyst actions: Use the token specified in `FLOOD_MONITOR_ANALYST_TOKEN`.
 - For Admin actions: Use the token specified in `FLOOD_MONITOR_ADMIN_TOKEN`.
+- Reviewer and service roles use `FLOOD_MONITOR_REVIEWER_TOKEN` and `FLOOD_MONITOR_SERVICE_TOKEN`.
+
+Unsigned `v1.<base64 JSON>` identity tokens are no longer accepted: they were forgeable.
+Replace them with a configured role secret. Audit identities for these secrets are role-based;
+they do not establish an individual user identity or token expiry. Rotate any exposed secrets.
 
 Endpoints under `/public` are unauthenticated.
 
@@ -60,3 +65,13 @@ sequenceDiagram
 #### Settings & Configurations
 - `POST /internal/admin/register-threshold`: Updates threshold weights (requires Admin).
 - `GET /internal/monitoring/metrics`: Exports Prometheus-compatible operational metrics.
+
+### Publication lineage
+
+Outside test mode, the publication gate rejects missing or malformed observation lineage. Each
+required observation must include its matching name, a finite value, units, status, availability,
+source URI, timezone-aware source timestamp, processing version, and quality status. Available,
+non-synthetic metadata is necessary but does not by itself establish that a source is authentic,
+current, scientifically validated, or authorized for public warning. Existing producers with incomplete
+lineage must populate these fields before publication. The separate latest-run and mobile-advisory
+routes still need a reviewed-product publication design and must not be relied on for operational use.

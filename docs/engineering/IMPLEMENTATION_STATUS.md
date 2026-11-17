@@ -125,3 +125,12 @@ workflow recovery and concurrency remain incomplete; no CI workflows are present
 - Focused isolated SQLite check: `DATABASE_URL=sqlite:////tmp/flood_audit_tests_1.db .venv/bin/python -m pytest tests/test_operational_data_integrity.py tests/test_integrity_summary_regression.py tests/test_workflow_foundation.py tests/test_canonical_runtime_smoke.py -q --tb=short` — 12 passed.
 - `python -m pytest tests/ -q --tb=no` initially could not collect 14 modules, including the missing `Index`; after the fix and installing Pillow separately, a full run produced failures and was interrupted while still running. The suite writes tracked storage and is not reliably isolated/offline. Full results remain unverified.
 - Docker image and PostgreSQL migration were not exercised; Docker was unavailable.
+
+## Publication and authentication audit follow-up (2026-11-17)
+
+This work removes forgeable unsigned identity tokens from the canonical API and requires complete
+per-observation metadata at the publication gate outside test mode. Configured role secrets remain
+supported. Existing unsigned-token clients must migrate to configured secrets; role-based audit IDs
+are not individual identities. Metadata validation does not verify source authenticity or freshness.
+The public latest-run and advisory paths still bypass reviewed-product gating; workflow restart and
+concurrent retry ownership, CI, isolated offline tests, and operational data processing remain open.

@@ -154,7 +154,11 @@ def lineage_integrity_qa(event: dict[str, Any], app_mode: AppMode) -> list[str]:
     if not lineage:
         return ["Scientific lineage is required before publication outside test mode."]
 
+    if not isinstance(lineage, dict):
+        return ["Scientific lineage must be an object."]
     observations = lineage.get("observations") or {}
+    if not isinstance(observations, dict):
+        return ["Scientific observations must be an object."]
     eligibility = publication_eligibility(observations, app_mode=app_mode)
     errors = list(eligibility.errors)
     if app_mode is AppMode.OPERATIONAL and not observations:

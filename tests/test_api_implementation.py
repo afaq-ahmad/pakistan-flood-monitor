@@ -578,19 +578,21 @@ def test_expired_and_malformed_tokens_are_rejected() -> None:
     expired = _structured_token("admin", "admin-principal", datetime.now(UTC) - timedelta(minutes=5))
     expired_resp = client.get("/internal/run/Indus-Lower", headers={"Authorization": f"Bearer {expired}"})
     assert expired_resp.status_code == 401
-    assert expired_resp.json()["detail"] == "Token expired"
+    assert expired_resp.json()["detail"] == "Unauthorized"
 
     malformed_resp = client.get("/internal/run/Indus-Lower", headers={"Authorization": "Bearer v1.not-base64!!"})
     assert malformed_resp.status_code == 401
-    assert malformed_resp.json()["detail"] == "Malformed token"
+    assert malformed_resp.json()["detail"] == "Unauthorized"
 
 
-def test_role_separation_for_privileged_boundaries() -> None:
+def test_role_separation_for_privileged_boundaries(monkeypatch) -> None:
     _reset_state()
     client = TestClient(app)
 
-    service = _structured_token("service", "svc-sync", datetime.now(UTC) + timedelta(hours=1))
-    reviewer = _structured_token("reviewer", "reviewer-1", datetime.now(UTC) + timedelta(hours=1))
+    service = "test-service-token"
+    reviewer = "test-reviewer-token"
+    monkeypatch.setenv("FLOOD_MONITOR_SERVICE_TOKEN", service)
+    monkeypatch.setenv("FLOOD_MONITOR_REVIEWER_TOKEN", reviewer)
 
     service_denied = client.post(
         "/internal/admin/register-threshold",

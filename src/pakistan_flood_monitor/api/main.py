@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import base64
 import hashlib
+import hmac
 import json
 import os
 import time
@@ -867,13 +867,13 @@ def _resolve_role(token: str) -> str | None:
     analyst_token = os.getenv("FLOOD_MONITOR_ANALYST_TOKEN")
     reviewer_token = os.getenv("FLOOD_MONITOR_REVIEWER_TOKEN")
     service_token = os.getenv("FLOOD_MONITOR_SERVICE_TOKEN")
-    if admin_token and token == admin_token:
+    if admin_token and hmac.compare_digest(token.encode("utf-8"), admin_token.encode("utf-8")):
         return "admin"
-    if analyst_token and token == analyst_token:
+    if analyst_token and hmac.compare_digest(token.encode("utf-8"), analyst_token.encode("utf-8")):
         return "analyst"
-    if reviewer_token and token == reviewer_token:
+    if reviewer_token and hmac.compare_digest(token.encode("utf-8"), reviewer_token.encode("utf-8")):
         return "reviewer"
-    if service_token and token == service_token:
+    if service_token and hmac.compare_digest(token.encode("utf-8"), service_token.encode("utf-8")):
         return "service"
     return None
 
@@ -882,34 +882,9 @@ def _principal_id_for_role(role: str) -> str:
     return f"{role}-principal"
 
 
-def _parse_structured_token(token: str) -> dict[str, Any] | None:
-    if not token.startswith("v1."):
-        return None
-    payload_token = token.split(".", 1)[1]
-    try:
-        payload_bytes = base64.urlsafe_b64decode(payload_token + "=" * (-len(payload_token) % 4))
-        payload = json.loads(payload_bytes.decode("utf-8"))
-    except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token")
-    return payload
-
-
 def _resolve_principal(token: str) -> tuple[str, str]:
-    structured = _parse_structured_token(token)
-    if structured:
-        role = structured.get("role")
-        principal_id = structured.get("principal_id")
-        exp = structured.get("exp")
-        if not isinstance(role, str) or not isinstance(principal_id, str) or not isinstance(exp, str):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token")
-        try:
-            expiry = datetime.fromisoformat(exp.replace("Z", "+00:00"))
-        except ValueError as exc:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token") from exc
-        if expiry <= datetime.now(UTC):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
-        return role, principal_id
-
+    # A base64 payload is not an authenticated identity. Only configured bearer
+    # secrets are accepted, including secrets that happen to start with "v1.".
     role = _resolve_role(token)
     if role is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
