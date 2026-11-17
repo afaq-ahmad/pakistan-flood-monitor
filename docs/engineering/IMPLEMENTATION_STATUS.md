@@ -135,13 +135,18 @@ are not individual identities. Metadata validation does not verify source authen
 The public latest-run and advisory paths still bypass reviewed-product gating; workflow restart and
 concurrent retry ownership, CI, isolated offline tests, and operational data processing remain open.
 
-## Focused offline CI follow-up (2026-11-17)
+## Public output boundary follow-up (2026-11-17)
 
-A GitHub Actions job runs selected canonical security, integrity, workflow and GIS tests with
-network sockets disabled, an isolated SQLite database and Python 3.12. The ledger contract test now
-reads the actual Alembic head rather than hard-coding an obsolete revision. The full suite remains
-outside this focused job and has known failures; dependencies are not fully locked. Local equivalent
-with `pytest --disable-socket --allow-unix-socket` passed 26 tests. Hosted Actions, PostgreSQL,
-container builds, and the broader suite remain unverified.
-The same 26-test offline selection passed in a fresh Python 3.12 environment installed from the
-current project dependencies and `pytest-socket==0.8.1`; dependency resolution is still unpinned.
+Public event, catalog, risk, and alert reads now filter to currently eligible published events.
+Internal alert variants are rejected by public endpoints. Raw latest-run/advisory/corridor status and
+cross-run history/imagery views fail closed outside test mode until linked to reviewed products;
+corridor listings expose unknown state in those modes. This is an availability reduction, not a
+reviewed-product implementation. In-memory publication state and partial database restoration remain
+unresolved; no operational publication readiness is implied.
+
+Focused check: `DATABASE_URL=sqlite:////tmp/public_boundary_final.db .venv/bin/python -m pytest
+tests/test_publication_boundary.py tests/test_authentication_boundary.py
+tests/test_publication_lineage_boundary.py tests/test_operational_data_integrity.py
+tests/test_workflow_foundation.py tests/test_canonical_runtime_smoke.py -q --tb=short` — 26 passed.
+A broader API/resilience/GIS selection returned 4 passed and 6 failed, matching the same six failures
+when run against base `d40af2e` in a separate worktree and SQLite database.
