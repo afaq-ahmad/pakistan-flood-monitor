@@ -91,3 +91,20 @@ def test_unavailable_processor_is_durable_degraded_and_blocks_dependents(tmp_pat
     assert execution.tasks[1].status is WorkflowStatus.SKIPPED
     assert execution.tasks[0].attempt_count == 1
     assert calls == []
+
+
+def test_invalid_processor_status_marks_run_and_task_failed(tmp_path) -> None:
+    import pytest
+
+    class InvalidProcessor:
+        processor_version = "test-v1"
+
+        def execute(self, _context):
+            return ProcessorResult(status=WorkflowStatus.RUNNING)
+
+    repository = _repository(tmp_path)
+    definition = WorkflowDefinition(name="test_workflow", tasks=(WorkflowTaskSpec("bad", InvalidProcessor()),))
+    with pytest.raises(ValueError, match="unsupported terminal status"):
+        WorkflowEngine(repository).execute(definition, _context())
+    assert repository.get_run("workflow-run-1").status is WorkflowStatus.FAILED
+    assert repository.list_tasks("workflow-run-1")[0].status is WorkflowStatus.FAILED
