@@ -51,3 +51,12 @@ tests/
 2. Use `pytest` fixtures for mocking external API calls (e.g., STAC or Open-Meteo).
 3. Do not run live network calls in standard unit tests. Mock the responses to ensure tests remain fast and deterministic.
 4. If writing a new backtest event, add the ground truth data to `GROUND_TRUTH_EVENTS` in `test_backtesting.py`.
+
+## Focused offline CI
+
+`.github/workflows/canonical-checks.yml` runs a selected canonical security, integrity, workflow,
+and GIS suite with network sockets disabled and an isolated SQLite database. Unix-domain sockets are
+allowed for the in-process asynchronous test client. This is a partial safety check; it does not run
+the full test suite, Docker, PostgreSQL, or live provider integrations. Dependency versions are not
+fully locked, and the broader suite has known failures; a green focused check is not a release or
+operational-readiness certification.

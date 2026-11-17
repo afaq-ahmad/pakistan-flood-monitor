@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+from alembic.script import ScriptDirectory
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
@@ -67,11 +69,13 @@ def test_implementation_ledger_tracks_repository_context_and_all_prompts() -> No
     path = REPOSITORY_ROOT / "docs" / "engineering" / "IMPLEMENTATION_STATUS.md"
     ledger = _normalized_markdown(path)
 
+    heads = ScriptDirectory(str(REPOSITORY_ROOT / "alembic")).get_heads()
+    assert len(heads) == 1, f"Expected one canonical migration head, found {heads}"
     required_context = {
         "canonical package": "`src/pakistan_flood_monitor/`",
         "accepted ADR": "adr-001: canonical runtime and operational data integrity",
         "runtime modes": "`test`, `demo`, `operational`",
-        "canonical schema head": "`f46f1d9e187b`",
+        "canonical schema head": f"`{heads[0].lower()}`",
         "legacy schema head": "`0005_add_lineage_metadata_to_provenance`",
         "limitations": "## current limitations and deprecated work",
         "defects": "## known p0/p1 defects",
