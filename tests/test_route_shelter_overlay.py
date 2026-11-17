@@ -32,7 +32,8 @@ def test_route_constraints_and_shelter_proximity_are_emitted_in_district_report(
                     "point",
                     [
                         OverlayFeature("s1", {"type": "Point", "coordinates": [0.5, 0.5]}, {}),
-                        OverlayFeature("s2", {"type": "Point", "coordinates": [1.1, 1.1]}, {}),
+                        # About 157 m beyond the flood corner, within the 1 km threshold.
+                        OverlayFeature("s2", {"type": "Point", "coordinates": [1.001, 1.001]}, {}),
                     ],
                     max_distance_m=1000,
                 ),

@@ -71,7 +71,7 @@ def test_runtime_state_export_restore_supports_restart_recovery() -> None:
     review = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
         headers=_analyst_headers(),
-        json={"action": "accept", "actor": "analyst-ops", "notes": "post-restart recovered"},
+        json={"action": "review", "actor": "analyst-ops", "notes": "post-restart recovered"},
     )
     assert review.status_code == 200
 
@@ -87,12 +87,15 @@ def test_concurrent_writes_and_read_after_write_across_clients() -> None:
     with ThreadPoolExecutor(max_workers=4) as pool:
         statuses = list(pool.map(_run, aois))
 
-    assert all(code == 200 for code in statuses)
+    # Duplicate requests may observe a run while it is still being claimed.
+    assert all(code in {200, 409} for code in statuses)
+    assert statuses.count(200) >= 2
 
     with TestClient(app) as reader:
         corridors = reader.get("/public/corridors").json()
         assert len(corridors) >= 2
-        assert sum(len(runs) for runs in run_history.values()) >= 4
+        # Reusing the same AOI's run must not duplicate history.
+        assert sum(len(runs) for runs in run_history.values()) == 2
 
 
 def test_payload_actor_is_ignored_and_token_misuse_forbidden() -> None:
@@ -105,7 +108,7 @@ def test_payload_actor_is_ignored_and_token_misuse_forbidden() -> None:
     spoof_attempt = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
         headers=_analyst_headers(),
-        json={"action": "accept", "actor": "admin-fake", "notes": "spoof"},
+        json={"action": "review", "actor": "admin-fake", "notes": "spoof"},
     )
     assert spoof_attempt.status_code == 200
 
@@ -147,7 +150,7 @@ def test_internal_rate_limiting_and_prometheus_export() -> None:
     rate_limiter.reset()
     metrics = client.get("/internal/monitoring/metrics/prometheus", headers=_analyst_headers())
     assert metrics.status_code == 200
-    assert "pipeline_alerts_published_total" in metrics.text
+    assert "pipeline_demo_previews_produced_total" in metrics.text
 
 
 def test_end_to_end_contract_flow_with_realistic_dataset() -> None:
@@ -158,6 +161,12 @@ def test_end_to_end_contract_flow_with_realistic_dataset() -> None:
     assert run_response.status_code == 200
     event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
 
+    for action in ("review", "approved"):
+        transition = client.post(
+            f"/internal/admin/review-event?event_id={event_id}",
+            headers=_analyst_headers(), json={"action": action, "notes": "reviewed for test"},
+        )
+        assert transition.status_code == 200
     publish = client.post(
         f"/internal/admin/review-event?event_id={event_id}",
         headers=_analyst_headers(),
@@ -204,7 +213,7 @@ def test_audit_chain_verification_and_tamper_detection() -> None:
     review = client.post(
         f'/internal/admin/review-event?event_id={event_id}',
         headers=_analyst_headers(),
-        json={'action': 'accept', 'notes': 'chain check'},
+        json={'action': 'review', 'notes': 'chain check'},
     )
     assert review.status_code == 200
 

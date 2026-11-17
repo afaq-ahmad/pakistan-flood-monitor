@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from pakistan_flood_monitor.api.main import (
     app,
+    rate_limiter,
     event_store,
     field_report_audit_log,
     field_reports,
@@ -24,6 +25,9 @@ ANALYST_TOKEN = "test-analyst-token"
 
 
 def _reset_state() -> None:
+    rate_limiter.reset()
+    os.environ["FLOOD_MONITOR_RATE_LIMIT_REQUESTS"] = "1000"
+    os.environ["FLOOD_MONITOR_RATE_LIMIT_WINDOW_SECONDS"] = "60"
     run_history.clear()
     event_store.clear()
     historical_event_library.clear()
@@ -181,12 +185,15 @@ def test_event_imagery_supports_before_after_and_timeline() -> None:
         headers=_analyst_headers(),
     ).status_code == 200
 
+    # Provide distinct labelled test scenes instead of treating the reused run
+    # as a second observation.
+    event_store[event_id]["lineage"]["source_scene_ids"] = ["test-before", "test-after"]
     imagery_response = client.get(f"/public/events/{event_id}/imagery")
     assert imagery_response.status_code == 200
     payload = imagery_response.json()
     assert payload["comparison"]["mode"] == "swipe"
-    assert payload["comparison"]["before_scene"]["scene_id"]
-    assert payload["comparison"]["after_scene"]["scene_id"]
+    assert payload["comparison"]["before_scene"]["scene_id"] == "test-before"
+    assert payload["comparison"]["after_scene"]["scene_id"] == "test-after"
     assert payload["comparison"]["is_comparison_available"] is True
     assert len(payload["timeline"]) >= 1
     assert payload["timeline"][0]["lineage"]["processing_version"] == "sar-preprocess-v1"
@@ -463,6 +470,15 @@ def test_risk_summary_rollups_sorting_and_filters() -> None:
     for event_id in (event_a, event_b):
         _lifecycle_transition(client, event_id, "review")
         _lifecycle_transition(client, event_id, "approved")
+    # Approved events are not public until the publication gate succeeds.
+    assert client.get("/public/risk-summary/tehsil").json()["count"] == 0
+    for event_id in (event_a, event_b):
+        response = client.post(
+            f"/internal/admin/review-event?event_id={event_id}",
+            json=_gis_review_payload("published", "analyst-1", "published for test"),
+            headers=_analyst_headers(),
+        )
+        assert response.status_code == 200
     event_store[event_a]["admin_overlays"] = [
         {"province": "Sindh", "district": "Dadu", "tehsil": "Mehar"},
         {"province": "Sindh", "district": "Dadu", "tehsil": "Khairpur Nathan Shah"},
@@ -476,7 +492,7 @@ def test_risk_summary_rollups_sorting_and_filters() -> None:
     tehsil_payload = tehsil_resp.json()
     assert tehsil_payload["count"] >= 3
     assert tehsil_payload["results"][0]["risk_score"] >= tehsil_payload["results"][-1]["risk_score"]
-    assert tehsil_payload["results"][0]["latest_event_status"] in {"approved", "published"}
+    assert tehsil_payload["results"][0]["latest_event_status"] == "published"
 
     district_resp = client.get("/public/risk-summary/district?province=Sindh")
     assert district_resp.status_code == 200

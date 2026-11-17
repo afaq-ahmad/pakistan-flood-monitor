@@ -93,7 +93,7 @@ Detailed documentation is available in the `docs/` directory:
 | **Spectral Water Indices** | Uses NDWI, MNDWI, and AWEI on Sentinel-2 to detect inundated areas. | Prototype (RGB proxy) |
 | **Flood Forecasting** | Compares PyTorch LSTM against persistence and linear baselines. | Framework-ready |
 | **SAR & Topography Analysis** | Uses HAND indices to validate flood simulations against terrain. | Simulation / Ready |
-| **Public & Analyst Dashboards** | 15-page Streamlit application for both public warning and analyst lifecycle review. | Production-ready |
+| **Public & Analyst Dashboards** | 15-page Streamlit prototype for situational awareness and analyst development; not an authoritative warning service. | Prototype / demo |
 | **Historical Backtesting** | Replays historical floods (2010, 2014, 2022) to evaluate warning detection rates. | Active (Diagnostics) |
 
 ## Data Sources
