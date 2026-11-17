@@ -7,12 +7,21 @@ import plotly.graph_objects as go
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.pakistan_flood_monitor.services.forecast_service import fetch_weather_forecast, predict_future_water_level
+try:
+    from src.pakistan_flood_monitor.services.forecast_service import fetch_weather_forecast, predict_future_water_level
+    HAS_FORECAST_SERVICE = True
+except ImportError as e:
+    HAS_FORECAST_SERVICE = False
+    FORECAST_IMPORT_ERROR = str(e)
+
 from satellite_ml_service import CORRIDOR_BBOXES
 
 st.set_page_config(page_title="Flood Forecasting", page_icon="🔮", layout="wide")
 st.title("🔮 Predictive Flood Forecasting")
 st.markdown("Transitioning from reactive monitoring to **predictive early warnings**. This module leverages the Open-Meteo API (GFS) for 14-day precipitation forecasts and an LSTM Spatio-Temporal Neural Network to predict river water level trajectories.")
+
+if not HAS_FORECAST_SERVICE:
+    st.warning(f"⚠️ **Optional ML dependencies not found** (`{FORECAST_IMPORT_ERROR}`).\n\nTo enable full predictive LSTM forecasting, install optional packages: `pip install openmeteo-requests requests_cache retry_requests torch`.")
 
 col1, col2 = st.columns([1, 2])
 
@@ -27,7 +36,7 @@ with col1:
     
     st.write(f"**Target Coordinates:** {lat:.2f}, {lon:.2f}")
     
-    if st.button("Generate 14-Day Forecast", type="primary"):
+    if st.button("Generate 14-Day Forecast", type="primary", disabled=not HAS_FORECAST_SERVICE):
         with st.spinner("Fetching GFS meteorological forecast..."):
             forecast_df = fetch_weather_forecast(lat, lon, 14)
             st.session_state['forecast_df'] = forecast_df
@@ -79,3 +88,5 @@ with col2:
             st.warning(f"⚠️ **WATCH:** Water levels are predicted to rise to warning thresholds. Monitor the situation closely.")
         else:
             st.success("✅ Water levels are predicted to remain stable over the next 14 days.")
+    else:
+        st.info("ℹ️ Select a river corridor on the left and click **Generate 14-Day Forecast** to fetch meteorological data and predict water levels.")
