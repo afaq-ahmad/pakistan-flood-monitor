@@ -141,6 +141,10 @@ def test_canonical_api_returns_structured_unavailable_response(monkeypatch) -> N
 
     monkeypatch.setenv("FLOOD_MONITOR_ADMIN_TOKEN", "integrity-test-token")
     monkeypatch.setattr(api_main, "pipeline", FailingPipeline())
+    # Avoid reusing a same-day persistent workflow created by another test.
+    from uuid import uuid4
+    from pakistan_flood_monitor.workflow import engine as workflow_engine
+    monkeypatch.setattr(workflow_engine, "workflow_signature", lambda _context: uuid4().hex)
     api_main.rate_limiter.reset()
 
     response = TestClient(api_main.app).get(

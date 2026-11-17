@@ -36,7 +36,9 @@ def _lifecycle_transition(client: TestClient, event_id: str, action: str) -> Non
     assert response.status_code == 200
 
 
-def test_sitrep_export_contains_required_sections() -> None:
+def test_sitrep_export_contains_required_sections(tmp_path, monkeypatch) -> None:
+    # Keep the generated PDF and pipeline artifacts out of the repository.
+    monkeypatch.chdir(tmp_path)
     _reset_state()
     client = TestClient(app)
     run_response = client.get('/internal/run/Indus-Lower', headers=_admin_headers())

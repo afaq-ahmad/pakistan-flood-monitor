@@ -26,7 +26,7 @@ flowchart TD
     E -- No --> M[Event Missed ❌]
 ```
 
-**Current Gap**: The backtest currently documents a gap in detection (0/3 detection rate) due to the system relying on conservative heuristic fallbacks when satellite imagery is not actively fetched. This is expected behavior for the prototype, and the test serves as a diagnostic target for future calibration.
+**Limitation**: The replay uses deterministic simulated dam inputs in tests, not historical observed dam conditions or independently verified outcomes. It is a software diagnostic and cannot establish historical warning accuracy or operational readiness.
 
 ## Unit Testing
 
@@ -52,11 +52,13 @@ tests/
 3. Do not run live network calls in standard unit tests. Mock the responses to ensure tests remain fast and deterministic.
 4. If writing a new backtest event, add the ground truth data to `GROUND_TRUTH_EVENTS` in `test_backtesting.py`.
 
-## Focused offline CI
+## Offline CI
 
-`.github/workflows/canonical-checks.yml` runs a selected canonical security, integrity, workflow,
-and GIS suite with network sockets disabled and an isolated SQLite database. Unix-domain sockets are
-allowed for the in-process asynchronous test client. This is a partial safety check; it does not run
-the full test suite, Docker, PostgreSQL, or live provider integrations. Dependency versions are not
-fully locked, and the broader suite has known failures; a green focused check is not a release or
-operational-readiness certification.
+`.github/workflows/canonical-checks.yml` installs the project and runs the complete `tests/` suite
+with network sockets disabled, Unix-domain sockets enabled for the in-process test client, and an
+temporary SQLite database selected by the test configuration even if `DATABASE_URL` is set. Tests
+requiring another database must create it explicitly. Test fixtures replace live provider calls and keep prototype dam histories
+and generated reports in temporary directories. CI checks that tracked `storage/` and `data/` files
+were not changed. Pillow is a declared dependency for image-processing imports. A green result does
+not validate real provider integrations, historical warning accuracy, Docker, PostgreSQL, worker
+crash recovery, or scientific and operational readiness. Dependency versions are not fully locked.

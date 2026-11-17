@@ -498,7 +498,25 @@ def _build_damage_classifications(event_id: str, exposure: dict[str, Any], detec
 
 def _record_run(report: dict[str, Any], *, persist_pipeline_run: bool = True) -> None:
     corridor = report["detections"][0]["aoi"]
+    event_id = report["published_outputs"]["review_queue_event"]["event_id"]
     with state_lock:
+        existing = event_store.get(event_id)
+        if existing is not None:
+            # Do not erase analyst decisions on reuse or on an event-ID
+            # collision. Changed reports need a distinct reviewed identity.
+            if existing.get("run_id") != report["run_id"]:
+                raise HTTPException(status_code=409, detail={
+                    "error": "existing_event_run_conflict", "event_id": event_id,
+                    "run_id": report["run_id"],
+                })
+            previous = next((item for item in run_history.get(corridor, [])
+                             if item.get("run_id") == report["run_id"]), None)
+            if previous != report:
+                raise HTTPException(status_code=409, detail={
+                    "error": "existing_event_report_conflict", "event_id": event_id,
+                    "run_id": report["run_id"],
+                })
+            return
         run_history.setdefault(corridor, []).append(report)
         event = _event_record_from_run(report)
         event_store[event["event_id"]] = event

@@ -86,3 +86,11 @@ automatically: safe recovery requires worker ownership/fencing and an operator p
 not implemented. Do not reset an active worker's state directly.
 A failed or degraded run without a successful report returns HTTP 503 with `workflow_not_successful`;
 a stale report from an earlier attempt is not returned as a successful result.
+
+### Reused runs and analyst review
+
+Repeating an identical completed run does not recreate its in-memory event or erase analyst review
+state. If a retry produces a different report for an existing event and run ID, the API returns
+HTTP 409 `existing_event_report_conflict` rather than pairing new machine results with the earlier
+review. Reusing an event ID for a different run returns 409 `existing_event_run_conflict`. A distinct reviewed-product identity is still needed for changed results. Review state is not
+yet fully durable across process restarts.

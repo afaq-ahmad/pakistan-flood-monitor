@@ -1,7 +1,6 @@
 # Implementation status
 
-Last verified: **2026-08-29**, against `main` at `cc109c6`; the focused
-`feat/metric-gis-contracts` workstream is not yet merged. Read this file with root
+Last verified for this follow-up: **2026-11-17**, against `main` at `65aa6d4`. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -17,7 +16,7 @@ claims against code and Git history; update this ledger in each consolidated-pro
 | Package version | `0.1.0` in `pyproject.toml` |
 | Canonical DB migration head | Root Alembic chain: `b4d9d93f2a10` (durable canonical pipeline tasks) |
 | Legacy DB migration head | `src/app/db/alembic`: `0005_add_lineage_metadata_to_provenance` |
-| CI | No workflow exists under `.github/workflows/` |
+| CI | `.github/workflows/canonical-checks.yml` runs the full offline suite and SQLite migration round-trip on this branch |
 
 The two Alembic histories are not reconciled. The root chain imports canonical package metadata; the
 legacy chain belongs to `src/app`. A later migration task must not create another chain or silently
@@ -31,7 +30,7 @@ choose between them.
 |---|---|---|
 | 00 | COMPLETE | Repository operating contract merged in [PR #69](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/69); ledger and ADR policy added by the current Prompt 00 follow-up PR |
 | 01 | COMPLETE | [PR #68](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/68) merged the first observation-state contract and [PR #71](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/71) merged canonical API/CLI/worker wiring, explicit demo-only helpers, typed availability, publication eligibility, and durable run/task persistence. |
-| 02 | IN_PROGRESS | `feat/metric-gis-contracts` adds the canonical geodesic/local-projection measurement helpers, compact product provenance/quality/freshness/asset contracts, and targeted legacy migration-source call-site corrections. No migration is required: the canonical persistence boundary already stores composed metadata in JSON. |
+| 02 | COMPLETE | Metric GIS and provenance contracts merged in [PR #72](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/72); operational maturity remains partial. |
 | 03 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 04 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
 | 05 | NOT_STARTED | No authoritative prompt mapping or merged acceptance evidence recorded |
@@ -56,9 +55,10 @@ choose between them.
 - The canonical runner and API no longer import `app.*`; `src/app` remains a deprecated compatibility
   source for prototype routes, analyst tooling, and workflow shims. Its separate Alembic history is
   still unreconciled and must not receive new canonical runtime features.
-- Canonical pipeline runs and dependency-aware tasks now persist with signature-based idempotency and
+- Canonical pipeline runs and dependency-aware tasks persist with signature-based idempotency and
   retry counts. Event, review, audit, and dashboard state remain partly in memory; full restart-safe
-  API-state migration is still outstanding.
+  API-state migration is still outstanding. Queued or running work cannot safely recover automatically
+  after a crash without ownership and fencing. Some raw public views return 503 pending reviewed products.
 - Availability now represents `AVAILABLE`, `NO_DATA`, `UNAVAILABLE`, `DEGRADED`, `STALE`, and
   `PARTIAL` with a reason code, evaluation time, and optional freshness rule. Real source adapters
   must populate these fields rather than relying on default values.
@@ -71,8 +71,8 @@ Severity reflects current evidence, not an exhaustive safety assessment.
 | Priority | Defect / risk | Evidence and disposition |
 |---|---|---|
 | P0 | None formally triaged | Do not interpret this as evidence of operational safety or readiness |
-| P1 | Repository test baseline is red | 24 failures: shared rate-limit/test state, lifecycle/resilience contract mismatches, and database datetime JSON serialization |
-| P1 | CI and reproducible test environment are absent | No workflow is configured. `pytest` is now declared in the `dev` extra, but the full baseline has not been rerun from a fresh environment on this branch |
+| P1 | Worker crash recovery is not implemented | Queued/running work cannot be safely reclaimed without ownership, fencing, and operator recovery. |
+| P1 | Full dependency reproducibility and operational integration are unverified | Dependencies remain loosely constrained; hosted CI, Docker, PostgreSQL, and live providers require validation. |
 | P1 | Runtime and migration split-brain remains | Canonical and legacy packages plus two independent Alembic histories require incremental reconciliation |
 | P1 | Canonical durable task migration must be applied before operational use | Root Alembic head is `b4d9d93f2a10`; demo/test may initialize local tables, but operational deployments must use Alembic |
 
@@ -105,10 +105,12 @@ Focused checks on the unmerged metric-GIS contracts workstream:
 
 ## Next recommended prompt
 
-**Stop after Prompt 02 review/merge.** The next prompt must preserve these metric and metadata
-contracts when migrating additional GIS services or introducing real EO products.
+Prioritize fenced worker crash recovery, restart-safe event/review persistence, and independently
+validated real-data ingestion and reviewed products. These are not completed by the offline test fixes.
 
-## Independent audit follow-up (2026-11-17)
+## Independent audit follow-up (2026-11-17; historical baseline)
+
+The following findings describe the earlier audit baseline; see the later follow-ups for merged fixes.
 
 At main `6f486ca`, API import failed because the canonical task model used an unimported
 `Index`. This branch repairs the import, preserves `DEGRADED` input in integrity summaries,
@@ -126,7 +128,9 @@ workflow recovery and concurrency remain incomplete; no CI workflows are present
 - `python -m pytest tests/ -q --tb=no` initially could not collect 14 modules, including the missing `Index`; after the fix and installing Pillow separately, a full run produced failures and was interrupted while still running. The suite writes tracked storage and is not reliably isolated/offline. Full results remain unverified.
 - Docker image and PostgreSQL migration were not exercised; Docker was unavailable.
 
-## Publication and authentication audit follow-up (2026-11-17)
+## Publication and authentication audit follow-up (2026-11-17; historical baseline)
+
+The public-route and CI observations in this section predate PRs #75 and #77.
 
 This work removes forgeable unsigned identity tokens from the canonical API and requires complete
 per-observation metadata at the publication gate outside test mode. Configured role secrets remain
@@ -147,3 +151,17 @@ Focused workflow/security check: `DATABASE_URL=sqlite:////tmp/workflow_claim_fin
 /workspace/scratch/b87b53edb69f/repo/.venv/bin/python -m pytest tests/test_workflow_concurrent_retry.py
 tests/test_workflow_foundation.py tests/test_operational_data_integrity.py tests/test_canonical_runtime_smoke.py
 tests/test_authentication_boundary.py tests/test_publication_lineage_boundary.py -q --tb=short` — 22 passed.
+
+## Consolidated reliability follow-up (2026-11-17)
+
+- Reused in-memory runs preserve analyst review and do not duplicate history. A changed report for the
+  same event/run returns HTTP 409; full restart-safe review persistence remains unimplemented.
+- Runtime declares Pillow; CI runs the complete test suite with network sockets disabled and verifies
+  that tracked data/storage remain unchanged. Tests force a temporary SQLite DB and test mode, and
+  isolate prototype dam history and PDF output.
+- Baseline at `65aa6d4`: 164 passed, 25 failed under an offline SQLite run. With this branch, a fresh
+  Python 3.12 install and offline full run passed **190 tests** (475 warnings); a three-run concurrent
+  subset passed 13 tests each run. SQLite Alembic upgrade/downgrade/upgrade passed.
+- Docker, PostgreSQL, hosted Actions and live providers were not tested. Full dependency locking,
+  fenced crash recovery, durable reviewed state, currently disabled raw public routes and operational
+  EO products remain open. Synthetic historical replay is not accuracy validation.
