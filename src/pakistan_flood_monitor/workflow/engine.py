@@ -98,6 +98,8 @@ class WorkflowEngine:
             tasks_by_name[task.name] = task
             try:
                 result = spec.processor.execute(context)
+                if result.status not in {WorkflowStatus.SUCCESS, WorkflowStatus.SKIPPED, WorkflowStatus.DEGRADED}:
+                    raise ValueError(f"Processor '{spec.name}' returned unsupported terminal status '{result.status.value}'")
             except OperationalDataIntegrityError as exc:
                 failure = exc
                 task = self._repository.update_task(
@@ -122,8 +124,6 @@ class WorkflowEngine:
                 self._repository.update_run(run.id, status=WorkflowStatus.FAILED, metadata=metadata)
                 raise
             else:
-                if result.status not in {WorkflowStatus.SUCCESS, WorkflowStatus.SKIPPED, WorkflowStatus.DEGRADED}:
-                    raise ValueError(f"Processor '{spec.name}' returned unsupported terminal status '{result.status.value}'")
                 task = self._repository.update_task(
                     task.id,
                     status=result.status,

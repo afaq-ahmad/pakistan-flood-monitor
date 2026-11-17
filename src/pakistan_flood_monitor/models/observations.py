@@ -96,6 +96,10 @@ def summarize_integrity(
         for name, observation in observations.items()
         if observation.availability is SourceAvailabilityStatus.PARTIAL
     )
+    degraded = sorted(
+        name for name, observation in observations.items()
+        if observation.availability is SourceAvailabilityStatus.DEGRADED
+    )
     synthetic = sorted(name for name, observation in observations.items() if observation.synthetic)
 
     if unavailable:
@@ -110,9 +114,9 @@ def summarize_integrity(
     elif partial:
         availability = SourceAvailabilityStatus.PARTIAL
         label = ObservationStatus.UNAVAILABLE
-    elif synthetic:
+    elif degraded or synthetic:
         availability = SourceAvailabilityStatus.DEGRADED
-        label = ObservationStatus.SIMULATED
+        label = ObservationStatus.SIMULATED if synthetic else ObservationStatus.UNAVAILABLE
     else:
         availability = SourceAvailabilityStatus.AVAILABLE
         label = ObservationStatus.OBSERVED
@@ -123,7 +127,7 @@ def summarize_integrity(
         data_availability=availability,
         product_label=label,
         contains_synthetic=bool(synthetic),
-        missing_required_inputs=unavailable + no_data + stale + partial,
+        missing_required_inputs=unavailable + no_data + stale + partial + degraded,
         synthetic_inputs=synthetic,
         watermark=watermark,
     )

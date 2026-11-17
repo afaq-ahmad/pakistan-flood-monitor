@@ -107,3 +107,21 @@ Focused checks on the unmerged metric-GIS contracts workstream:
 
 **Stop after Prompt 02 review/merge.** The next prompt must preserve these metric and metadata
 contracts when migrating additional GIS services or introducing real EO products.
+
+## Independent audit follow-up (2026-11-17)
+
+At main `6f486ca`, API import failed because the canonical task model used an unimported
+`Index`. This branch repairs the import, preserves `DEGRADED` input in integrity summaries,
+including the operational required-input gate, and records invalid processor results as failed
+runs and tasks. These fixes do not establish operational readiness.
+
+Critical unresolved security: the API accepts unsigned `v1` role/principal payloads as bearer
+credentials. Operational publication lineage also accepts an `AVAILABLE` mapping without source,
+time, status, or units. The public latest-run output and advisory endpoints bypass the reviewed-event
+publication path. These require urgent contract and authorization decisions before exposure. Durable
+workflow recovery and concurrency remain incomplete; no CI workflows are present. README's
+"Production-ready" dashboard label is not supported by the accepted ADR or this audit.
+
+- Focused isolated SQLite check: `DATABASE_URL=sqlite:////tmp/flood_audit_tests_1.db .venv/bin/python -m pytest tests/test_operational_data_integrity.py tests/test_integrity_summary_regression.py tests/test_workflow_foundation.py tests/test_canonical_runtime_smoke.py -q --tb=short` — 12 passed.
+- `python -m pytest tests/ -q --tb=no` initially could not collect 14 modules, including the missing `Index`; after the fix and installing Pillow separately, a full run produced failures and was interrupted while still running. The suite writes tracked storage and is not reliably isolated/offline. Full results remain unverified.
+- Docker image and PostgreSQL migration were not exercised; Docker was unavailable.
