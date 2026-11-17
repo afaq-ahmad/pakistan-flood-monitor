@@ -542,6 +542,10 @@ def _record_run(report: dict[str, Any], *, persist_pipeline_run: bool = True) ->
 
 
 def _workflow_report(execution: Any) -> dict[str, Any]:
+    if execution.run.status.value in {"queued", "running"}:
+        raise HTTPException(status_code=409, detail={"error": "workflow_in_progress", "run_id": execution.run.id, "status": execution.run.status.value})
+    if execution.run.status.value != "success":
+        raise HTTPException(status_code=503, detail={"error": "workflow_not_successful", "run_id": execution.run.id, "status": execution.run.status.value})
     for task in execution.tasks:
         report = task.result.get("report")
         if isinstance(report, dict):

@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Any, Callable
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
 from pakistan_flood_monitor.config import AppMode
@@ -192,11 +192,40 @@ class WorkflowRepository:
             session.commit()
             return self._run(run)
 
-    def prepare_retry(self, run_id: str, *, force: bool = False) -> PersistentRun:
+    def claim_new_run(self, run_id: str) -> PersistentRun | None:
+        """Atomically claim a newly created run; an active run is never reclaimed."""
         with self._session_factory() as session:
+            result = session.execute(
+                update(PipelineRun)
+                .where(PipelineRun.id == run_id, PipelineRun.status == WorkflowStatus.QUEUED.value)
+                .values(status=WorkflowStatus.RUNNING.value)
+            )
+            if result.rowcount != 1:
+                session.rollback()
+                return None
+            session.commit()
+            return self._run(session.get(PipelineRun, run_id))
+
+    def prepare_retry(self, run_id: str, *, force: bool = False) -> PersistentRun | None:
+        """Claim a terminal run and reset eligible tasks in one transaction.
+
+        Running and queued runs cannot safely be retried automatically; recovery
+        requires a separate ownership and operator workflow.
+        """
+        with self._session_factory() as session:
+            result = session.execute(
+                update(PipelineRun)
+                .where(
+                    PipelineRun.id == run_id,
+                    PipelineRun.status.in_([WorkflowStatus.SUCCESS.value, WorkflowStatus.FAILED.value,
+                                            WorkflowStatus.DEGRADED.value, WorkflowStatus.SKIPPED.value]),
+                )
+                .values(status=WorkflowStatus.RUNNING.value, completed_at=None)
+            )
+            if result.rowcount != 1:
+                session.rollback()
+                return None
             run = session.get(PipelineRun, run_id)
-            if run is None:
-                raise KeyError(f"Pipeline run '{run_id}' does not exist")
             tasks = session.scalars(select(PipelineTask).where(PipelineTask.run_id == run_id)).all()
             for task in tasks:
                 if task.status == WorkflowStatus.SUCCESS.value and not force:
@@ -207,7 +236,5 @@ class WorkflowRepository:
                 task.error_code = None
                 task.error_message = None
                 task.completed_at = None
-            run.status = WorkflowStatus.QUEUED.value
-            run.completed_at = None
             session.commit()
             return self._run(run)

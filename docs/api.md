@@ -75,3 +75,14 @@ non-synthetic metadata is necessary but does not by itself establish that a sour
 current, scientifically validated, or authorized for public warning. Existing producers with incomplete
 lineage must populate these fields before publication. The separate latest-run and mobile-advisory
 routes still need a reviewed-product publication design and must not be relied on for operational use.
+
+### Concurrent workflow requests
+
+A workflow execution claims its persisted run before processing. A duplicate request observes the
+existing run; `GET /internal/run/{aoi}` returns HTTP 409 with `workflow_in_progress`, its run ID and
+status while the existing run is queued or running. Explicit retry claims only a terminal run, and
+uses its original persisted run ID. A queued or running run left after a crash cannot be reclaimed
+automatically: safe recovery requires worker ownership/fencing and an operator procedure, which are
+not implemented. Do not reset an active worker's state directly.
+A failed or degraded run without a successful report returns HTTP 503 with `workflow_not_successful`;
+a stale report from an earlier attempt is not returned as a successful result.
