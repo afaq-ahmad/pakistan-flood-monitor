@@ -22,3 +22,5 @@ COPY . .
 RUN mkdir -p storage/satellite storage/ml storage/flood_memory storage/dams/imagery storage/dams/water_masks storage/dams/fill_history
 
 EXPOSE 8000 8501
+
+CMD ["uvicorn", "pakistan_flood_monitor.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

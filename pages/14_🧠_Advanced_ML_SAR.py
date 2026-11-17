@@ -5,16 +5,25 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.pakistan_flood_monitor.services.advanced_ml_service import (
-    simulate_sar_download_and_process,
-    fetch_dem_and_calculate_hand,
-    GeoFoundationModelWrapper
-)
+try:
+    from src.pakistan_flood_monitor.services.advanced_ml_service import (
+        simulate_sar_download_and_process,
+        fetch_dem_and_calculate_hand,
+        GeoFoundationModelWrapper
+    )
+    HAS_ADVANCED_ML = True
+except ImportError as e:
+    HAS_ADVANCED_ML = False
+    ADVANCED_ML_ERROR = str(e)
+
 from satellite_ml_service import CORRIDOR_BBOXES
 
 st.set_page_config(page_title="Advanced ML & SAR", page_icon="🧠", layout="wide")
 st.title("🧠 Advanced ML: SAR, Topography & Foundation Models")
 st.markdown("This module demonstrates the state-of-the-art predictive architecture: replacing optical imagery with cloud-penetrating SAR, integrating terrain physics via DEM/HAND, and leveraging zero-shot Foundation Models.")
+
+if not HAS_ADVANCED_ML:
+    st.warning(f"⚠️ **Optional Deep Learning dependencies not found** (`{ADVANCED_ML_ERROR}`).\n\nTo enable SAR simulation, DEM/HAND, and foundation model prototyping, install optional packages: `pip install torch torchvision scikit-image`.")
 
 tabs = st.tabs(["1. SAR Processing", "2. Topography (DEM/HAND)", "3. Foundation Model Inference"])
 
@@ -24,7 +33,7 @@ with tabs[0]:
     st.subheader("Radar Imagery: Sentinel-1 SAR")
     st.markdown("Optical imagery (Sentinel-2) is blind during monsoon storms. Synthetic Aperture Radar (SAR) pierces through clouds. Water acts as a specular reflector, returning minimal signal (appearing dark).")
     
-    if st.button("Fetch & Process SAR", key="btn_sar"):
+    if st.button("Fetch & Process SAR", key="btn_sar", disabled=not HAS_ADVANCED_ML):
         with st.spinner("Downloading Sentinel-1 GRD imagery and applying Otsu thresholding..."):
             time.sleep(1) # simulate network delay
             res = simulate_sar_download_and_process(corridor, "latest")
@@ -37,12 +46,14 @@ with tabs[0]:
             st.image(res['sar_path'], caption="Raw SAR Intensity (VV/VH)", use_container_width=True)
         with col2:
             st.image(res['mask_path'], caption=f"Otsu Water Mask (Coverage: {res['water_coverage_pct']}%)", use_container_width=True)
+    else:
+        st.info("ℹ️ Click **Fetch & Process SAR** above to run radar change detection.")
 
 with tabs[1]:
     st.subheader("Physics-Informed: Topography Integration")
     st.markdown("Neural networks need to know that water flows downhill. We integrate the Copernicus 30m Digital Elevation Model (DEM) and calculate the Height Above Nearest Drainage (HAND) index.")
     
-    if st.button("Fetch DEM & Compute HAND", key="btn_dem"):
+    if st.button("Fetch DEM & Compute HAND", key="btn_dem", disabled=not HAS_ADVANCED_ML):
         with st.spinner("Fetching Copernicus 30m DEM and computing HAND index..."):
             res = fetch_dem_and_calculate_hand(corridor, CORRIDOR_BBOXES[corridor])
             st.session_state['dem_res'] = res
@@ -54,6 +65,8 @@ with tabs[1]:
             st.image(res['dem_path'], caption="Real Topography Elevation (DEM)", use_container_width=True)
         with col2:
             st.image(res['hand_path'], caption="Real Height Above Nearest Drainage (HAND)", use_container_width=True)
+    else:
+        st.info("ℹ️ Click **Fetch DEM & Compute HAND** to compute terrain drainage index.")
 
 with tabs[2]:
     st.subheader("Zero-Shot Earth Observation Foundation Models")
@@ -61,7 +74,7 @@ with tabs[2]:
     
     forecast_rain = st.slider("Simulate Forecasted Rain (mm)", 0.0, 300.0, 100.0)
     
-    if st.button("Run Multi-Modal Inference", type="primary"):
+    if st.button("Run Multi-Modal Inference", type="primary", disabled=not HAS_ADVANCED_ML):
         if 'sar_res' not in st.session_state or 'dem_res' not in st.session_state:
             st.error("Please run SAR Processing and Topography steps first!")
         else:

@@ -31,10 +31,21 @@ import requests
 from PIL import Image
 
 # Reuse existing project infrastructure
-from satellite_ml_service import (
-    CORRIDOR_BBOXES, RIVER_PATHS, STORAGE,
-    download_image, detect_water_regions,
-)
+try:
+    from satellite_ml_service import (
+        CORRIDOR_BBOXES, RIVER_PATHS, STORAGE,
+        download_image, detect_water_regions,
+    )
+except ImportError:
+    import sys
+    from pathlib import Path
+    _root = Path(__file__).resolve().parents[3]
+    if str(_root) not in sys.path:
+        sys.path.insert(0, str(_root))
+    from satellite_ml_service import (
+        CORRIDOR_BBOXES, RIVER_PATHS, STORAGE,
+        download_image, detect_water_regions,
+    )
 
 # ── Storage ───────────────────────────────────────────────────────────────────
 DAM_DIR = STORAGE / "dams"

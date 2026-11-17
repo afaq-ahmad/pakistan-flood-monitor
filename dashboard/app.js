@@ -88,12 +88,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('stat-population').textContent = pop.toLocaleString();
         
         const avgConf = data.length ? Math.round((confTotal / data.length) * 100) : 0;
-        document.getElementById('stat-confidence').textContent = `${avgConf}%`;
-        document.getElementById('total-events').textContent = `${data.length} Total`;
+        const statConf = document.getElementById('stat-confidence');
+        if (statConf) statConf.textContent = `${avgConf}%`;
+        const totalEventsEl = document.getElementById('total-events');
+        if (totalEventsEl) totalEventsEl.textContent = `${data.length} Total`;
     }
 
     function updateTable(data) {
-        const tbody = document.getElementById('events-body');
+        const tbody = document.getElementById('events-body') || document.getElementById('review-body');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (data.length === 0) {
@@ -174,14 +177,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showError(msg) {
-        document.getElementById('events-body').innerHTML = `<tr><td colspan="5" class="loading-cell"><i class="fa-solid fa-triangle-exclamation" style="color:var(--status-critical);font-size:24px;margin-bottom:10px;"></i><br>${msg}</td></tr>`;
+        const tbody = document.getElementById('events-body') || document.getElementById('review-body');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" class="loading-cell"><i class="fa-solid fa-triangle-exclamation" style="color:var(--status-critical);font-size:24px;margin-bottom:10px;"></i><br>${msg}</td></tr>`;
+        }
     }
 
     // Refresh button logic
-    document.getElementById('refresh-btn').addEventListener('click', () => {
-        document.getElementById('events-body').innerHTML = '<tr><td colspan="5" class="loading-cell"><div class="spinner"></div><p>Refreshing data...</p></td></tr>';
-        fetchEvents();
-    });
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            const tbody = document.getElementById('events-body') || document.getElementById('review-body');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading-cell"><div class="spinner"></div><p>Refreshing data...</p></td></tr>';
+            }
+            fetchEvents();
+        });
+    }
 
     // Initial load
     fetchEvents();

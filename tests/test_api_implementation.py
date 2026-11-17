@@ -706,3 +706,73 @@ def test_public_endpoints_include_limitations_reference() -> None:
     assert feed.status_code == 200
     for payload in feed.json():
         assert payload["limitations"]["href"] == "/public/limitations"
+
+
+def test_internal_run_post_and_list_runs_endpoints() -> None:
+    _reset_state()
+    client = TestClient(app)
+
+    # Test POST method for triggering pipeline runs
+    post_run_resp = client.post("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert post_run_resp.status_code == 200
+    report = post_run_resp.json()
+    assert "run_id" in report
+    assert "published_outputs" in report
+
+    # Test GET /internal/runs listing endpoint
+    runs_resp = client.get("/internal/runs", headers=_analyst_headers())
+    assert runs_resp.status_code == 200
+    runs_data = runs_resp.json()
+    assert runs_data["total"] >= 1
+    assert len(runs_data["runs"]) >= 1
+    assert runs_data["runs"][0]["run_id"] == report["run_id"]
+
+
+def test_review_event_accepts_event_id_in_json_body() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.post("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    # Call /internal/admin/review-event without ?event_id= query param, passing event_id inside JSON body
+    review_resp = client.post(
+        "/internal/admin/review-event",
+        json={"event_id": event_id, "action": "review", "notes": "Reviewed via body"},
+        headers=_analyst_headers(),
+    )
+    assert review_resp.status_code == 200
+    assert review_resp.json()["status"] == "review_updated"
+    assert review_resp.json()["event"]["event_id"] == event_id
+
+
+def test_field_report_moderate_route_alias() -> None:
+    _reset_state()
+    client = TestClient(app)
+    run_response = client.post("/internal/run/Indus-Lower", headers=_admin_headers())
+    assert run_response.status_code == 200
+    event_id = run_response.json()["published_outputs"]["review_queue_event"]["event_id"]
+
+    # Submit field report
+    ingest_resp = client.post(
+        "/internal/reports/field",
+        json={
+            "event_id": event_id,
+            "observed_at": datetime.now(UTC).isoformat(),
+            "location": {"lat": 28.5, "lon": 70.2},
+            "notes": "High water near bridge",
+        },
+        headers=_analyst_headers(),
+    )
+    assert ingest_resp.status_code == 200
+    report_id = ingest_resp.json()["report"]["report_id"]
+
+    # Moderate using documented alias /internal/field-reports/{report_id}/moderate
+    moderate_resp = client.post(
+        f"/internal/field-reports/{report_id}/moderate",
+        json={"action": "approve", "moderator": "analyst-1", "reason": "Verified"},
+        headers=_analyst_headers(),
+    )
+    assert moderate_resp.status_code == 200
+    assert moderate_resp.json()["status"] == "moderated"
+    assert moderate_resp.json()["report"]["status"] == "approved"

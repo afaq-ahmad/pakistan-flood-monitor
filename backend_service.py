@@ -65,6 +65,11 @@ class DataService:
                             "published_at": e.get("timestamps", {}).get("published_at"),
                             "latitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][1] if e.get("geometry") else 0,
                             "longitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][0] if e.get("geometry") else 0,
+                            "district": e.get("district") or e.get("aoi", "Unknown"),
+                            "event_class": e.get("event_class", "flood_event"),
+                            "confidence_band": e.get("confidence_band", "medium"),
+                            "breach_suspicion": e.get("breach_suspicion", False),
+                            "source_scenes": e.get("source_scenes", ""),
                         } for e in events])
                         return df
             except Exception as e:
@@ -104,8 +109,14 @@ class DataService:
             try:
                 admin_token = os.getenv("FLOOD_MONITOR_ADMIN_TOKEN", "mock-token")
                 headers = {"Authorization": f"Bearer {admin_token}"}
-                payload = {"action": new_status, "actor": actor, "notes": notes}
-                response = httpx.post(f"{API_BASE_URL}/internal/admin/review-event", json=payload, headers=headers, timeout=2.0)
+                payload = {"action": new_status, "actor": actor, "notes": notes, "event_id": event_id}
+                response = httpx.post(
+                    f"{API_BASE_URL}/internal/admin/review-event",
+                    params={"event_id": event_id},
+                    json=payload,
+                    headers=headers,
+                    timeout=2.0,
+                )
                 if response.status_code == 200:
                     return True
             except Exception as e:

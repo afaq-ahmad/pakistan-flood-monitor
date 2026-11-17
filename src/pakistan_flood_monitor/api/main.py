@@ -232,6 +232,7 @@ def _verify_audit_chain(log: list[dict[str, Any]], chain_name: str) -> tuple[boo
 
 class ReviewEventRequest(BaseModel):
     action: str
+    event_id: str | None = None
     actor: str | None = Field(default=None, deprecated=True)
     analyst_confidence: float | None = None
     notes: str = ""
@@ -1033,12 +1034,25 @@ def public_limitations() -> dict[str, Any]:
     }
 
 
+@internal_router.post("/run/{aoi_name}", dependencies=[Depends(_require_role("admin"))])
 @internal_router.get("/run/{aoi_name}", dependencies=[Depends(_require_role("admin"))])
 def run_pipeline(aoi_name: str):
     execution = run_flood_daily_workflow(aoi_name, pipeline=pipeline)
     report = _workflow_report(execution)
     _record_run(report, persist_pipeline_run=False)
     return report
+
+
+@internal_router.get("/runs", dependencies=[Depends(_require_role("admin", "analyst"))])
+def list_runs(aoi_name: str | None = None, limit: int = 20) -> dict[str, Any]:
+    if aoi_name:
+        runs = _corridor_run_history(aoi_name)
+    else:
+        runs = [run for aoi_runs in run_history.values() for run in aoi_runs]
+    return {
+        "total": len(runs),
+        "runs": list(reversed(runs[-limit:])),
+    }
 
 
 @internal_router.get("/workflow-runs/{run_id}", dependencies=[Depends(_require_role("admin"))])
@@ -1496,7 +1510,14 @@ def admin_reprocess_scene(aoi_name: str, auth_context: dict[str, str] = Depends(
 
 
 @internal_router.post("/admin/review-event")
-def admin_review_event(event_id: str, payload: ReviewEventRequest, auth_context: dict[str, str] = Depends(_require_role("admin", "analyst", "reviewer"))) -> dict:
+def admin_review_event(
+    payload: ReviewEventRequest,
+    event_id: str | None = Query(default=None),
+    auth_context: dict[str, str] = Depends(_require_role("admin", "analyst", "reviewer")),
+) -> dict:
+    event_id = event_id or payload.event_id
+    if not event_id:
+        raise HTTPException(status_code=422, detail="Missing event_id in query parameter or request body.")
     principal_id = auth_context["principal_id"]
     event = _event_by_id(event_id)
     if not event:
@@ -1644,6 +1665,7 @@ def ingest_field_report(
     return {"status": "accepted", "report": report}
 
 
+@internal_router.post("/field-reports/{report_id}/moderate")
 @internal_router.post("/admin/reports/field/{report_id}/moderate")
 def moderate_field_report(
     report_id: str,
