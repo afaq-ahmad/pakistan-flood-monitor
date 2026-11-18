@@ -112,3 +112,22 @@ Append entries; never rewrite earlier handoffs.
   formats and exposes download buttons. Export and P0-003 focused tests passed 23 tests.
 - Full offline suite passed 242 tests with 475 warnings. SQLite migration round-trip,
   byte-compilation and tracked-data check passed. Next: review CI and finalize the audit/ledger.
+
+### 2026-11-18 06:45 UTC — UI-001 final validation and handoff
+
+- Repository: afaq-ahmad/pakistan-flood-monitor. Branch: `audit/ui-001-functionality-gaps`;
+  [draft PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85) to main
+  `339ad5de0951260a52f9ea3505c42962cec1a109`.
+- Last verified remote before this commit: `85ee5a2bec2516a4a11014eb97e877e6f4abd786`.
+  The audit, public feed and export checkpoints are already published.
+- Status: PARTIAL for UI-001. Standalone demo/test labels and operational 503s now verified.
+  See the [findings and validation matrix](FUNCTIONALITY_GAP_AUDIT.md).
+- Full offline suite: 245 passed, 475 warnings. Three focused standalone tests passed.
+  Fresh SQLite upgrade/downgrade/upgrade, Python compilation, workflow YAML, and tracked-data
+  checks passed. All 16 Streamlit pages started in offline AppTest without an uncaught exception.
+- Limitations: Chromium was blocked creating a local socket; no reviewed-product or live scientific
+  validation. Hosted Actions returned no jobs for both main and the export checkpoint.
+- Changed in this checkpoint: standalone dashboard handler, HTML, invariant tests, development
+  guide, audit matrix, master plan, and implementation ledger.
+- Next: verify hosted runner availability and browser acceptance; scope authenticated analyst
+  queue and review audit in the next UI-001 slice. Verify the latest PR head before resuming.
