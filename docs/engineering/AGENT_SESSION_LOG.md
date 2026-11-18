@@ -492,3 +492,9 @@ Append entries; never rewrite earlier handoffs.
   architecture Mermaid block and heading links in Obsidian and the GitHub PR.
   Separately track the Python 3.11 minimum-version smoke and packaging metadata
   in OPS-001.
+
+### 2026-11-18 UTC · ENG-001 verified runtime and processing flows
+
+- Main `bbf988e` includes merged PR #96. No open documentation PR at intake. Branch `docs/verified-runtime-architecture`.
+- Reconciled runtime entry points, persistence boundaries, direct research provider paths, workflow retries and the fail-closed canonical ingestion path. Added the first two Mermaid diagrams and linked their source and tests. Found draft-time `published_at` and limited event hydration in code, and documented their boundaries.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings). Next: compare actual lifecycle transitions and API gates, then document public reads, reports and agent recovery.

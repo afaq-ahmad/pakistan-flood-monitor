@@ -352,3 +352,5 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [x] Correct onboarding, architecture, persistence, API and status discrepancies. Preserve historical reports and accepted decisions. See [the discrepancy audit](DOCUMENTATION_INVENTORY.md) and [draft PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96).
 - [ ] Open the vault in Obsidian and preview the index and runtime Mermaid diagram in both renderers. Record rendering and cross-vault navigation evidence.
 - [ ] Verify canonical imports and the SQLite workflow on Python 3.11, then reconcile package metadata with the actual supported floor (OPS-001).
+- [x] Document verified entry points, SQL boundaries and the canonical environmental processing path on `docs/verified-runtime-architecture` from `bbf988e`.
+- [ ] Trace and diagram the public read, event and field-report lifecycles and agent recovery. Verify source paths, transitions, route names and Mermaid syntax.
