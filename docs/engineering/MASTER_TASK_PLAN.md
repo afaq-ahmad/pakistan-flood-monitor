@@ -124,6 +124,7 @@ PR #74 rejected unsigned role tokens; PR #75 restricted publication. Confirm XSS
 CSV injection, rate limits and sensitive data exposure with tests; do not assume prior fixes cover all.
 - [x] Record prior authentication/publication changes.
 - [ ] Verify remaining trust boundaries and document reproducible findings.
+- [ ] Verify that PK-006 replay receipts are bound to the existing authenticated identity and event. Reject conflicting receipt reuse without returning private report data.
 
 ## OPS-001 — Deployment and operational verification
 Status: BLOCKED; files: `Dockerfile`, `docker-compose.yml`, CI, migrations.
@@ -139,6 +140,8 @@ work remains open and a reproducible session log exists. Do not interpret test p
 - [x] Record baseline behavior by feature and runtime in the [functionality matrix](FUNCTIONALITY_GAP_AUDIT.md) (PR #85).
 - [x] Run focused tests (8 passed) and complete offline suite (204 passed, 475 warnings).
 - [ ] Verify Docker, PostgreSQL, live providers and UI when available.
+- [x] Reconcile merged PR #88 and re-run the clean offline baseline at `cb70717` (278 passed).
+- [x] Record the incremental [end-user acceptance matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md#independent-qa-follow-up) against current main without re-auditing closed workstreams.
 - [ ] Record final commit, PR and next exact task in session log.
 
 
@@ -237,14 +240,22 @@ Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified 
 
 
 ### PK-006 — Community reports
-Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Moderated field reports and privacy/retention policy.
+Priority: P2; Status: PARTIAL. The FL-05 boundary and failure-feedback slice is in progress on
+`fix/pk-006-field-report-qa` from `cb70717`. Dependencies for operational intake: P1-002, SEC-001,
+a durable report store and privacy/retention policy. This containment slice uses the existing
+demo boundary and canonical role checks.
 - [ ] Audit existing field-report flow; distinguish reports from verified observations.
 - [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
 
 - [ ] Audit field-report authorization and moderation.
 - [ ] Design categories, evidence, deduplication and retention.
 - [ ] Test sensitive-location and publication boundaries.
-- [ ] Reproduce local moderation result handling in isolation and design resident consent, categories, receipt and private evidence checks (FL-05).
+- [x] Reproduce FL-05 page 3 loading local report metrics/actions in API mode and giving no visible error when an AppTest moderation write is declined.
+- [ ] Run failing demo boundary and failed-write tests, plus canonical receipt ownership regressions with synthetic reports.
+- [ ] Verify blocked report CSV reads and writes in operational and API-backed modes, an explicit unavailable page state and labelled demo moderation.
+- [ ] Verify stale actions and write failures produce an error and preserve demo records. Check successful updates via isolated CSV and Streamlit rerun.
+- [ ] Verify an idempotent same-identity, same-event receipt and a sanitized conflict otherwise. Keep existing authorization and report IDs.
+- [ ] Design resident consent, categories, receipt and private evidence checks for future intake (FL-05).
 - [ ] Define a private acknowledgement and retry/idempotency contract with minimal coarse-area fields, moderation states and retention rules. Exercise unauthorized, duplicate/spam and write-failure cases before enabling operational intake. Verify durable storage and explicit consent for any onward integration.
 
 

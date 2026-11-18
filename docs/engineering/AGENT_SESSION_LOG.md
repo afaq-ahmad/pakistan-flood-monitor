@@ -266,3 +266,15 @@ Append entries; never rewrite earlier handoffs.
   in a runnable browser. Next product slice after UI acceptance: verify agriculture authority
   sources for the PK-010 English preparedness entry. PK-006 private reporting and PK-007
   property exposure need their recorded prerequisites.
+
+### 2026-11-18 UTC — QA-001 independent acceptance and PK-006 checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `fix/pk-006-field-report-qa` from
+  `cb707175b82e72f232dc1ed19a470b9ba3738f51`. PR #88 is merged, with no review threads,
+  review submissions or combined-status entries returned. No open PR owns this continuation.
+- Baseline ran 278 offline tests with 475 warnings. AppTest reproduced API-mode local Field
+  Reports access and silent failure of a declined demo update. Injecting an absent optional
+  forecast service produced disabled control and a warning. Chromium failed at socket startup.
+- Reused QA-001, PK-006 and SEC-001. Added the incremental acceptance matrix and selected FL-05
+  acceptance cases before application edits. Next: publish docs, open the draft, and run
+  failing mode, moderation, and canonical receipt regressions with synthetic data.
