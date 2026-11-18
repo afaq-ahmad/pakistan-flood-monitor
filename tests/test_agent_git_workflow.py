@@ -109,3 +109,36 @@ def test_dry_run_and_branch_guard(repos):
     assert helper("agent_checkpoint.sh", "wrong", "message", cwd=local, check=False).returncode == 2
     helper("agent_checkpoint.sh", "--dry-run", "work", "message", cwd=local)
     assert sha(local) == before == sha(remote, "refs/heads/work")
+
+
+def test_preflight_lists_existing_pr_without_creating_one(repos, tmp_path, monkeypatch):
+    local, _ = repos
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    calls = tmp_path / "gh-calls"
+    gh = fake_bin / "gh"
+    gh.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$CALL_LOG"\ncase "$1 $2" in\n  "auth status") exit 0;;\n  "pr list") printf "[{\\"number\\":83,\\"headRefName\\":\\"work\\"}]\\n";;\n  *) exit 1;;\nesac\n')
+    gh.chmod(0o755)
+    monkeypatch.setenv("PATH", str(fake_bin) + os.pathsep + os.environ["PATH"])
+    monkeypatch.setenv("CALL_LOG", str(calls))
+    result = helper("agent_preflight.sh", "--dry-run", "workflow", cwd=local)
+    assert '"number":83' in result.stdout
+    assert "pr list" in calls.read_text() and "pr create" not in calls.read_text()
+
+
+def test_remote_advance_rejects_checkpoint_without_force(repos, tmp_path):
+    local, remote = repos
+    other = tmp_path / "other"
+    run("git", "clone", "--branch", "work", str(remote), str(other), cwd=tmp_path)
+    run("git", "config", "user.email", "other@example.invalid", cwd=other)
+    run("git", "config", "user.name", "Other", cwd=other)
+    (other / "upstream").write_text("upstream\n")
+    run("git", "add", "upstream", cwd=other)
+    run("git", "commit", "-m", "upstream", cwd=other)
+    run("git", "push", cwd=other)
+    remote_before = sha(remote, "refs/heads/work")
+    (local / "local").write_text("local\n")
+    run("git", "add", "local", cwd=local)
+    result = helper("agent_checkpoint.sh", "work", "feat: local", cwd=local, check=False)
+    assert result.returncode == 3 and "do not force push" in result.stderr
+    assert sha(remote, "refs/heads/work") == remote_before and sha(local) != remote_before
