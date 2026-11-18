@@ -306,3 +306,13 @@ explicit consent, data minimization, location privacy notices, and stable receip
 
 11 new offline tests in `tests/test_safety_gates_and_community_reporting.py` passed. Full offline suite
 passed 333 tests with 978 warnings.
+
+## PK-006 / FL-05 · demo report receipts
+
+PR #91 merged. Its demo form produced a receipt without persisting the report.
+Draft PR #92 replaces that action with a structured preview and makes example
+moderation independent of preview availability. Operational intake remains
+PARTIAL under PK-006, with durable private receipts blocked on P1-002 / SEC-001.
+Six acceptance cases reproduced the presentation gaps. After the fix, 29 focused
+and 336 offline tests passed. The SQLite migration round trip reached
+`b4d9d93f2a10`. Browser and field usability remain pending.

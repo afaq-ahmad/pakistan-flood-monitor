@@ -242,7 +242,7 @@ Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified 
 
 ### PK-006 — Community reports
 
-- [ ] FL-05 follow-up claimed on `fix/pk-006-report-receipts` from `90062a0`. Replace the unbacked demo receipt with a private practice preview. Check empty fixtures, missing coverage, repeated previews, mode separation and an unchanged moderation queue. Real intake retains P1-002 and SEC-001 dependencies.
+- [x] FL-05 follow-up verified in draft PR #92 (29 focused and 336 full-suite tests passed), originally claimed on `fix/pk-006-report-receipts` from `90062a0`. Replace the unbacked demo receipt with a private practice preview. Check empty fixtures, missing coverage, repeated previews, mode separation and an unchanged moderation queue. Real intake retains P1-002 and SEC-001 dependencies.
 Priority: P2; Status: PARTIAL. The FL-05 boundary and failure-feedback slice passed offline in
 [draft PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89), based on `cb70717`. Dependencies for operational intake: P1-002, SEC-001,
 a durable report store and privacy/retention policy. This containment slice uses the existing

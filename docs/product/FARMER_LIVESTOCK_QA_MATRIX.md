@@ -139,3 +139,10 @@ private reporting, independently verified observations, and live moderation rema
 
 Operational reporting remains blocked on private durable intake and policy. This
 slice owns the presentation contract only.
+
+**PR #92 verification.** Six AppTest cases failed against the baseline. The
+practice and fixture journeys above now pass. Tests also cover a cleared date,
+the required practice acknowledgement and preservation of demo/API boundaries.
+The preview offers structured choices only. All 29 focused tests passed.
+Chromium failed to create its startup socket, so 360 px rendering, keyboard
+navigation, screen readers and participant usability remain unverified.

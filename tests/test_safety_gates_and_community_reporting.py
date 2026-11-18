@@ -5,6 +5,7 @@ Deterministic and offline — no network, no live model execution.
 """
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -128,27 +129,64 @@ class TestCommunityReportIntake:
         }]).to_csv(path, index=False)
         return backend_service
 
-    def test_community_submission_requires_consent(self, demo_env):
+    def test_practice_requires_acknowledgement(self, demo_env):
+        page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
+        page.button(key="sub_submit_btn").click().run()
+        assert not page.exception
+        assert any("Confirm" in err.value for err in page.error)
+        assert not page.success
+
+    def test_repeated_previews_leave_the_queue_unchanged(self, demo_env):
+        path = demo_env.DATA_DIR / "field_reports.csv"
+        before = path.read_bytes()
+        page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
+        assert not page.text_area
+        assert "preview" in page.button(key="sub_submit_btn").label.lower()
+        category = page.selectbox(key="sub_cat").options[1]
+        page.selectbox(key="sub_cat").select(category)
+        page.selectbox(key="sub_corridor").select("Chenab-Middle")
+        page.date_input(key="sub_date").set_value(date(2026, 1, 2))
+        page.checkbox(key="sub_consent").check()
+        for _ in range(2):
+            page.button(key="sub_submit_btn").click().run()
+            assert not page.exception
+            preview = next(item.value for item in page.info if "Practice preview" in item.value)
+            assert all(value in preview for value in (category, "Chenab-Middle", "2026-01-02"))
+            assert "Nothing was submitted" in preview
+            assert not page.success
+            messages = " ".join(item.value for item in page.info)
+            assert all(term not in messages for term in ("REC-", "Pending Moderation", "Report received"))
+            assert page.metric[0].value == "1"
+            assert path.read_bytes() == before
+
+    def test_preview_without_date(self, demo_env):
+        page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
+        page.checkbox(key="sub_consent").check()
+        page.date_input(key="sub_date").set_value(None)
+        page.button(key="sub_submit_btn").click().run()
+        assert not page.exception
+        assert any("Choose a date" in err.value for err in page.error)
+
+    def test_preview_without_moderation_file(self, demo_env):
+        path = demo_env.DATA_DIR / "field_reports.csv"
+        path.unlink()
+        page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
+        page.checkbox(key="sub_consent").check()
+        page.button(key="sub_submit_btn").click().run()
+        assert not page.exception
+        assert any("Nothing was submitted" in i.value for i in page.info)
+        assert any("Demo field reports are unavailable" in i.value for i in page.info)
+        assert not path.exists()
+
+    def test_no_configured_corridors_preserves_moderation(self, demo_env, monkeypatch):
+        from pakistan_flood_monitor.config import settings
+        monkeypatch.setattr(settings, "pilot_corridors", [])
         page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
         assert not page.exception
-
-        # Fill in notes without checking consent
-        page.text_area(key="sub_notes").input("Submerged irrigation canal near village").run()
-        page.button(key="sub_submit_btn").click().run()
-
-        assert any("Consent is required" in err.value for err in page.error)
-
-    def test_community_submission_generates_receipt_with_consent(self, demo_env):
-        page = AppTest.from_file(HOME).switch_page(str(PAGE_REPORTS)).run()
-        assert not page.exception
-
-        page.text_area(key="sub_notes").input("Standing water in wheat fields").run()
-        page.checkbox(key="sub_consent").check().run()
-        page.button(key="sub_submit_btn").click().run()
-
-        assert any("Report received" in s.value for s in page.success)
-        assert any("REC-" in s.value for s in page.success)
-        assert any("Pending Moderation" in info.value for info in page.info)
+        assert any("No pilot corridors" in i.value for i in page.info)
+        assert "sub_corridor" not in [widget.key for widget in page.selectbox]
+        assert "sub_submit_btn" not in [widget.key for widget in page.button]
+        assert page.button(key="mod_approve_demo-report")
 
 
 # ── FL-09: NASA Hydromet Counter Accuracy ────────────────────────────────────
