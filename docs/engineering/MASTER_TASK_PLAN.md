@@ -97,6 +97,11 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [ ] Verify hosted CI and before/after browser render. GitHub runs on main and the implementation checkpoint returned zero jobs, and Chromium startup was blocked by local socket permissions.
 - [ ] Verify browser presentation, keyboard access, and actual file download transfer.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
+- [x] Audit Home, the 18 Streamlit pages, standalone dashboard and adapter. Record the [UX plan](../product/UI_UX_IMPROVEMENT_PLAN.md) and [acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md).
+- [x] Implement and verify UX-A01–03 on `ux/ui-001-public-home` ([draft PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93)). Home has five native public links and one fail-closed published-event snapshot. AppTest verified destinations and feed states. Browser acceptance remains open.
+- [ ] Verify and constrain specialist configuration writes under SEC-001. Follow with honest Operations and Training feedback, using the existing UI-001 workstream.
+- [ ] Evaluate grouped navigation and direct-route compatibility after specialist mode and access boundaries are verified. Track mobile and Urdu under PK-003.
+
 
 ## DATA-001 — Real environmental processing and validation
 Status: BLOCKED; files: `src/pakistan_flood_monitor/data`, `pipeline`, services.

@@ -398,3 +398,18 @@ Append entries; never rewrite earlier handoffs.
 - Six acceptance cases failed before repair. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_field_report_boundaries.py tests/test_safety_gates_and_community_reporting.py -q --tb=short` passed 29 (9 warnings). Same command with `tests/` passed 336 (480 warnings).
 - SQLite upgrade/downgrade/re-upgrade, package/page compile, tracked data isolation and diff checks passed. Chromium headless startup at 360 px failed with socket permission denied before rendering. No browser, participant or operational safety validation.
 - Next: agree the PK-006 private receipt and retention contract and test commit failure, authorized lookup and retry after restart against durable storage. Final implementation SHA and hosted check state are recorded on the PR.
+
+### 2026-11-18 14:28 UTC · UI-001 design checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor, branch `ux/ui-001-public-home` from `39dd0e4`. PRs #85–92 are merged. No open PR owned this workstream at intake. The first draft will follow this documentation checkpoint.
+- Audited Home and the 18 Streamlit pages. Traced the demo HTML app and local/canonical adapters. Verified misleading Operations and Training trigger feedback on local AppTest. The design and acceptance documents track follow-up under existing tasks.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 336 tests with 480 warnings. Chromium could not start due to socket permissions.
+- This checkpoint contains documentation. Next: add UX-A01–03 AppTests, then improve Home links and place publication status below them. Preserve the current routes, mode and publication boundaries.
+
+### 2026-11-18 14:32 UTC · UI-001 Home implementation checkpoint
+
+- Branch `ux/ui-001-public-home`, base `39dd0e4`, [draft PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93). Verified documentation-only remote head `d35797c15d3e5ea58342a411e2a3ebc36f1f1e1a` before editing tests and Home.
+- Home now leads with five public task links and gives publication status below them. Existing page URLs and the canonical public-feed call remain in use. Changed `streamlit_app.py`, `tests/test_streamlit_public_pages.py`, UX acceptance matrix, master plan, status ledger and handoff.
+- Seven homepage cases failed before the edit. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py -q --tb=short` passed 18 tests (4 warnings). Same command with `tests/` passed 341 tests (480 warnings). Temporary SQLite round-trip to `b4d9d93f2a10`, compilation, clean tracked data and whitespace checks passed.
+- Chromium reported socket permission denied before rendering. Screenshot, responsive layout and assistive-technology acceptance remain pending. The implementation SHA and hosted CI observations are recorded on the PR.
+- Next UI-001 / SEC-001 slice: using an isolated temporary configuration, test the Settings threshold and weight save handlers against the agreed authorization boundary. If configuration changes lack a protected service contract, make the hosted UI read-only and retain the developer file-based workflow. Keep this separate from Operations and Training acknowledgement work.

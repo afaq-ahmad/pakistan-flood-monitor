@@ -9,6 +9,13 @@ from streamlit.testing.v1 import AppTest
 ROOT = Path(__file__).resolve().parents[1]
 HOME = ROOT / "streamlit_app.py"
 PUBLIC = next((ROOT / "pages").glob("1_*")).relative_to(ROOT)
+HOME_LINKS = [
+    ("My Area", "Public_Dashboard", "Public Flood Dashboard"),
+    ("Official Information", "Official_Information", "Official flood information"),
+    ("Farmer Safety", "Farmer_Preparedness", "Farmer Preparedness Guide"),
+    ("Livestock Safety", "Livestock_Preparedness", "Livestock Preparedness Guide"),
+    ("Community Reporting", "Field_Reports", "Field Reports Moderation"),
+]
 
 
 @pytest.fixture
@@ -21,12 +28,77 @@ def dashboard(monkeypatch):
     return backend_service
 
 
+def assert_public_home_navigation(page):
+    assert not page.exception
+    links = [item.proto for item in page.get("page_link")]
+    assert [(link.label, link.page) for link in links] == [
+        (label, route) for label, route, _ in HOME_LINKS
+    ]
+    assert all(link.page_script_hash and not link.external and not link.disabled for link in links)
+    order = [item.type if item.type == "page_link" else getattr(item, "value", None) for item in page.main]
+    assert max(i for i, kind in enumerate(order) if kind == "page_link") < order.index("Published events")
+    assert not page.button
+
+
+def test_home_links_resolve_to_existing_public_pages(dashboard, monkeypatch):
+    monkeypatch.setattr(dashboard, "_APP_MODE", "operational")
+    page = AppTest.from_file(HOME).run()
+    assert_public_home_navigation(page)
+    for _, route, title in HOME_LINKS:
+        target, = (ROOT / "pages").glob(f"*_{route}.py")
+        destination = AppTest.from_file(HOME).switch_page(str(target.relative_to(ROOT))).run()
+        assert not destination.exception
+        assert any(title in heading.value for heading in destination.title)
+
+
 def test_demo_home_shows_only_published_fixtures(dashboard):
     page = AppTest.from_file(HOME).run()
 
-    assert not page.exception
-    assert any(dashboard.DEMO_WATERMARK.removeprefix("⚠️ ") in warning.value for warning in page.warning)
-    assert page.metric[0].value == str(len(dashboard.DataService().get_public_events()))
+    assert_public_home_navigation(page)
+    watermark = dashboard.DEMO_WATERMARK.removeprefix("⚠️ ")
+    assert any(watermark in warning.value for warning in page.warning)
+    expected = f"Events in this feed: {len(dashboard.DataService().get_public_events())}."
+    assert any(item.value == expected for item in page.markdown)
+    main = list(page.main)
+    assert next(i for i, item in enumerate(main) if item.type == "warning") < next(
+        i for i, item in enumerate(main) if getattr(item, "value", None) == expected
+    )
+
+
+@pytest.mark.parametrize("result", ["operational-empty", "outage", "timeout", "published"])
+def test_home_keeps_public_links_when_event_feed_changes(dashboard, monkeypatch, result):
+    monkeypatch.setattr(dashboard, "_APP_MODE", "operational")
+    monkeypatch.setattr(dashboard, "API_BASE_URL", "http://api.test")
+    calls = []
+
+    def get(url, *, timeout):
+        calls.append((url, timeout))
+        if result == "timeout":
+            raise httpx.ReadTimeout("fixture timeout")
+        events = []
+        if result == "published":
+            events = [
+                {"event_id": "private-draft", "status": "draft"},
+                {"event_id": "published-fixture", "status": "published"},
+            ]
+        return httpx.Response(503 if result == "outage" else 200, json={"events": events})
+
+    monkeypatch.setattr(httpx, "get", get)
+    page = AppTest.from_file(HOME).run()
+
+    assert_public_home_navigation(page)
+    assert calls == [("http://api.test/public/events", 2.0)]
+    assert not page.warning
+    assert not page.success
+    assert not page.metric
+    if result in {"outage", "timeout"}:
+        assert "Event information is unavailable" in page.error[0].value
+    elif result == "operational-empty":
+        assert not page.error
+        assert any("No published events" in info.value and "unknown" in info.value for info in page.info)
+    else:
+        assert not page.error
+        assert any(text.value == "Events in this feed: 1." for text in page.markdown)
 
 
 def test_demo_public_page_filters_cards_map_and_exposure(dashboard, monkeypatch):
@@ -60,6 +132,8 @@ def test_operational_without_api_shows_no_fixture_events(dashboard, monkeypatch,
     assert not page.metric
     assert not page.warning
     assert "No event API is configured" in page.error[0].value
+    if path is None:
+        assert_public_home_navigation(page)
     assert dashboard.DataService().get_event("evt-indus-001") is None
     assert dashboard.DataService().update_event_status("evt-indus-001", "draft", "tester") is False
 
