@@ -97,6 +97,9 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [ ] Verify hosted CI and before/after browser render. GitHub runs on main and the implementation checkpoint returned zero jobs, and Chromium startup was blocked by local socket permissions.
 - [ ] Verify browser presentation, keyboard access, and actual file download transfer.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
+- [x] Document comprehensive UI/UX improvement plan and persona acceptance matrix (`docs/product/UI_UX_IMPROVEMENT_PLAN.md`, `docs/product/UI_UX_ACCEPTANCE_MATRIX.md`).
+- [ ] Implement audience-centered homepage navigation hub and sidebar organization (`streamlit_app.py`).
+- [ ] Harmonize demo watermarks, limitations, and official info links across specialist modules.
 
 ## DATA-001 — Real environmental processing and validation
 Status: BLOCKED; files: `src/pakistan_flood_monitor/data`, `pipeline`, services.

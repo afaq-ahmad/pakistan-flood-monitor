@@ -316,3 +316,14 @@ PARTIAL under PK-006, with durable private receipts blocked on P1-002 / SEC-001.
 Six acceptance cases reproduced the presentation gaps. After the fix, 29 focused
 and 336 offline tests passed. The SQLite migration round trip reached
 `b4d9d93f2a10`. Browser and field usability remain pending.
+
+## UI/UX user-centered audit and redesign planning
+
+Branch `feat/ui-ux-redesign` from `39dd0e4` (post-PR #92). Conducted exhaustive
+audit of all 18 Streamlit application pages, standalone dashboard, and homepage.
+Established comprehensive improvement plan (`docs/product/UI_UX_IMPROVEMENT_PLAN.md`)
+and end-to-end acceptance matrix (`docs/product/UI_UX_ACCEPTANCE_MATRIX.md`).
+Audited persona journeys for residents, farmers, livestock owners, community
+reporters, analysts, and operators. Planned first incremental implementation slice
+targeting homepage navigation and audience orientation under UI-001/PK-001.
+Full offline baseline verified (336 passed, 978 warnings).
