@@ -19,3 +19,12 @@ Append entries; never rewrite earlier handoffs.
 - Open: P0-003 local-only CSV and independent local exposures; UI browser validation unavailable.
 - Next: claim P0-003, trace map/card/exposure data sources and reproduce their mode boundaries.
 - Scientific and operational readiness remains unverified; Docker/PostgreSQL/live providers not tested.
+
+## 2026-11-18 UTC — Pakistan community sources
+- Baseline: `main` c43199290e27297e3588151e40aef2ef49acbe83; local branch `feat/pakistan-community-sources`.
+- PR #81 was merged; no consolidated open PR found. Preserved existing plan IDs and handoffs.
+- Independently checked World Bank, Dawn, IFRC, PMD/FFD, NDMA and PITB source pages; PDMA helpline page timed out.
+- Added proposed PK-001–PK-011 backlog and specifications, and a static FFD/NDMA link page (PK-002).
+- P0-003 remains open: local CSV and exposure data require mode-safe handling; this static directory does not depend on them.
+- Next: finish P0-003, validate static page on mobile/assistive technology, review link maintenance and source permissions before ingestion.
+- Verification: `PYTHONPATH=. .../.venv/bin/python -m pytest tests/test_official_sources_directory.py tests/test_dashboard_api_fail_closed.py -q --tb=short` — 9 passed; full offline suite — 205 passed, 475 warnings. No browser screenshots: Streamlit UI not launched. No Docker/PostgreSQL/live ingestion verification.
