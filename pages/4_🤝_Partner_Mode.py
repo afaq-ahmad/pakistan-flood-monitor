@@ -1,10 +1,20 @@
 import streamlit as st
 import pandas as pd
-from backend_service import data_service
+from backend_service import data_service, DEMO_WATERMARK
 
 st.set_page_config(page_title="Partner Mode", page_icon="🤝", layout="wide")
 st.title("🤝 Partner Mode — Event Briefs & Sharing")
 st.markdown("Generate exportable briefs, shareable advisory cards, and printable maps for emergency partners.")
+
+# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
+if data_service.is_demo_mode:
+    st.warning(
+        f"**{DEMO_WATERMARK}**  \n"
+        "Operating with prototype data. Generated briefs and advisory cards are simulated "
+        "and MUST NOT be shared as real disaster advisories. Follow official NDMA/PDMA channels."
+    )
+elif not data_service.is_demo_mode and not __import__("os").getenv("API_BASE_URL"):
+    st.error("⛔ Operational data unavailable. No live API configured.")
 
 events = data_service.get_events_by_status(["published", "approved", "active"])
 if events.empty:
@@ -23,8 +33,8 @@ with col1:
     st.markdown(f"**District/Tehsil:** {ev['district']}/{ev.get('tehsil','')}")
     st.markdown(f"**Severity:** {ev['severity']}")
     st.markdown(f"**Confidence:** {ev['confidence']} ({ev.get('confidence_band','')})")
-    st.markdown(f"**Status:** {ev['status']}")
-    st.markdown(f"**Detected:** {ev['detected_at']}")
+    st.markdown(f"**Status:** {ev.get('status','N/A')}")
+    st.markdown(f"**Detected:** {ev.get('detected_at','N/A')}")
     st.markdown(f"**Published:** {ev.get('published_at','Not yet')}")
 
 with col2:
@@ -42,8 +52,8 @@ if not exposure.empty:
 
 # Shareable advisory card
 st.subheader("📋 Shareable Advisory Card")
-advisory = f"""
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+watermark_header = f"[{DEMO_WATERMARK}]\n" if data_service.is_demo_mode else ""
+advisory = f"""{watermark_header}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FLOOD ADVISORY — {ev['severity'].upper()}
 {ev['corridor_id']} near {ev['district']}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

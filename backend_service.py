@@ -21,6 +21,13 @@ REPORTS_DIR = Path("reports")
 STORAGE_DIR = Path("storage")
 API_BASE_URL = os.getenv("API_BASE_URL")
 
+# ADR-001 / AGENTS.md: exactly three runtime modes.
+# When APP_MODE is "demo" or "test" and no API_BASE_URL is configured, local CSV
+# data is acknowledged as synthetic/demo and must carry a visible watermark.
+# In "operational" mode without API_BASE_URL the system must fail closed.
+_APP_MODE = os.getenv("APP_MODE", "demo").lower()
+DEMO_WATERMARK = "⚠️ SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS"
+
 
 class DataService:
     """Singleton-style CSV data backend for the dashboard."""
@@ -28,6 +35,18 @@ class DataService:
     def __init__(self):
         self._cache: dict[str, pd.DataFrame] = {}
         self.event_api_error: str | None = None
+        # Exposure data source tag: "api", "local_csv", or "unavailable"
+        self.exposure_data_source: str = "unavailable"
+
+    @property
+    def is_demo_mode(self) -> bool:
+        """True when running without a live API in demo or test APP_MODE.
+
+        In demo/test mode local CSV data is acknowledged as synthetic.
+        In operational mode without API_BASE_URL the system should fail closed;
+        callers must check this and show the appropriate unavailability state.
+        """
+        return not bool(API_BASE_URL) and _APP_MODE in ("demo", "test")
 
     def _load(self, name: str) -> pd.DataFrame:
         path = DATA_DIR / f"{name}.csv"
@@ -68,13 +87,24 @@ class DataService:
                             "population_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("population", 0),
                             "updated_at": e.get("timestamps", {}).get("published_at") or e.get("timestamps", {}).get("detected_at"),
                             "published_at": e.get("timestamps", {}).get("published_at"),
+                            "detected_at": e.get("timestamps", {}).get("detected_at"),
                             "latitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][1] if e.get("geometry") else 0,
                             "longitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][0] if e.get("geometry") else 0,
                             "district": e.get("district") or e.get("aoi", "Unknown"),
+                            "tehsil": e.get("tehsil", ""),
                             "event_class": e.get("event_class", "flood_event"),
                             "confidence_band": e.get("confidence_band", "medium"),
                             "breach_suspicion": e.get("breach_suspicion", False),
                             "source_scenes": e.get("source_scenes", ""),
+                            "affected_area_sqkm": e.get("affected_area_sqkm", 0),
+                            "roads_exposed_km": e.get("exposure", {}).get("asset_class_exposure", {}).get("roads_km", 0),
+                            "health_facilities_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("health_facilities", 0),
+                            "schools_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("schools", 0),
+                            "cropland_exposed_sqkm": e.get("exposure", {}).get("asset_class_exposure", {}).get("cropland_sqkm", 0),
+                            "what_changed": e.get("what_changed", ""),
+                            "what_this_means_en": e.get("what_this_means_en", ""),
+                            "what_this_means_ur": e.get("what_this_means_ur", ""),
+                            "limitations": e.get("limitations", ""),
                         } for e in events])
                         return df
                 else:
@@ -85,7 +115,15 @@ class DataService:
                 print(self.event_api_error)
             # An empty response, HTTP error, or malformed payload is not a reason
             # to present unrelated local data as published API results.
-            return pd.DataFrame(columns=["event_id", "corridor_id", "status", "severity", "confidence", "population_exposed", "updated_at", "published_at", "latitude", "longitude", "district", "event_class", "confidence_band", "breach_suspicion", "source_scenes"])
+            return pd.DataFrame(columns=[
+                "event_id", "corridor_id", "status", "severity", "confidence",
+                "population_exposed", "updated_at", "published_at", "detected_at",
+                "latitude", "longitude", "district", "tehsil", "event_class",
+                "confidence_band", "breach_suspicion", "source_scenes",
+                "affected_area_sqkm", "roads_exposed_km", "health_facilities_exposed",
+                "schools_exposed", "cropland_exposed_sqkm", "what_changed",
+                "what_this_means_en", "what_this_means_ur", "limitations",
+            ])
         return self._load("flood_events")
 
     def get_event(self, event_id: str) -> dict | None:
@@ -156,7 +194,31 @@ class DataService:
 
     # ── Exposure / Impact ────────────────────────────────
     def get_exposure(self) -> pd.DataFrame:
-        return self._load("exposure_results")
+        """Return exposure data with provenance tracking.
+
+        Provenance rules (ADR-001 / P0-003):
+        - API mode: local exposure CSV must NOT be shown alongside API events —
+          the two datasets are unrelated and mixing them silently creates false
+          provenance. Return empty until an exposure API endpoint is available.
+        - Demo/test mode (no API_BASE_URL): local CSV is synthetic; callers
+          MUST display DEMO_WATERMARK before showing this data.
+        - Operational mode without API: fail closed — return empty.
+        Sets ``self.exposure_data_source`` for callers to inspect.
+        """
+        if API_BASE_URL:
+            # Local exposure CSV was not produced by the current API feed.
+            # Return empty to prevent mixed provenance; a future API exposure
+            # endpoint can be wired here when available.
+            self.exposure_data_source = "unavailable"
+            return pd.DataFrame()
+        if _APP_MODE == "operational":
+            # Operational mode must fail closed without real data.
+            self.exposure_data_source = "unavailable"
+            return pd.DataFrame()
+        # demo or test mode: local CSV is acknowledged as synthetic.
+        df = self._load("exposure_results")
+        self.exposure_data_source = "local_csv" if not df.empty else "unavailable"
+        return df
 
     def get_exposure_for_event(self, event_id: str) -> pd.DataFrame:
         df = self.get_exposure()
@@ -361,12 +423,24 @@ class DataService:
             "output_path": str(output_path),
             "manifest_path": str(manifest_path),
             "format": fmt,
-            "validation": {"valid": True, "checks_passed": ["format_valid", "crs_present", "non_empty"]},
+            # NOTE: validation checks are hardcoded stubs — not real validation.
+            # Real exports require CRS/nodata/range checks against reviewed products.
+            "validation": {
+                "valid": True,
+                "checks_passed": ["format_valid", "crs_present", "non_empty"],
+                "note": "Stub validation — not verified against reviewed product specifications.",
+            },
+            "demo_watermark": DEMO_WATERMARK if not API_BASE_URL else None,
         }
 
     # ── Release Checklist ────────────────────────────────
     def get_release_checklist(self) -> list[dict]:
-        """Return release checklist items from release_checklist.md."""
+        """Return prototype release checklist items.
+
+        WARNING: All "pass" statuses below are hardcoded prototype placeholders
+        and do NOT represent verified operational state. No claim of readiness
+        should be made from this list without independent verification.
+        """
         return [
             {"category": "Pre-release", "item": "Canonical runtime command validated", "status": "pass"},
             {"category": "Pre-release", "item": "No deprecated prototype entrypoint in deployment", "status": "pass"},

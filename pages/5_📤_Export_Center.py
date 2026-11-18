@@ -1,9 +1,17 @@
 import streamlit as st
-from backend_service import data_service
+from backend_service import data_service, DEMO_WATERMARK
 
 st.set_page_config(page_title="Export Center", page_icon="📤", layout="wide")
 st.title("📤 Export Center")
 st.markdown("Generate validated GIS exports — GeoJSON, COG, GeoParquet — with manifests and QGIS guidance.")
+
+# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
+if data_service.is_demo_mode:
+    st.warning(
+        f"**{DEMO_WATERMARK}**  \n"
+        "Exports generated in demo mode contain mock vector and raster data for pipeline verification only. "
+        "They do NOT represent actual flood extent."
+    )
 
 events = data_service.get_events()
 if events.empty:

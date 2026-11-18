@@ -55,3 +55,37 @@ Append entries; never rewrite earlier handoffs.
 - Next exact action: fetch PR #83 in an authorized clean checkout; inspect commits, CI and reviews,
   run the complete offline suite and actual authenticated PR/checkpoint verification, then update
   this entry's successor and the authoritative plan.
+
+### 2026-11-18 UTC — P0-003 exposure boundary and comprehensive gap remediation
+
+- Session date/time (UTC): 2026-11-18, approximately 05:40–06:00.
+- Repository: afaq-ahmad/pakistan-flood-monitor; workstream: P0-003 & comprehensive gap audit; branch: `audit/p0003-exposure-boundary-and-demo-watermark`.
+- Base commit: `9a51f46` (merge of PR #83).
+- Task status: COMPLETE for P0-003; comprehensive functionality matrix and findings report generated.
+- Completed:
+  1. `backend_service.py`: Enforced ADR-001 runtime mode rules. Added `is_demo_mode`, `exposure_data_source`, and `DEMO_WATERMARK`. In `get_exposure()`, suppress local exposure CSV when `API_BASE_URL` is set to avoid mixed-provenance presentation. In operational mode without API, fail closed. In demo mode, mark as `local_csv`. Full schema mapping parity for API events (including `detected_at`, `tehsil`, `roads_exposed_km`, `cropland_exposed_sqkm`, `what_changed`, `what_this_means_en`, `what_this_means_ur`, `limitations`).
+  2. `pages/1_🌍_Public_Dashboard.py`: Visible `DEMO_WATERMARK` banner when no API is configured; fail-closed message in operational mode; per-section caption for local prototype exposure figures.
+  3. `pages/2_👨‍💻_Analyst_Review.py`: Demo watermark banner; fixed action buttons (Approve, Publish, Reject) to check `update_event_status()` return value, rendering `st.error` on failure instead of false `st.success`.
+  4. `pages/4_🤝_Partner_Mode.py`: Demo watermark banner; safe `.get('detected_at')` to prevent KeyError; prepend `DEMO_WATERMARK` to shareable text advisory cards in demo mode.
+  5. `pages/5_📤_Export_Center.py`: Demo watermark banner indicating export artifacts contain synthetic vector/raster data for pipeline testing.
+  6. `pages/8_🔑_Settings.py`: Replaced deceptive `st.success` mocks on "Save API Keys" and "Save Environment Config" with informational guidance explaining environment-level configuration requirements.
+  7. `tests/test_agent_git_workflow.py`: Configured `core.whitespace=cr-at-eol` and `core.autocrlf=false` in test git fixture to resolve 4 pre-existing Windows-specific test failures (all 7 passed).
+  8. `tests/conftest.py`: Added `ignore_cleanup_errors=True` to `_TEST_DATABASE_DIR` to cleanly suppress benign Windows `WinError 267` temp directory teardown.
+  9. `tests/test_p0003_exposure_boundary.py`: 16 deterministic offline tests covering demo mode, exposure boundary, operational fail-closed, export watermarks, and API schema column parity.
+- Files changed:
+  - `backend_service.py`
+  - `pages/1_🌍_Public_Dashboard.py`
+  - `pages/2_👨‍💻_Analyst_Review.py`
+  - `pages/4_🤝_Partner_Mode.py`
+  - `pages/5_📤_Export_Center.py`
+  - `pages/8_🔑_Settings.py`
+  - `tests/conftest.py`
+  - `tests/test_agent_git_workflow.py`
+  - `tests/test_p0003_exposure_boundary.py`
+  - `docs/engineering/MASTER_TASK_PLAN.md`
+  - `docs/engineering/AGENT_SESSION_LOG.md`
+- Tests:
+  - `pytest tests/test_p0003_exposure_boundary.py -v`: 16 passed.
+  - `pytest tests/test_agent_git_workflow.py -v`: 7 passed (100%).
+  - Full suite `pytest tests/ -q --tb=short`: 228 passed, 0 failed (exit code 0).
+- Next exact action: Open PR to main, verify remote CI, and submit focused handoff.

@@ -1,10 +1,19 @@
 import streamlit as st
 import pandas as pd
-from backend_service import data_service
+from backend_service import data_service, DEMO_WATERMARK
 
 st.set_page_config(page_title="Analyst Review", page_icon="👨‍💻", layout="wide")
 st.title("👨‍💻 Analyst Review Queue")
 st.markdown("Validate machine detections, review evidence, and manage lifecycle transitions.")
+
+# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
+if data_service.is_demo_mode:
+    st.warning(
+        f"**{DEMO_WATERMARK}** — Operating in local prototype/demo mode. "
+        "Review actions update local records and do not affect live operational systems."
+    )
+elif not data_service.is_demo_mode and not __import__("os").getenv("API_BASE_URL"):
+    st.error("⛔ Operational API unavailable. Live reviews cannot be submitted.")
 
 # Filters
 st.subheader("🔎 Queue Filters")
@@ -114,17 +123,23 @@ else:
 
                 ac1, ac2, ac3 = st.columns(3)
                 if ac1.button("✅ Approve", key=f"approve_{eid}", type="primary"):
-                    data_service.update_event_status(eid, "approved", analyst, notes)
-                    st.success(f"Event {eid} approved!")
-                    st.rerun()
+                    if data_service.update_event_status(eid, "approved", analyst, notes):
+                        st.success(f"Event {eid} approved!")
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to approve event {eid}. Check backend service and permissions.")
                 if ac2.button("📢 Publish", key=f"publish_{eid}"):
-                    data_service.update_event_status(eid, "published", analyst, notes)
-                    st.success(f"Event {eid} published! Public alerts updated.")
-                    st.rerun()
+                    if data_service.update_event_status(eid, "published", analyst, notes):
+                        st.success(f"Event {eid} published! Public alerts updated.")
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to publish event {eid}. Check backend service and permissions.")
                 if ac3.button("❌ Reject", key=f"reject_{eid}"):
-                    data_service.update_event_status(eid, "rejected", analyst, notes)
-                    st.warning(f"Event {eid} rejected.")
-                    st.rerun()
+                    if data_service.update_event_status(eid, "rejected", analyst, notes):
+                        st.warning(f"Event {eid} rejected.")
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to reject event {eid}. Check backend service and permissions.")
 
 # Audit Timeline
 st.subheader("📜 Audit Timeline")

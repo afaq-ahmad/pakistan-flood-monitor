@@ -21,6 +21,8 @@ def repos(tmp_path):
     run("git", "clone", str(remote), str(local), cwd=tmp_path)
     run("git", "config", "user.email", "agent@example.invalid", cwd=local)
     run("git", "config", "user.name", "Test Agent", cwd=local)
+    run("git", "config", "core.autocrlf", "false", cwd=local)
+    run("git", "config", "core.whitespace", "cr-at-eol", cwd=local)
     run("git", "switch", "-c", "work", cwd=local)
     (local / "base").write_text("base\n")
     run("git", "add", "base", cwd=local)

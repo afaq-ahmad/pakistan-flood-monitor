@@ -10,7 +10,10 @@ import pytest
 # operational modes.
 # Never point the standard suite at a caller's database or enable operational
 # mode accidentally. Integration tests needing another database create it explicitly.
-_TEST_DATABASE_DIR = tempfile.TemporaryDirectory(prefix="flood-monitor-tests-")
+_TEST_DATABASE_DIR = tempfile.TemporaryDirectory(
+    prefix="flood-monitor-tests-",
+    ignore_cleanup_errors=True,
+)
 os.environ["DATABASE_URL"] = f"sqlite:///{Path(_TEST_DATABASE_DIR.name) / 'tests.db'}"
 os.environ["APP_MODE"] = "test"
 

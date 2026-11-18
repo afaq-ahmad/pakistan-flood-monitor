@@ -35,7 +35,7 @@ Acceptance: API-configured failures cannot alter local event or audit files or r
 - [x] Evidence: the implementation commit in this PR; 8 focused tests and 204 full offline tests passed.
 
 ## P0-003 — Local-only dashboard data and exposure boundary
-Priority: P0; Status: NOT_STARTED; files: `backend_service.py`, `streamlit_app.py`, `pages/`.
+Priority: P0; Status: COMPLETE; files: `backend_service.py`, `streamlit_app.py`, `pages/`, `tests/test_p0003_exposure_boundary.py`.
 Evidence: without `API_BASE_URL`, `get_events` reads `data/flood_events.csv`; `get_exposure` reads
 local exposure regardless of API; the public page uses these independently of API eligibility.
 Trigger: no configured API, or API active while local exposures remain populated. Impact: potentially
@@ -44,8 +44,13 @@ consumer; require explicit, visibly watermarked demo mode or fail closed, and ne
 exposure as operational; test map/card/exposure consistency and unavailable states. Do not assume
 local CSV records are live. Dependencies: mode/UI product contract and P0-001.
 - [x] Identify no-API CSV and local exposure paths by code inspection.
-- [ ] Reproduce operational/demo UI behavior and trace all callers.
-- [ ] Implement safely labelled demo or unavailable behavior with browser-level coverage.
+- [x] Reproduce operational/demo UI behavior and trace all callers.
+- [x] Implement safely labelled demo or unavailable behavior: `DEMO_WATERMARK` constant, `is_demo_mode`
+  property, `exposure_data_source` tag; `get_exposure()` returns empty in API mode and operational
+  no-API mode; public dashboard, analyst review, partner mode, and export center display watermark
+  banners; partner advisory text prepends demo watermark; analyst review action buttons fail safe;
+  settings UI reflects read-only configuration; 16 focused tests and 228 full offline tests pass.
+- [x] Offline automated test coverage for demo watermark, exposure suppression, and API column parity.
 
 ## P1-001 — Fenced worker recovery
 Status: BLOCKED; files: `workflow/engine.py`, `workflow/repository.py`, migrations.
