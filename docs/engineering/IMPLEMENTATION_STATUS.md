@@ -374,3 +374,16 @@ guidance. The canonical review and administrator checks returned 401 for an
 anonymous request. PK-003 now has an Urdu readiness plan. Browser, physical
 printing, assistive technology and human-reviewed Urdu remain open. The full
 offline suite passed 353 tests.
+
+## ENG-001 verified runtime architecture
+
+[Draft PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97)
+documents canonical and legacy entry points, environmental processing,
+event lifecycle, public reads, field reports and agent recovery from
+`bbf988e`. The documentation records the operational input gate,
+best-effort draft hydration, process-local review and report state,
+and draft-time `published_at`. Six diagram grammar checks, 26 OpenAPI
+route/method comparisons, all 25 event-state pairs and four action aliases
+passed. The focused offline suite passed 121 tests and the full suite
+passed 353 tests. Rendered GitHub and Obsidian previews remain pending.
+P1-003 tracks the publication timestamp contract.

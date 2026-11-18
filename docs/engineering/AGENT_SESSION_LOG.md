@@ -492,3 +492,31 @@ Append entries; never rewrite earlier handoffs.
   architecture Mermaid block and heading links in Obsidian and the GitHub PR.
   Separately track the Python 3.11 minimum-version smoke and packaging metadata
   in OPS-001.
+
+### 2026-11-18 UTC · ENG-001 verified runtime and processing flows
+
+- Main `bbf988e` includes merged PR #96. No open documentation PR at intake. Branch `docs/verified-runtime-architecture`.
+- Reconciled runtime entry points, persistence boundaries, direct research provider paths, workflow retries and the fail-closed canonical ingestion path. Added the first two Mermaid diagrams and linked their source and tests. Found draft-time `published_at` and limited event hydration in code, and documented their boundaries.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings). Next: compare actual lifecycle transitions and API gates, then document public reads, reports and agent recovery.
+
+### 2026-11-18 UTC · ENG-001 public and review contracts checkpoint
+
+- [Draft PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97)
+  targets `main` from `docs/verified-runtime-architecture`. The preceding
+  verified remote checkpoint is `abf113bf37be6696165784ab4f8a6ff3f4be7024`.
+- Mapped the exact review lifecycle and publication failure, the public read
+  and official-source paths, separate field-report boundaries and the agent
+  recovery procedure. Linked the contracts to implementation, ADRs and tests.
+  Updated the discrepancy inventory, API reference and contributor guidance.
+  The publication timestamp contract remains tracked in P1-003.
+- Checked six Mermaid blocks against the local flowchart grammar. Compared
+  26 documented route/method pairs with canonical OpenAPI and verified 57
+  source and test paths. Exercised every state pair against the canonical
+  validator and checked all four aliases. No visual renderer was used.
+- Focused regression passed 121 tests (28 warnings). Full regression
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 353 tests (480 warnings). No application or schema changes.
+- Next: render diagrams A–F in the draft PR and in Obsidian with `docs/`
+  open as the vault. Inspect labels and navigation at narrow widths and
+  record visual evidence under ENG-001 before starting the P1-003
+  publication timestamp contract.

@@ -10,7 +10,10 @@
    Use [offline testing](testing.md) and record exact commands and results.
 4. Update the owning page according to the [documentation guide](DOCUMENTATION_GUIDE.md).
    Submit a PR describing scope, evidence, limitations and any follow-up.
-   Use the repository PR template.
+   Use the repository PR template. If the PR changes an architecture
+   contract, API boundary, workflow transition, scientific-data semantics
+   or storage responsibility, review the affected documentation and
+   Mermaid diagrams. Link any updated sections in the PR.
 
 When contributing corridor or dam data, cite the authoritative source and
 verification date. Distinguish the canonical corridor catalogue in
