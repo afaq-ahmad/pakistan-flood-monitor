@@ -280,3 +280,16 @@ live moderation depend on P1-002 and SEC-001. The previous runtime state still u
 credentials and process-local reports. Cross-process concurrency, DB write recovery for reports,
 browser keyboard/reflow and scientific validation remain open. Hosted Actions returned failure
 with zero jobs and Chromium startup failed locally.
+
+## Farmer and livestock user experience continuation
+
+Branch `feat/pk-farmer-livestock-ux` from `d37488a`. Sourced English preparedness guides for
+farmers (`pages/17_🌾_Farmer_Preparedness.py`) and livestock owners (`pages/18_🐄_Livestock_Preparedness.py`)
+added with demo watermarks, attribution to FAO/NDMA/PARC, limitations and unverified Urdu warnings
+(PK-010). Agricultural report categories taxonomy with data minimization and privacy flags defined
+in `src/pakistan_flood_monitor/models/report_categories.py` (PK-006/PK-007 prerequisite). Sourced
+specification for 9 prerequisites for agricultural field exposure added (PK-007, kept BLOCKED).
+
+Focused tests passed 29 tests (17 preparedness page tests, 12 category tests). Full offline suite
+passed 322 tests with 973 warnings. Compilation and git diff checks passed. Browser and mobile
+rendering remain unverified in this environment.
