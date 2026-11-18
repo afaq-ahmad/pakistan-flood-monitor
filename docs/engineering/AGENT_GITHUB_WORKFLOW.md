@@ -70,3 +70,33 @@ acceptance; select a new one only when authorized, following AGENTS.md.
 References: [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow),
 [GitHub draft PRs](https://docs.github.com/en/pull-requests/reference/pull-requests),
 and [OpenAI's multi-hour execution plans](https://developers.openai.com/cookbook/articles/codex_exec_plans).
+
+## Optional local Git helpers
+
+Invoke these scripts with Bash (their executable bit is not required):
+
+```bash
+bash scripts/agent_preflight.sh --dry-run <workstream-search>
+bash scripts/agent_preflight.sh <workstream-search>
+bash scripts/agent_resume.sh --dry-run <verified-pr-branch>
+bash scripts/agent_resume.sh <verified-pr-branch>
+# Review and explicitly stage each intended file, then inspect the full staged diff:
+git diff --cached
+bash scripts/agent_checkpoint.sh --dry-run <expected-branch> 'task-id: descriptive message'
+bash scripts/agent_checkpoint.sh <expected-branch> 'task-id: descriptive message'
+```
+
+Preflight fetches unless dry-run, reports status and lists PRs when authenticated `gh` is available.
+If not, use an authorized GitHub integration; inability to list PRs is not evidence that none exists.
+Check repository identity, review comments, checks and ownership separately. Resume accepts an
+already verified PR branch and refuses dirty or divergent work; it does not select a PR for you.
+The checkpoint helper never stages files; it screens some common sensitive paths and patterns but
+does not detect every secret, protected file, symlink, binary or private datum. Review all staged
+content and use approved security tooling. It does not validate task completion or verify CI.
+A failed push leaves the new commit local. A successful push followed by failed remote verification
+is still unverified. Dry-run does not commit, push, fetch or switch branches.
+
+The existing offline CI runs on pushes and pull requests. Frequent checkpoints can generate
+redundant runs; concurrency cancellation was evaluated but left unchanged here because branch and PR
+events have different check contexts and cancellation must not leave required checks unresolved.
+Inspect CI at milestones and before review.
