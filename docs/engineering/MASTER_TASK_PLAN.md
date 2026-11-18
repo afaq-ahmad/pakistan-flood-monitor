@@ -87,7 +87,7 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [x] Verify the public/dashboard boundary work merged in [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85).
 - [x] Reproduce the analyst discovery gap. The page filters a published-only API feed for drafts while using local audit CSV.
 - [x] Specify the [authorized read-only queue](../api.md#analyst-review-workflow) and its process-local limits.
-- [ ] Test role enforcement, pagination, simulation labels, and public-feed isolation for the canonical queue.
+- [x] Test role enforcement, pagination, simulation labels, and public-feed isolation for the canonical queue. The focused queue, authentication, and public boundary suite passed 25 tests.
 - [ ] Wire a credential-scoped analyst viewer with clear empty, access-denied, and unavailable states.
 - [ ] Remove default attestations from the separate demo checklist and test local/API isolation.
 - [ ] Define a durable review and audit contract before implementing live dashboard mutations (P1-002).

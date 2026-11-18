@@ -143,3 +143,10 @@ Append entries; never rewrite earlier handoffs.
 - Claimed and documented a bounded, authorized, read-only queue. Durable review and audit
   remain in P1-002. Next: implement the API projection and verify role, privacy, and paging
   contracts before connecting the Streamlit page.
+
+- Draft [PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86) opened from
+  verified documentation checkpoint `03f0a249a05b9a56af816adff5c2aa8cd12cf628`.
+- Added the read-only queue and tested roles, minimized output, chronological pagination,
+  simulation labels, and a canonical test-mode pipeline run. The focused queue, authentication,
+  and public boundary suite passed 25 tests with sockets disabled. Next: connect Streamlit
+  with a per-session credential and verify that it never reads the local audit in API mode.
