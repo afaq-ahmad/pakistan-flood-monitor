@@ -565,3 +565,20 @@ Append entries; never rewrite earlier handoffs.
   DATA-001 change, exercise the downstream operational gate with an offline
   extraction fixture, restore its typed integrity error, and verify the
   structured 503 and absence of a new candidate or public event.
+
+### 2026-11-18 UTC · ENG-001 authoritative backlog checkpoint
+
+- Recovered main at `8938d60532ac33a00ae31ed80b9c313e04790bc5`.
+  PR #98 had merged. No suitable open workstream was returned. Claimed
+  ENG-001 on `docs/backlog-verification`. Its parent is the last verified
+  remote baseline for this checkpoint.
+- Reconciled 25 task IDs against source evidence, tests and PR history.
+  Added one Pending Work section and linked it from the vault index,
+  Remaining Work and the feature roadmap. Kept the PR #92 historical
+  record and the original checks. GIS-001 now reflects the verified
+  measurement-helper slice with the broader raster audit still pending.
+- Main baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 353 tests (480 warnings). Markdown link and heading checks
+  reported no broken targets. Only documentation is changed at this checkpoint.
+- Next: add the offline documentation validator, verify its clean and
+  failing cases, align the freshness rule, then wire the passing check into CI.
