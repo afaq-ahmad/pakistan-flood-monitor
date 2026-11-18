@@ -1,9 +1,20 @@
-# Pakistan Flood Monitor — Remaining Work Documentation
+# Pakistan Flood Monitor — Remaining Work
 
-This page preserves the PR #92 verification checkpoint. The
-[master task plan](MASTER_TASK_PLAN.md) is the authoritative pending and
-blocked work list. Use the [implementation ledger](IMPLEMENTATION_STATUS.md)
-for current evidence and limitations.
+Start with [Pending Work](MASTER_TASK_PLAN.md#pending-work). It links to each
+task's owner or workstream, priority, status, acceptance evidence and next
+action. Read the [latest handoff](AGENT_SESSION_LOG.md) and verify the active
+PR before resuming. The [implementation ledger](IMPLEMENTATION_STATUS.md)
+records verified milestones and limitations.
+
+- Review operational failure containment and authorization first.
+  See [DATA-001](MASTER_TASK_PLAN.md#data-001--real-environmental-processing-and-validation)
+  and [SEC-001](MASTER_TASK_PLAN.md#sec-001--security-and-privacy-audit).
+- Use [UI-001](MASTER_TASK_PLAN.md#ui-001--public-and-analyst-dashboard-end-to-end-audit)
+  and [QA-001](MASTER_TASK_PLAN.md#qa-001--full-independent-audit-and-handoff)
+  for browser, accessibility and operational verification.
+- Use [ENG-001](MASTER_TASK_PLAN.md#eng-001--resumable-agent-github-workflow)
+  and [OPS-001](MASTER_TASK_PLAN.md#ops-001--deployment-and-operational-verification)
+  for tooling, documentation and deployability.
 
 ## Historical checkpoint · 18 November 2026
 

@@ -8,7 +8,7 @@
 
 ## Changed components
 
-<!-- List affected packages, services, APIs, data contracts, UI surfaces, tests and docs. Link changed architecture contracts and diagrams. -->
+<!-- List affected packages, services, APIs, data contracts, UI surfaces, tests and docs. Link updated owning documentation, diagrams and task evidence, or explain why a documentation update does not apply. -->
 
 ## Migrations and configuration
 

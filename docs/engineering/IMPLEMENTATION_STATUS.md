@@ -132,8 +132,9 @@ Focused checks on the unmerged metric-GIS contracts workstream:
 
 ## Next recommended prompt
 
-Prioritize fenced worker crash recovery, restart-safe event/review persistence, and independently
-validated real-data ingestion and reviewed products. These are not completed by the offline test fixes.
+Use [Pending Work](MASTER_TASK_PLAN.md#pending-work) for live priorities,
+dependencies and concrete next actions. The evidence below records delivered
+milestones and their verification boundaries.
 
 ## Independent audit follow-up (2026-11-17; historical baseline)
 
@@ -403,3 +404,15 @@ Compose v2.40.3 parsed the configuration. Image and PostGIS runtime
 verification are pending. A correctness lint pilot exposed a reproducible
 undefined exception at the downstream operational processor gate. It is
 tracked under DATA-001. No application behavior or schema changed.
+
+## ENG-001 backlog and documentation verification
+
+[Draft PR #99](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/99)
+reconciles the 25 authoritative task IDs against merged changes at
+`8938d60`. The vault index and Remaining Work direct readers to Pending Work.
+An offline validator checks tracked Markdown and PR diff hygiene with the
+existing Python environment. The offline suite passed 361 tests. A separate
+Mermaid grammar check passed all six existing diagrams. The CI checker
+validates Mermaid fences and supported headers. Rendered previews in
+GitHub and Obsidian remain open. No runtime code, schema or application
+data changed.

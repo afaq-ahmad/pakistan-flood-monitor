@@ -565,3 +565,43 @@ Append entries; never rewrite earlier handoffs.
   DATA-001 change, exercise the downstream operational gate with an offline
   extraction fixture, restore its typed integrity error, and verify the
   structured 503 and absence of a new candidate or public event.
+
+### 2026-11-18 UTC · ENG-001 authoritative backlog checkpoint
+
+- Recovered main at `8938d60532ac33a00ae31ed80b9c313e04790bc5`.
+  PR #98 had merged. No suitable open workstream was returned. Claimed
+  ENG-001 on `docs/backlog-verification`. Its parent is the last verified
+  remote baseline for this checkpoint.
+- Reconciled 25 task IDs against source evidence, tests and PR history.
+  Added one Pending Work section and linked it from the vault index,
+  Remaining Work and the feature roadmap. Kept the PR #92 historical
+  record and the original checks. GIS-001 now reflects the verified
+  measurement-helper slice with the broader raster audit still pending.
+- Main baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 353 tests (480 warnings). Markdown link and heading checks
+  reported no broken targets. Only documentation is changed at this checkpoint.
+- Next: add the offline documentation validator, verify its clean and
+  failing cases, align the freshness rule, then wire the passing check into CI.
+
+### 2026-11-18 UTC · ENG-001 offline documentation validation
+
+- [Draft PR #99](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/99)
+  targets `main` from `docs/backlog-verification`, base `8938d60`.
+  Prior verified remote checkpoint `203e4fdd07bfacf98cc2666fabc5ee0a98229a07`.
+- Linked the task records to real source paths. Added
+  `scripts/check_docs.py`, eight focused validator cases and one existing
+  workflow step. Updated the authoring guide, PR template, testing guide
+  and implementation ledger. The script reads tracked docs and screens
+  the PR diff with the current Python and PyYAML installation.
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 361 tests (480 warnings). Actionlint passed. Local link and
+  heading checks and six Mermaid grammar checks passed. The CI checker
+  validates Mermaid structure only. Visual previews remain open.
+- Python 3.12.14 reached the API and Streamlit loopback demo endpoints.
+  Disposable SQLite upgrade/downgrade/re-upgrade reached `b4d9d93f2a10`.
+  Canonical compilation and `git diff --exit-code -- storage data` passed.
+  No application behavior or persisted data changed.
+- Next: verify PR checks on the remote head and inspect navigation from
+  `docs/INDEX.md` to Pending Work and the six diagram previews in GitHub and
+  Obsidian. Record renderer evidence under ENG-001. DATA-001 and OPS-001
+  retain separate implementation actions in the master plan.

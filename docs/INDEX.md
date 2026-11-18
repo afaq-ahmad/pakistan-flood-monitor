@@ -18,7 +18,7 @@ guidance. See [the project overview](overview.md) for the scope and limitations.
 | If you are a… | Go to |
 |---|---|
 | Developer setting up a checkout | [Local setup and first smoke check](setup.md) |
-| Coding agent resuming work | [Agent workflow](engineering/AGENT_GITHUB_WORKFLOW.md) → [current tasks](engineering/MASTER_TASK_PLAN.md) → [latest handoff](engineering/AGENT_SESSION_LOG.md) |
+| Coding agent resuming work | [Agent workflow](engineering/AGENT_GITHUB_WORKFLOW.md) → [Pending Work](engineering/MASTER_TASK_PLAN.md#pending-work) → [latest handoff](engineering/AGENT_SESSION_LOG.md) |
 | Architect or reviewer | [Runtime architecture](architecture.md) and [accepted decisions](adr/README.md) |
 | QA engineer | [Test commands and evidence boundaries](testing.md) and [UX acceptance matrix](product/UI_UX_ACCEPTANCE_MATRIX.md) |
 | Contributor editing this vault | [Documentation guide](DOCUMENTATION_GUIDE.md) and [inventory and evidence audit](engineering/DOCUMENTATION_INVENTORY.md) |
@@ -53,7 +53,8 @@ Inside a checkout it is at the repository root, beside the `docs/` folder.
 
 ## Task state, handoffs and known limits
 
-- [Master task plan](engineering/MASTER_TASK_PLAN.md) owns pending, blocked and completed task state.
+- [Pending Work](engineering/MASTER_TASK_PLAN.md#pending-work) is the entry point for current tasks. The master plan owns status, acceptance and next steps.
+- [Remaining Work](engineering/REMAINING_WORK.md) gives orientation to the task families and preserves the prior reporting checkpoint.
 - [Agent session log](engineering/AGENT_SESSION_LOG.md) records handoffs and checkpoints.
 - [Implementation status](engineering/IMPLEMENTATION_STATUS.md) owns the evidence ledger and current limitations.
 - [Functionality gap audit](engineering/FUNCTIONALITY_GAP_AUDIT.md) records historical findings and decisions.
