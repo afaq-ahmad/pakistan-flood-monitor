@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-18**, against `main` at `d24fa22` and the reference catalogue changes in draft PR #87. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `6f35e9e` and the My Area selector changes in draft PR #88. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -251,3 +251,18 @@ reported failure with zero jobs. Chromium startup failed on local socket permiss
 FL-08's prototype forecast and dam presentation, report protection, reviewed products and
 validated farm-level exposure remain open. The next scoped change is the operational
 forecast page guard under PK-011, exercised with injected prototype responses.
+
+## PK-001 corridor selector continuation
+
+PR #87 is merged. Draft PR #88 adds a configured-ID selector in the published event view.
+It keeps unknown associations in the all-events view, distinguishes missing measurements
+and timestamps, and avoids loading the map until requested. No validated district, tehsil,
+village or farm coverage is available from the audited data.
+
+All 34 focused tests and 278 full offline tests passed. The SQLite chain round-tripped to
+`b4d9d93f2a10`. The [main run](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44274735400)
+and [selector checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44276177058)
+reported failure with zero jobs. Chromium startup failed on socket permissions. The draft
+retains mobile, browser and keyboard checks. Future farmer and livestock content requires
+verified, attributed English guidance and human-reviewed Urdu under PK-010. Reports and
+property exposure retain the PK-006 and PK-007 prerequisites.

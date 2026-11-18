@@ -128,16 +128,19 @@ class DataService:
                         rows = []
                         for e in events:
                             latitude, longitude = _event_coordinates(e.get("geometry"))
+                            timestamps = e.get("timestamps")
+                            if timestamps is None:
+                                timestamps = {}
                             rows.append({
                                 "event_id": e.get("event_id"),
-                                "corridor_id": e.get("aoi"),
+                                "corridor_id": e.get("corridor_id", e.get("aoi")),
                                 "status": e.get("status"),
                                 "severity": e.get("latest_event_summary", {}).get("alert_level", "low"),
                                 "confidence": e.get("machine_confidence"),
                                 "population_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("population", 0),
-                                "updated_at": e.get("timestamps", {}).get("published_at") or e.get("timestamps", {}).get("detected_at"),
-                                "published_at": e.get("timestamps", {}).get("published_at"),
-                                "detected_at": e.get("timestamps", {}).get("detected_at"),
+                                "updated_at": timestamps.get("published_at") or timestamps.get("detected_at"),
+                                "published_at": timestamps.get("published_at"),
+                                "detected_at": timestamps.get("detected_at"),
                                 "latitude": latitude,
                                 "longitude": longitude,
                                 "district": e.get("district"),

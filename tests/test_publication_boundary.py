@@ -57,3 +57,20 @@ def test_nonpublic_historical_record_is_not_exposed(client, monkeypatch):
 def test_nonpublic_published_event_fails_detail_check(client):
     assert client.get("/public/events/bad").status_code == 404
     assert client.get("/public/events/draft").status_code == 404
+
+
+@pytest.mark.parametrize("recorded,expected", [
+    ("Chenab-Middle", "Chenab-Middle"),
+    ("Unknown-village", None),
+    (None, None),
+])
+def test_public_collection_projects_only_configured_corridor(client, recorded, expected):
+    if recorded is not None:
+        main.event_store["good"]["aoi"] = recorded
+    main.event_store["draft"]["aoi"] = "Chenab-Middle"
+    response = client.get("/public/events")
+    assert response.status_code == 200
+    events = response.json()["events"]
+    assert [row["event_id"] for row in events] == ["good"]
+    assert events[0]["corridor_id"] == expected
+    assert "district" not in events[0]

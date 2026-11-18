@@ -220,3 +220,49 @@ Append entries; never rewrite earlier handoffs.
   page in operational mode before any provider call or alert-style output. Dam fallback masking,
   district/tehsil/mouza validation, real device checks and agricultural resource verification
   remain separate pending steps.
+
+### 2026-11-18 UTC — PK-001 My Area selector planning checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `feat/pk-001-my-area-corridor`
+  from `6f35e9e3765ce5c8e9d0b37fdd55dad19b2911e4`. PR #87 is merged and no open draft
+  owns this work. The user's current priorities select PK-001 ahead of the earlier PK-011 handoff.
+- Audited six configured pilot IDs, five reference map lines, demo district labels and the
+  canonical published event projection. Verified that the public collection omits its stored AOI.
+- Claimed the exact-ID selector slice, recorded scope and objective tests, and added existing-task
+  prerequisites for sourced preparedness, report protection and property exposure. Locality mapping
+  stays dependent on trustworthy boundaries. Next: verify this planning checkpoint remotely, open
+  the draft, and run the new regression tests before editing API or Streamlit code.
+
+- The document-only checkpoint `2c232c2885923e3ed6b9135cda39366751598e17` was
+  verified on GitHub and [draft PR #88](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/88)
+  was opened before application code edits.
+
+- Four baseline regressions failed before implementation, including a timestamp-null record that
+  caused the adapter to reject a valid published snapshot. The canonical list now projects exact,
+  allowlisted corridor IDs, and the dashboard selects from that catalogue before reading the feed.
+  Text stays available without tiles. Missing times and exposure show unavailable, and the map
+  becomes optional with container width. The 34-test focused suite passed.
+- Next: publish this implementation checkpoint, confirm the final suite, and record browser and
+  hosted CI status. No locality mapping, new measurements or user data collection was added.
+
+### 2026-11-18 UTC — PK-001 My Area selector handoff
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `feat/pk-001-my-area-corridor`,
+  [draft PR #88](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/88) to main
+  `6f35e9e3765ce5c8e9d0b37fdd55dad19b2911e4`. Verified implementation checkpoint
+  `753e9f086c8d23db438d11d9e37e3e5201647219` before this handoff.
+- PK-001 remains PARTIAL. The UI has exact configured corridor selection, a distinct no-result
+  state and source navigation even when the API is unavailable. The API adds a nullable
+  allowlisted corridor ID. Null timestamps no longer hide otherwise valid events. No locality
+  or measurement inference or user data collection was added.
+- Four new baseline cases failed before the edit. The focused suite passed 34 tests, and
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 278 tests with 475 warnings. SQLite upgraded, downgraded and re-upgraded to
+  `b4d9d93f2a10`. Compile, link, tracked-data and whitespace checks passed.
+- Hosted Actions returned failure with zero jobs on main and the selector checkpoint. Chromium
+  could not create its socket, so browser, 360 px and keyboard acceptance remain unverified.
+  This final checkpoint only updates the plan, journeys, QA matrix, ledger and handoff.
+- Next PK-001 subtask: exercise selector and official links at 360 px and with keyboard navigation
+  in a runnable browser. Next product slice after UI acceptance: verify agriculture authority
+  sources for the PK-010 English preparedness entry. PK-006 private reporting and PK-007
+  property exposure need their recorded prerequisites.
