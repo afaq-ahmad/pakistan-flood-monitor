@@ -21,7 +21,8 @@ continues mapping; failure has observable indication; deterministic offline test
 - [x] Reproduce empty and outage cases (three tests failed before the implementation commit in this PR).
 - [x] Prevent API-configured fallback and verify valid response (the implementation commit in this PR, 8 focused tests).
 - [x] Run offline regression and full suite (204 passed, 475 warnings).
-- [ ] Validate Streamlit UI in a browser and assess local exposure/no-API paths (P0-003).
+- [x] Exercise no-API, empty, and outage behavior plus the published map/cards/exposure boundary in Streamlit AppTest (PR #85).
+- [ ] Validate rendered pages and accessibility in a browser; Chromium startup was blocked in the audit environment.
 
 Evidence: `PYTHONPATH=. .../python -m pytest tests/test_dashboard_api_fail_closed.py -q` — 8 passed;
 full offline suite — 204 passed. No browser screenshots; UI was not run in this environment.
@@ -76,11 +77,15 @@ Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending
 - [ ] Implement and test availability, freshness and safe degradation.
 
 ## UI-001 — Public and analyst dashboard end-to-end audit
-Status: NOT_STARTED; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
+Status: PARTIAL; implementation in [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85); baseline: `339ad5d`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
 Audit maps/cards, empty/outage states, demo watermark, districts, localization, mobile, field reports,
 exports and status actions. Acceptance: evidence-backed inventory and integration tests; no synthetic
 or unreviewed output represented as operational. Prototype UI is not an authoritative warning service.
-- [ ] Trace every public and analyst data path, including standalone dashboard.
+- [x] Inventory public and analyst data paths, including standalone dashboard. See the [functionality gap audit](FUNCTIONALITY_GAP_AUDIT.md).
+- [x] Verify public snapshot, mode, dashboard install, and demo export boundaries with offline tests.
+- [x] Verify the standalone HTML prototype and feed are labelled in demo/test and refuse operational mode.
+- [ ] Specify authenticated review-queue and audit contracts before implementing the canonical analyst workflow.
+- [ ] Verify browser presentation, keyboard access, and actual file download transfer.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
 
 ## DATA-001 — Real environmental processing and validation
@@ -121,7 +126,7 @@ Status: IN_PROGRESS; owner: consolidated agent; baseline `58e735b`. Audit all wo
 reconcile PRs #73–80 before claiming more work. Acceptance: exact commands and results; unresolved
 work remains open and a reproducible session log exists. Do not interpret test pass as scientific validity.
 - [x] Read agent contract, ADR-001, ledger, recent commits and open PRs.
-- [ ] Complete deeper end-to-end audit and add only evidence-backed task IDs.
+- [x] Record baseline behavior by feature and runtime in the [functionality matrix](FUNCTIONALITY_GAP_AUDIT.md) (PR #85).
 - [x] Run focused tests (8 passed) and complete offline suite (204 passed, 475 warnings).
 - [ ] Verify Docker, PostgreSQL, live providers and UI when available.
 - [ ] Record final commit, PR and next exact task in session log.

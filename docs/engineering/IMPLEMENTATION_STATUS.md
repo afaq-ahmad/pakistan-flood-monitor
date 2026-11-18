@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-18**, against `main` at `9a51f46`. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `339ad5d`, with fixes verified on the PR #85 branch. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -200,3 +200,18 @@ checkpoints; actual GitHub CLI authentication, live push failure, hosted CI and 
 current main were not verified. The existing CI was evaluated and left unchanged. Secret screening
 is heuristic and requires human/agent review. No application or scientific behavior was changed.
 Continue ENG-001 validation before human review; other backlog statuses remain unchanged.
+
+## Public dashboard and functionality audit (2026-11-18, PR #85)
+
+- [Functionality matrix](FUNCTIONALITY_GAP_AUDIT.md) records entry points and gaps across the
+  canonical API, dashboard pages, standalone UI, workers, GIS, and deployment.
+- UI-001 remains PARTIAL. This branch fixes public event boundaries, dashboard dependencies,
+  standalone demo labelling, and local-demo export format and provenance. Browser verification,
+  authenticated analyst discovery, partner sharing and reviewed live products remain open.
+- Baseline 228 passed. Branch 245 passed, 475 warnings with network sockets disabled. SQLite
+  migration round-trip to `b4d9d93f2a10`, compile, workflow YAML and tracked-data checks passed.
+- Hosted Actions failed before creating jobs on both baseline and implementation checkpoint.
+  Chromium startup was blocked by local socket permissions. Docker, PostgreSQL, external
+  providers and scientific validation were outside the verified environment.
+- Next UI-001 action is to specify the private queue and audit contract alongside durable review
+  (P1-002). Keep P1-003 reviewed publication and operational GIS export open.

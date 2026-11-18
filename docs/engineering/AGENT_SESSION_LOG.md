@@ -89,3 +89,45 @@ Append entries; never rewrite earlier handoffs.
   - `pytest tests/test_agent_git_workflow.py -v`: 7 passed (100%).
   - Full suite `pytest tests/ -q --tb=short`: 228 passed, 0 failed (exit code 0).
 - Next exact action: Open PR to main, verify remote CI, and submit focused handoff.
+
+### 2026-11-18 UTC — UI-001 functionality audit and implementation checkpoint
+
+- Repository: afaq-ahmad/pakistan-flood-monitor. Branch: `audit/ui-001-functionality-gaps`;
+  base and last verified remote main: `339ad5de0951260a52f9ea3505c42962cec1a109`. PR pending.
+- Claimed UI-001 public-data and export slice. PR #84 was merged and no open PR/issue matched.
+- Added functionality and dependency matrix. Baseline Streamlit AppTest hit
+  `ModuleNotFoundError: No module named 'folium'` from Public Dashboard after
+  installing `.[dev,dashboard]`; home opened without a demo warning. Full baseline running.
+- Next: fix the public feed boundary, dashboard install and demo export; exercise pages offline.
+
+- Draft PR: [#85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85).
+  Documentation checkpoint verified at remote `d9418868a8c8632c358f3aa22e93f4515e669f4a`.
+- Public snapshot, no-API fail-closed behavior and dashboard dependency fixes implemented.
+  `.venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py tests/test_dashboard_api_fail_closed.py tests/test_p0003_exposure_boundary.py -q --tb=short`
+  passed 31 tests. Baseline full offline suite passed 228 tests with 475 warnings.
+- Next: constrain demo export, verify actual downloads, run full checks, then update PR and ledger.
+
+- Export checkpoint follows verified remote `8b2ba961a659d6ccd6f87cc30141a1fdc7ab3eb3`.
+  Export Center generates labelled local-demo GeoJSON and a manifest, rejects placeholder
+  formats and exposes download buttons. Export and P0-003 focused tests passed 23 tests.
+- Full offline suite passed 242 tests with 475 warnings. SQLite migration round-trip,
+  byte-compilation and tracked-data check passed. Next: review CI and finalize the audit/ledger.
+
+### 2026-11-18 06:45 UTC — UI-001 final validation and handoff
+
+- Repository: afaq-ahmad/pakistan-flood-monitor. Branch: `audit/ui-001-functionality-gaps`;
+  [draft PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85) to main
+  `339ad5de0951260a52f9ea3505c42962cec1a109`.
+- Last verified remote before this commit: `85ee5a2bec2516a4a11014eb97e877e6f4abd786`.
+  The audit, public feed and export checkpoints are already published.
+- Status: PARTIAL for UI-001. Standalone demo/test labels and operational 503s now verified.
+  See the [findings and validation matrix](FUNCTIONALITY_GAP_AUDIT.md).
+- Full offline suite: 245 passed, 475 warnings. Three focused standalone tests passed.
+  Fresh SQLite upgrade/downgrade/upgrade, Python compilation, workflow YAML, and tracked-data
+  checks passed. All 16 Streamlit pages started in offline AppTest without an uncaught exception.
+- Limitations: Chromium was blocked creating a local socket; no reviewed-product or live scientific
+  validation. Hosted Actions returned no jobs for both main and the export checkpoint.
+- Changed in this checkpoint: standalone dashboard handler, HTML, invariant tests, development
+  guide, audit matrix, master plan, and implementation ledger.
+- Next: verify hosted runner availability and browser acceptance; scope authenticated analyst
+  queue and review audit in the next UI-001 slice. Verify the latest PR head before resuming.

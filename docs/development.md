@@ -8,7 +8,7 @@ This document outlines the directory structure and common tasks for developers w
 pakistan-flood-monitor/
 ├── .env.local                 # Local environment variables
 ├── streamlit_app.py           # Streamlit entry point
-├── dashboard_app.py           # Alternate FastAPI entry point (static HTML serving)
+├── dashboard_app.py           # Standalone HTML prototype for local demo/test only
 ├── backend_service.py         # Data wrapper reading from CSVs
 ├── nasa_service.py            # NASA POWER integration
 ├── satellite_ml_service.py    # STAC discovery & ML water detection

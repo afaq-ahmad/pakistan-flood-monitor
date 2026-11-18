@@ -7,13 +7,19 @@ from __future__ import annotations
 
 import os
 import json
+import math
 import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 import yaml
 import httpx
+from shapely.errors import ShapelyError
+from shapely.geometry import shape
+
+from pakistan_flood_monitor.config import AppMode
 
 DATA_DIR = Path("data")
 CONFIG_DIR = Path("config/thresholds")
@@ -25,8 +31,35 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 # When APP_MODE is "demo" or "test" and no API_BASE_URL is configured, local CSV
 # data is acknowledged as synthetic/demo and must carry a visible watermark.
 # In "operational" mode without API_BASE_URL the system must fail closed.
-_APP_MODE = os.getenv("APP_MODE", "demo").lower()
+_APP_MODE = os.getenv("APP_MODE", AppMode.DEMO.value).strip().lower()
 DEMO_WATERMARK = "⚠️ SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS"
+
+EVENT_COLUMNS = [
+    "event_id", "corridor_id", "status", "severity", "confidence",
+    "population_exposed", "updated_at", "published_at", "detected_at",
+    "latitude", "longitude", "district", "tehsil", "event_class",
+    "confidence_band", "breach_suspicion", "source_scenes",
+    "affected_area_sqkm", "roads_exposed_km", "health_facilities_exposed",
+    "schools_exposed", "cropland_exposed_sqkm", "what_changed",
+    "what_this_means_en", "what_this_means_ur", "limitations",
+]
+
+
+def _event_coordinates(geometry: dict | None) -> tuple[float | None, float | None]:
+    """Choose a display point from GeoJSON WGS84 coordinates (longitude, latitude)."""
+    if not geometry:
+        return None, None
+    try:
+        geom = shape(geometry)
+        if geom.is_empty:
+            return None, None
+        marker = geom.representative_point()
+        lon, lat = marker.x, marker.y
+    except (ShapelyError, KeyError, AttributeError, TypeError, ValueError):
+        return None, None
+    if math.isfinite(lon) and math.isfinite(lat) and -180 <= lon <= 180 and -90 <= lat <= 90:
+        return lat, lon
+    return None, None
 
 
 class DataService:
@@ -67,8 +100,8 @@ class DataService:
 
     # ── Flood Events ─────────────────────────────────────
     def get_events(self) -> pd.DataFrame:
+        self.event_api_error = None
         if API_BASE_URL:
-            self.event_api_error = None
             try:
                 response = httpx.get(f"{API_BASE_URL}/public/events", timeout=2.0)
                 if response.status_code == 200:
@@ -78,35 +111,38 @@ class DataService:
                     events = payload["events"]
                     if events:
                         # Map API dicts to CSV-like DataFrame
-                        df = pd.DataFrame([{
-                            "event_id": e.get("event_id"),
-                            "corridor_id": e.get("aoi"),
-                            "status": e.get("status"),
-                            "severity": e.get("latest_event_summary", {}).get("alert_level", "low"),
-                            "confidence": e.get("machine_confidence"),
-                            "population_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("population", 0),
-                            "updated_at": e.get("timestamps", {}).get("published_at") or e.get("timestamps", {}).get("detected_at"),
-                            "published_at": e.get("timestamps", {}).get("published_at"),
-                            "detected_at": e.get("timestamps", {}).get("detected_at"),
-                            "latitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][1] if e.get("geometry") else 0,
-                            "longitude": e.get("geometry", {}).get("coordinates", [[[0,0]]])[0][0][0] if e.get("geometry") else 0,
-                            "district": e.get("district") or e.get("aoi", "Unknown"),
-                            "tehsil": e.get("tehsil", ""),
-                            "event_class": e.get("event_class", "flood_event"),
-                            "confidence_band": e.get("confidence_band", "medium"),
-                            "breach_suspicion": e.get("breach_suspicion", False),
-                            "source_scenes": e.get("source_scenes", ""),
-                            "affected_area_sqkm": e.get("affected_area_sqkm", 0),
-                            "roads_exposed_km": e.get("exposure", {}).get("asset_class_exposure", {}).get("roads_km", 0),
-                            "health_facilities_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("health_facilities", 0),
-                            "schools_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("schools", 0),
-                            "cropland_exposed_sqkm": e.get("exposure", {}).get("asset_class_exposure", {}).get("cropland_sqkm", 0),
-                            "what_changed": e.get("what_changed", ""),
-                            "what_this_means_en": e.get("what_this_means_en", ""),
-                            "what_this_means_ur": e.get("what_this_means_ur", ""),
-                            "limitations": e.get("limitations", ""),
-                        } for e in events])
-                        return df
+                        rows = []
+                        for e in events:
+                            latitude, longitude = _event_coordinates(e.get("geometry"))
+                            rows.append({
+                                "event_id": e.get("event_id"),
+                                "corridor_id": e.get("aoi"),
+                                "status": e.get("status"),
+                                "severity": e.get("latest_event_summary", {}).get("alert_level", "low"),
+                                "confidence": e.get("machine_confidence"),
+                                "population_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("population", 0),
+                                "updated_at": e.get("timestamps", {}).get("published_at") or e.get("timestamps", {}).get("detected_at"),
+                                "published_at": e.get("timestamps", {}).get("published_at"),
+                                "detected_at": e.get("timestamps", {}).get("detected_at"),
+                                "latitude": latitude,
+                                "longitude": longitude,
+                                "district": e.get("district"),
+                                "tehsil": e.get("tehsil", ""),
+                                "event_class": e.get("event_class", "flood_event"),
+                                "confidence_band": e.get("confidence_band", "medium"),
+                                "breach_suspicion": e.get("breach_suspicion", False),
+                                "source_scenes": e.get("source_scenes", ""),
+                                "affected_area_sqkm": e.get("affected_area_sqkm", 0),
+                                "roads_exposed_km": e.get("exposure", {}).get("asset_class_exposure", {}).get("roads_km", 0),
+                                "health_facilities_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("health_facilities", 0),
+                                "schools_exposed": e.get("exposure", {}).get("asset_class_exposure", {}).get("schools", 0),
+                                "cropland_exposed_sqkm": e.get("exposure", {}).get("asset_class_exposure", {}).get("cropland_sqkm", 0),
+                                "what_changed": e.get("what_changed", ""),
+                                "what_this_means_en": e.get("what_this_means_en", ""),
+                                "what_this_means_ur": e.get("what_this_means_ur", ""),
+                                "limitations": e.get("limitations", ""),
+                            })
+                        return pd.DataFrame(rows, columns=EVENT_COLUMNS)
                 else:
                     self.event_api_error = "Event service returned an error."
             except (httpx.HTTPError, ValueError, TypeError, AttributeError, IndexError, KeyError):
@@ -115,19 +151,16 @@ class DataService:
                 print(self.event_api_error)
             # An empty response, HTTP error, or malformed payload is not a reason
             # to present unrelated local data as published API results.
-            return pd.DataFrame(columns=[
-                "event_id", "corridor_id", "status", "severity", "confidence",
-                "population_exposed", "updated_at", "published_at", "detected_at",
-                "latitude", "longitude", "district", "tehsil", "event_class",
-                "confidence_band", "breach_suspicion", "source_scenes",
-                "affected_area_sqkm", "roads_exposed_km", "health_facilities_exposed",
-                "schools_exposed", "cropland_exposed_sqkm", "what_changed",
-                "what_this_means_en", "what_this_means_ur", "limitations",
-            ])
-        return self._load("flood_events")
+            return pd.DataFrame(columns=EVENT_COLUMNS)
+        if self.is_demo_mode:
+            return self._load("flood_events")
+        self.event_api_error = "No event API is configured."
+        return pd.DataFrame(columns=EVENT_COLUMNS)
 
     def get_event(self, event_id: str) -> dict | None:
         df = self.get_events()
+        if df.empty:
+            return None
         row = df[df["event_id"] == event_id]
         if row.empty:
             return None
@@ -174,6 +207,8 @@ class DataService:
             return False
 
         df = self.get_events()
+        if df.empty:
+            return False
         idx = df.index[df["event_id"] == event_id]
         if len(idx) == 0:
             return False
@@ -211,7 +246,7 @@ class DataService:
             # endpoint can be wired here when available.
             self.exposure_data_source = "unavailable"
             return pd.DataFrame()
-        if _APP_MODE == "operational":
+        if not self.is_demo_mode:
             # Operational mode must fail closed without real data.
             self.exposure_data_source = "unavailable"
             return pd.DataFrame()
@@ -308,11 +343,13 @@ class DataService:
 
     def freshness_status(self) -> dict:
         """Compute data freshness SLA status per dashboard_freshness_lineage.md."""
+        if not self.is_demo_mode:
+            return {"status": "unknown", "message": "Event feed freshness is unavailable.", "age_minutes": None}
         latest = self.get_latest_run("daily_monitoring")
         if latest is None:
             return {"status": "unknown", "message": "No pipeline runs found", "age_minutes": None}
         try:
-            if pd.notna(latest.get("completed_at")):
+            if latest.get("status") == "completed" and pd.notna(latest.get("completed_at")):
                 completed = pd.Timestamp(latest["completed_at"])
                 if completed.tzinfo is None:
                     completed = completed.tz_localize("UTC")
@@ -324,6 +361,8 @@ class DataService:
             return {"status": "unknown", "message": "Latest run has no completion time", "age_minutes": None}
         now = pd.Timestamp.now(tz="UTC")
         age = (now - completed).total_seconds() / 60.0
+        if age < 0:
+            return {"status": "unknown", "message": "Run completion time is in the future.", "age_minutes": None}
         if age <= 30:
             status = "fresh"
         elif age <= 60:
@@ -376,61 +415,65 @@ class DataService:
 
     # ── Export Center ────────────────────────────────────
     def generate_export(self, event_id: str, fmt: str) -> dict:
-        """Generate a mock export artifact matching export_center.md."""
+        """Write a labelled GeoJSON point and its manifest for a local demo event."""
+        if not self.is_demo_mode:
+            return {"error": "GIS export is unavailable for API-backed or operational events."}
+        if fmt != "geojson":
+            return {"error": "Only GeoJSON demo point export is available."}
         event = self.get_event(event_id)
         if event is None:
-            return {"error": f"Event {event_id} not found"}
-        export_id = f"exp-{event_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+            return {"error": f"Event {event_id} not found."}
+
+        try:
+            lon, lat = float(event["longitude"]), float(event["latitude"])
+        except (KeyError, TypeError, ValueError):
+            return {"error": "Event coordinates are unavailable."}
+        if not (-180 <= lon <= 180 and -90 <= lat <= 90):
+            return {"error": "Event coordinates are outside valid WGS84 bounds."}
+
+        export_id = f"exp-{uuid4().hex}"
         export_dir = Path(".cache/exports") / export_id
-        export_dir.mkdir(parents=True, exist_ok=True)
+        output_path = export_dir / "event.geojson"
+        manifest_path = export_dir / "manifest.json"
 
-        ext_map = {"geojson": ".geojson", "cog": ".tif", "geoparquet": ".parquet"}
-        ext = ext_map.get(fmt, ".geojson")
-        output_path = export_dir / f"{event_id}{ext}"
-
-        # Write mock data
-        if fmt == "geojson":
-            geojson = {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [float(event.get("longitude", 0)), float(event.get("latitude", 0))]},
-                    "properties": {"event_id": event_id, "severity": event.get("severity"), "confidence": event.get("confidence")}
-                }]
-            }
-            output_path.write_text(json.dumps(geojson, indent=2))
-        else:
-            output_path.write_text(f"Mock {fmt} export for {event_id}")
-
+        labels = {"product_label": "SIMULATED", "demo_watermark": DEMO_WATERMARK}
+        geojson = {
+            "type": "FeatureCollection",
+            **labels,
+            "features": [{
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                "properties": {"event_id": event_id, **labels},
+            }],
+        }
+        output = json.dumps(geojson, indent=2, ensure_ascii=False).encode("utf-8")
         manifest = {
             "schema": "pakistan-flood-monitor/export-manifest/v1",
             "export_id": export_id,
             "event_id": event_id,
             "format": fmt,
             "generated_at": datetime.now(timezone.utc).isoformat(),
+            **labels,
             "lineage": {
-                "source_endpoint": f"/public/events/{event_id}",
-                "exposure_endpoint": f"/public/events/{event_id}/exposure",
-                "processing_version": "2.1.0",
+                "source_type": "local_demo_fixture",
+                "dataset": str(DATA_DIR / "flood_events.csv"),
             },
-            "outputs": [{"path": str(output_path), "size_bytes": output_path.stat().st_size}],
+            "geometry": "GeoJSON point in WGS84 longitude/latitude order",
+            "outputs": [{"path": output_path.name, "size_bytes": len(output)}],
         }
-        manifest_path = export_dir / "manifest.json"
-        manifest_path.write_text(json.dumps(manifest, indent=2))
+        try:
+            export_dir.mkdir(parents=True)
+            output_path.write_bytes(output)
+            manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            return {"error": "Unable to write the demo export."}
 
         return {
             "export_id": export_id,
             "output_path": str(output_path),
             "manifest_path": str(manifest_path),
             "format": fmt,
-            # NOTE: validation checks are hardcoded stubs — not real validation.
-            # Real exports require CRS/nodata/range checks against reviewed products.
-            "validation": {
-                "valid": True,
-                "checks_passed": ["format_valid", "crs_present", "non_empty"],
-                "note": "Stub validation — not verified against reviewed product specifications.",
-            },
-            "demo_watermark": DEMO_WATERMARK if not API_BASE_URL else None,
+            "demo_watermark": DEMO_WATERMARK,
         }
 
     # ── Release Checklist ────────────────────────────────

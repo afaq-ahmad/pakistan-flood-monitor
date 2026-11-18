@@ -34,7 +34,7 @@ source .venv/bin/activate
 The project uses a standard `pyproject.toml`. Install the application along with development dependencies:
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,dashboard]"
 ```
 
 *Note: If testing is required, ensure you install `pytest` explicitly if not covered by the dev block.*
@@ -44,7 +44,7 @@ pip install -e ".[dev]"
 Create a local environment file. 
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env
 ```
 
 ### Required Credentials
@@ -75,7 +75,11 @@ The primary user interface is the Streamlit dashboard.
 python -m streamlit run streamlit_app.py
 ```
 
-The application will start and be available at `http://localhost:8501`.
+The application will start and be available at `http://localhost:8501`. With no
+`API_BASE_URL`, `APP_MODE=demo` shows watermarked local fixtures. To use the canonical
+published event feed, set `API_BASE_URL=http://localhost:8000` and start the API. The
+home and public dashboard show an unavailable state when an operational feed is unconfigured
+or unreachable. An empty feed gives no information about local flood conditions.
 
 ## 7. Running the FastAPI Backend (Optional)
 

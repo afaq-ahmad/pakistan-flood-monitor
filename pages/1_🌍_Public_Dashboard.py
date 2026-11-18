@@ -1,72 +1,55 @@
+from html import escape
+
 import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
-from backend_service import data_service, DEMO_WATERMARK
+
+from backend_service import DEMO_WATERMARK, DataService
 
 st.set_page_config(page_title="Public Dashboard", page_icon="🌍", layout="wide")
 st.title("🌍 Public Flood Dashboard")
-st.markdown("Live situational awareness for monitored river corridors in Pakistan.")
-
-# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
-# When no live API is configured and local CSV data is loaded, the dashboard
-# MUST display a prominent watermark so users are not misled into treating
-# synthetic prototype data as operational flood information.
+st.page_link("pages/16_📚_Official_Information.py", label="Official flood information")
+data_service = DataService()
 if data_service.is_demo_mode:
-    st.warning(
-        f"**{DEMO_WATERMARK}**  \n"
-        "No live event API is configured. Data shown below is from local prototype "
-        "files and does not reflect current flood conditions. "
-        "Follow official **NDMA / PDMA** channels for authoritative guidance."
-    )
-elif not data_service.is_demo_mode and not __import__("os").getenv("API_BASE_URL"):
-    # Operational mode without API: fail closed with an explicit banner.
-    st.error(
-        "⛔ **Operational data unavailable.** "
-        "No live API is configured and this instance is not in demo mode. "
-        "Follow official NDMA / PDMA channels."
-    )
+    st.warning(DEMO_WATERMARK)
+    fresh = data_service.freshness_status()
+    st.caption(f"Demo run freshness: {fresh['message']}")
 
-# Emergency banner
-fresh = data_service.freshness_status()
-if fresh["status"] == "stale":
-    st.error(f"⚠️ DATA MAY BE STALE — Last update: {fresh.get('last_completed','unknown')}. Follow official NDMA/PDMA channels.")
-elif fresh["status"] == "watch":
-    st.warning(f"🟡 Data freshness watch — {fresh['message']}")
-else:
-    st.success(f"🟢 System active — {fresh['message']}")
-
-# Search my area
-st.subheader("🔍 Search My Area")
-all_events = data_service.get_events()
+events = data_service.get_public_events()
 if data_service.event_api_error:
-    st.error("Event information is unavailable. Follow official NDMA/PDMA guidance.")
-districts = sorted(all_events["district"].dropna().unique().tolist()) if not all_events.empty and "district" in all_events.columns else []
-search = st.selectbox("Search by district", ["All"] + districts)
-events = all_events[all_events["district"] == search] if search != "All" and not all_events.empty and "district" in all_events.columns else all_events
+    st.error(f"Event information is unavailable. {data_service.event_api_error}")
+    st.stop()
 
-# Stats
-district_filter = None if search == "All" else search
-stats = data_service.summary_stats(district=district_filter)
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Active Alerts", stats.get("active_events", 0))
-c2.metric("Critical Zones", stats.get("critical_zones", 0))
-c3.metric("Population at Risk", f"{stats.get('total_population',0):,}")
-c4.metric("Avg Confidence", f"{stats.get('avg_confidence',0)*100:.0f}%")
+if not data_service.is_demo_mode:
+    st.caption("Event feed freshness is unavailable.")
+
+if events.empty:
+    st.info("No published events were returned. Conditions may still be unknown.")
+    st.stop()
+
+st.subheader("🔍 Search My Area")
+districts = sorted(events["district"].dropna().unique())
+search = st.selectbox("Search by district", ["All"] + districts)
+if search != "All":
+    events = events[events["district"] == search]
+
+st.metric("Published events", len(events))
 
 # Map
 st.subheader("🗺️ Flood Map Overview")
-pub_events = events
 sev_colors = {"critical": "red", "warning": "orange", "watch": "gold", "low": "blue"}
 
-m = folium.Map(location=[30.37, 69.34], zoom_start=5, tiles="CartoDB dark_matter")
-for _, row in pub_events.iterrows():
+m = folium.Map(location=[30.37, 69.34], zoom_start=5, tiles="OpenStreetMap")
+for _, row in events.iterrows():
     if pd.notna(row.get("latitude")) and pd.notna(row.get("longitude")):
-        color = sev_colors.get(str(row.get("severity","")), "blue")
-        popup = f"<b>{row['event_id']}</b><br>District: {row['district']}<br>Severity: {row['severity']}<br>Confidence: {row['confidence']}<br>Status: {row['status']}"
+        color = sev_colors.get(row.get("severity"), "blue") if data_service.is_demo_mode else "blue"
+        event_id = escape(str(row["event_id"]))
+        district = escape(str(row["district"])) if pd.notna(row["district"]) else "District unavailable"
+        popup = f"<b>{event_id}</b><br>District: {district}"
         folium.CircleMarker([row["latitude"], row["longitude"]], radius=10, color=color,
                             fill=True, fill_opacity=0.7, popup=popup,
-                            tooltip=f"{row['event_id']} — {row['district']}").add_to(m)
+                            tooltip=f"{event_id} — {district}").add_to(m)
 
 # Corridors
 corridors = data_service.get_corridors()
@@ -76,32 +59,27 @@ for _, c in corridors.iterrows():
 
 st_folium(m, width=1200, height=500)
 
-# Public alert cards
-st.subheader("🚨 Active Alert Cards")
-published = data_service.get_events_by_status(["published", "active", "approved"])
-if search != "All" and not published.empty and "district" in published.columns:
-    published = published[published["district"] == search]
-if published.empty:
-    if data_service.event_api_error:
-        st.warning("Alerts are unavailable; an empty list does not indicate safe conditions.")
-    else:
-        st.info("No published alerts are currently available.")
-else:
-    for _, ev in published.iterrows():
-        sev = str(ev.get("severity","")).upper()
-        band = str(ev.get("confidence_band",""))
-        with st.expander(f"{'🔴' if sev=='CRITICAL' else '🟠' if sev=='WARNING' else '🟡'} **{sev}** — {ev.get('corridor_id','')} near {ev.get('district','')} | Confidence: {band} | Updated: {ev.get('updated_at','')}"):
-            st.markdown(f"**Event ID:** {ev['event_id']}")
-            st.markdown(f"**What changed:** {ev.get('what_changed','N/A')}")
-            st.markdown(f"**What this means:** {ev.get('what_this_means_en','N/A')}")
-            st.markdown(f"**اردو:** {ev.get('what_this_means_ur','N/A')}")
-            st.caption(f"⚠️ {ev.get('limitations','This alert may be delayed, incomplete, or incorrect. Follow official instructions.')}")
+st.subheader("Published events")
+for _, event in events.iterrows():
+    district = event["district"] if pd.notna(event["district"]) else "District unavailable"
+    with st.expander(f"{event['event_id']} · {district}"):
+        updated_at = event.get("updated_at")
+        st.write(f"Event timestamp: {updated_at}" if pd.notna(updated_at) else "Event timestamp unavailable.")
+        if data_service.is_demo_mode:
+            for label, field in (
+                ("Severity", "severity"),
+                ("What changed", "what_changed"),
+                ("What this means", "what_this_means_en"),
+                ("اردو", "what_this_means_ur"),
+            ):
+                if pd.notna(event.get(field)):
+                    st.write(f"**{label}** {event[field]}")
 
 # Impact summary
 st.subheader("📊 Impact Summary")
 exposure = data_service.get_exposure()
-if search != "All" and not exposure.empty and "district" in exposure.columns:
-    exposure = exposure[exposure["district"] == search]
+if not exposure.empty:
+    exposure = exposure[exposure["event_id"].isin(events["event_id"])]
 if not exposure.empty:
     if data_service.exposure_data_source == "local_csv":
         st.caption(
@@ -112,18 +90,14 @@ if not exposure.empty:
                            "roads_exposed_km","health_facilities_exposed","schools_exposed",
                            "cropland_sqkm","housing_damage_class","infrastructure_damage_class"]],
                  width="stretch", hide_index=True)
-elif data_service.exposure_data_source == "unavailable":
-    st.info("Exposure data is not available for this configuration.")
+else:
+    st.info("Exposure data is unavailable for the selected events.")
 
 # How to read this map
 with st.expander("ℹ️ How to Read This Map"):
     st.markdown("""
-    - **Red circles**: Critical severity events — high confidence, large impact
-    - **Orange circles**: Warning level events — confirmed flooding
-    - **Yellow circles**: Watch level — lower confidence, monitoring needed
-    - **Cyan lines**: Monitored river corridors
-    - **Confidence bands**: Low (<50%), Medium (50-75%), High (>75%)
-    - Map data is updated after each pipeline run (target: every 30 minutes)
+    - Circles show mapped published events. Demo marker colours reflect fixture severity.
+    - Cyan lines show reference corridors.
     """)
 
 # Limitations
