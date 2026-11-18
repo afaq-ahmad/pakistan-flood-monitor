@@ -448,3 +448,10 @@ Append entries; never rewrite earlier handoffs.
 - Focused guide and public, directory, review, reporting and dashboard suites passed 74 tests. The first full run exposed stale module references in guide mode selection after test reloads. The page now supplies the active DataService to the shared renderer. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) after correction.
 - SQLite migration round trip to `b4d9d93f2a10`, compile checks, tracked-data isolation and diff validation passed. Chromium was denied its startup socket. No rendered screenshots, print pagination or actual keyboard and screen-reader validation.
 - Next: run UX-A05, UX-A06 and UX-A15 on a browser-enabled runner at 320, 360, 390, 768 and 1440 px. Tab from Home to each guide, open a detail, enable the print view, inspect PDF pagination and verify the official notices remain accessible without tiles. Record viewport evidence before accepting the responsive and assistive checks.
+
+### 2026-11-18 UTC · ENG-001 documentation architecture
+
+- Main `77dc8b7` includes merged PR #95. GitHub returned no open documentation workstream. Dedicated branch `docs/obsidian-knowledge-base`.
+- Indexed the 33 baseline Markdown files with audience, Diátaxis form, authority, code/task references, dispositions, revision and links. Added the Obsidian homepage and contributor guide.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) on Python 3.12.14.
+- Next: correct README and setup guidance, show actual architecture and persistence, reconcile API descriptions and relabel historical/status snapshots. Preserve ownership of task state, evidence, handoffs and ADRs.

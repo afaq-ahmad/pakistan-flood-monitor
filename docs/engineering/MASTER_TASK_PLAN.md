@@ -348,3 +348,6 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [x] Implement and exercise preflight, checkpoint and recovery helpers with isolated local remotes (7 tests).
 - [ ] Verify real GitHub CLI authentication, hosted PR/CI behavior, and full suite on current main.
 - [ ] Complete any remaining acceptance scenarios and request human review; keep PR draft until then.
+- [x] Inventory the 33 baseline Markdown files and add the [vault index](../INDEX.md) and [documentation guide](../DOCUMENTATION_GUIDE.md) on `docs/obsidian-knowledge-base` from `77dc8b7`.
+- [ ] Correct onboarding, architecture, persistence, API and status discrepancies against current source. Keep historical reports and accepted decisions intact.
+- [ ] Verify both Markdown renderers when available and reconcile package metadata with the runtime Python floor (OPS-001).
