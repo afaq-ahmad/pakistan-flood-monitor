@@ -189,3 +189,14 @@ Pakistan-specific needs research and feature specifications are linked from the 
 provides a static FFD/NDMA link page only, with no live warning feed. P0-003 and operational data,
 durable review and fenced recovery remain open. PDMA helpline verification timed out; no number is
 published. Browser/mobile validation and live provider licensing remain unverified.
+
+## Agent GitHub workflow (2026-11-18; PR #83, PARTIAL)
+
+A checkpoint-first guide, mandatory AGENTS.md pointer, and intentionally invoked Bash helpers
+support small commits, fast-forward recovery and remote SHA verification. Seven isolated temporary
+Git repository tests passed. Shell syntax and Python test compilation passed; ShellCheck was not
+installed. Direct GitHub CLI authentication was unavailable, so the connector created remote
+checkpoints; actual GitHub CLI authentication, live push failure, hosted CI and full tests against
+current main were not verified. The existing CI was evaluated and left unchanged. Secret screening
+is heuristic and requires human/agent review. No application or scientific behavior was changed.
+Continue ENG-001 validation before human review; other backlog statuses remain unchanged.

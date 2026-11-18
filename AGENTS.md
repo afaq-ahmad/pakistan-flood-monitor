@@ -172,6 +172,8 @@ and expose the relevant timestamp meaning.
 
 ## 11. Persistent task plan and session handoff
 
+- Every coding agent must read and follow [the resumable GitHub workflow](docs/engineering/AGENT_GITHUB_WORKFLOW.md) before beginning work.
+
 - Before selecting work, read `docs/engineering/MASTER_TASK_PLAN.md` and the latest entry in
   `docs/engineering/AGENT_SESSION_LOG.md`; verify status against current code, tests, and Git history.
 - Prioritize eligible existing pending tasks, claim a task before changing code, coordinate ownership,
