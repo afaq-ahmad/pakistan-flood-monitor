@@ -11,7 +11,7 @@ from threading import Lock
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
@@ -26,6 +26,13 @@ from pakistan_flood_monitor.models.db_models import AuditLog as DBAuditLog
 from pakistan_flood_monitor.models.db_models import FloodEvent as DBFloodEvent
 from pakistan_flood_monitor.models.db_models import PipelineRun as DBPipelineRun
 from pakistan_flood_monitor.models.observations import OperationalDataIntegrityError
+from pakistan_flood_monitor.models.review_queue import (
+    REVIEW_QUEUE_PAGE_SIZE,
+    SIMULATION_WATERMARK,
+    ReviewQueueItem,
+    ReviewQueuePage,
+    ReviewQueueStatus,
+)
 from pakistan_flood_monitor.pipeline.runner import FloodMonitoringPipeline
 from pakistan_flood_monitor.services.alert_templates import render_alert_template
 from pakistan_flood_monitor.services.gis_qa import publication_gate
@@ -1439,6 +1446,72 @@ def risk_summary(
             "exposure_baseline_layers": "Required for exposure score comparability.",
         },
     }
+
+
+def _queue_detection_time(event: dict[str, Any]) -> datetime | None:
+    timestamps = event.get("timestamps")
+    value = timestamps.get("detected_at") if isinstance(timestamps, dict) else None
+    if not isinstance(value, str):
+        return None
+    try:
+        detected_at = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if detected_at.tzinfo is None:
+        # The canonical runner historically records detections as naive UTC.
+        if not event.get("run_id"):
+            return None
+        return detected_at.replace(tzinfo=UTC)
+    return detected_at.astimezone(UTC)
+
+
+@internal_router.get(
+    "/review-queue",
+    dependencies=[Depends(_require_role("admin", "analyst", "reviewer"))],
+)
+def list_review_queue(
+    response: Response,
+    status: ReviewQueueStatus | None = None,
+    limit: int = Query(default=REVIEW_QUEUE_PAGE_SIZE, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> ReviewQueuePage:
+    response.headers["Cache-Control"] = "no-store"
+    # Avoid DB hydration here. Durable, complete review state is tracked in P1-002.
+    snapshot = [event.copy() for event in event_store.copy().values()]
+    candidates = []
+    for event in snapshot:
+        lifecycle = event.get("status")
+        if lifecycle not in ("draft", "review", "approved") or (status and lifecycle != status):
+            continue
+        simulated = (
+            settings.synthetic_data_allowed
+            or event.get("app_mode") in (AppMode.TEST, AppMode.DEMO)
+            or event.get("contains_synthetic")
+            or event.get("product_label") == "SIMULATED"
+        )
+        confidence = event.get("machine_confidence")
+        if not isinstance(confidence, (int, float)) or not 0 <= confidence <= 100:
+            confidence = None
+        candidates.append(ReviewQueueItem(
+            event_id=event["event_id"],
+            status=lifecycle,
+            corridor_id=event.get("aoi"),
+            event_class=event.get("event_class"),
+            detected_at=_queue_detection_time(event),
+            machine_confidence_pct=confidence,
+            product_label="SIMULATED" if simulated else event.get("product_label"),
+            watermark=SIMULATION_WATERMARK if simulated else event.get("watermark"),
+        ))
+
+    earliest = datetime.min.replace(tzinfo=UTC)
+    candidates.sort(key=lambda row: row.event_id)
+    candidates.sort(key=lambda row: row.detected_at or earliest, reverse=True)
+    end = offset + limit
+    return ReviewQueuePage(
+        app_mode=settings.app_mode,
+        items=candidates[offset:end],
+        next_offset=end if end < len(candidates) else None,
+    )
 
 
 @internal_router.get("/breach-candidates", dependencies=[Depends(_require_role("admin", "analyst"))])

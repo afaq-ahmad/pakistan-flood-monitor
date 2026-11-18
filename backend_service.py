@@ -20,6 +20,12 @@ from shapely.errors import ShapelyError
 from shapely.geometry import shape
 
 from pakistan_flood_monitor.config import AppMode
+from pakistan_flood_monitor.models.review_queue import (
+    REVIEW_QUEUE_PAGE_SIZE,
+    SIMULATION_WATERMARK,
+    ReviewQueuePage,
+    ReviewQueueStatus,
+)
 
 DATA_DIR = Path("data")
 CONFIG_DIR = Path("config/thresholds")
@@ -32,7 +38,7 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 # data is acknowledged as synthetic/demo and must carry a visible watermark.
 # In "operational" mode without API_BASE_URL the system must fail closed.
 _APP_MODE = os.getenv("APP_MODE", AppMode.DEMO.value).strip().lower()
-DEMO_WATERMARK = "⚠️ SIMULATED / DEMO DATA — NOT FOR OPERATIONAL DECISIONS"
+DEMO_WATERMARK = f"⚠️ {SIMULATION_WATERMARK}"
 
 EVENT_COLUMNS = [
     "event_id", "corridor_id", "status", "severity", "confidence",
@@ -62,6 +68,10 @@ def _event_coordinates(geometry: dict | None) -> tuple[float | None, float | Non
     return None, None
 
 
+class ReviewQueueUnavailable(RuntimeError):
+    """User-facing failure to retrieve the canonical analyst queue."""
+
+
 class DataService:
     """Singleton-style CSV data backend for the dashboard."""
 
@@ -72,6 +82,10 @@ class DataService:
         self.exposure_data_source: str = "unavailable"
 
     @property
+    def has_api(self) -> bool:
+        return bool(API_BASE_URL)
+
+    @property
     def is_demo_mode(self) -> bool:
         """True when running without a live API in demo or test APP_MODE.
 
@@ -79,7 +93,7 @@ class DataService:
         In operational mode without API_BASE_URL the system should fail closed;
         callers must check this and show the appropriate unavailability state.
         """
-        return not bool(API_BASE_URL) and _APP_MODE in ("demo", "test")
+        return not self.has_api and _APP_MODE in ("demo", "test")
 
     def _load(self, name: str) -> pd.DataFrame:
         path = DATA_DIR / f"{name}.csv"
@@ -183,8 +197,46 @@ class DataService:
         return self.get_events_by_status(["published"])
 
     def get_review_queue(self) -> pd.DataFrame:
-        """Events awaiting analyst review."""
+        """Local demo events awaiting review."""
+        if not self.is_demo_mode:
+            return pd.DataFrame(columns=EVENT_COLUMNS)
         return self.get_events_by_status(["draft", "queued", "review", "active", "approved"])
+
+    def fetch_review_queue(
+        self,
+        token: str,
+        *,
+        offset: int = 0,
+        status: ReviewQueueStatus | None = None,
+    ) -> ReviewQueuePage:
+        if not self.has_api or not token:
+            raise ReviewQueueUnavailable("An API endpoint and review credential are required.")
+        if not token.isascii() or not token.isprintable() or any(char.isspace() for char in token):
+            raise ReviewQueueUnavailable("Enter a valid bearer credential without spaces.")
+
+        params: dict[str, int | str] = {"offset": offset, "limit": REVIEW_QUEUE_PAGE_SIZE}
+        if status is not None:
+            params["status"] = status
+        try:
+            response = httpx.get(
+                f"{API_BASE_URL.rstrip('/')}/internal/review-queue",
+                params=params,
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=2.0,
+            )
+        except httpx.HTTPError:
+            raise ReviewQueueUnavailable("The analyst queue is unavailable. Try again shortly.") from None
+
+        if response.status_code in (401, 403):
+            raise ReviewQueueUnavailable("The API rejected this review credential.")
+        if response.status_code == 429:
+            raise ReviewQueueUnavailable("The analyst queue is rate limited. Try again shortly.")
+        if response.status_code != 200:
+            raise ReviewQueueUnavailable("The analyst queue is unavailable. Try again shortly.")
+        try:
+            return ReviewQueuePage.model_validate(response.json())
+        except ValueError:
+            raise ReviewQueueUnavailable("The analyst queue returned an invalid response.") from None
 
     def update_event_status(self, event_id: str, new_status: str, actor: str, notes: str = ""):
         """Update event status and write audit record."""
@@ -306,7 +358,7 @@ class DataService:
 
     # ── Audit Log ────────────────────────────────────────
     def get_audit_log(self) -> pd.DataFrame:
-        return self._load("audit_log")
+        return self._load("audit_log") if self.is_demo_mode else pd.DataFrame()
 
     def _append_audit(self, event_id: str, actor: str, action: str,
                       old_status: str, new_status: str, notes: str):

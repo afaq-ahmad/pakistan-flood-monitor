@@ -131,3 +131,49 @@ Append entries; never rewrite earlier handoffs.
   guide, audit matrix, master plan, and implementation ledger.
 - Next: verify hosted runner availability and browser acceptance; scope authenticated analyst
   queue and review audit in the next UI-001 slice. Verify the latest PR head before resuming.
+
+### 2026-11-18 UTC — UI-001 analyst queue claim
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Workstream UI-001 on
+  `audit/ui-001-analyst-queue`, starting at `5f700f66e87455b555e85e3ddbe4f1e4df129c28`
+  after PR #85 merged. Open PR and issue searches returned no competing work.
+- Reproduced the missing canonical queue and traced the analyst page to the published-only
+  feed and local audit CSV. Existing auth, publication, legacy review, and public dashboard
+  checks passed 32 tests with network sockets disabled.
+- Claimed and documented a bounded, authorized, read-only queue. Durable review and audit
+  remain in P1-002. Next: implement the API projection and verify role, privacy, and paging
+  contracts before connecting the Streamlit page.
+
+- Draft [PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86) opened from
+  verified documentation checkpoint `03f0a249a05b9a56af816adff5c2aa8cd12cf628`.
+- Added the read-only queue and tested roles, minimized output, chronological pagination,
+  simulation labels, and a canonical test-mode pipeline run. The focused queue, authentication,
+  and public boundary suite passed 25 tests with sockets disabled. Next: connect Streamlit
+  with a per-session credential and verify that it never reads the local audit in API mode.
+
+- API projection checkpoint verified at `2206a8273ee9b2e09c72d0f3c266e3b31d0651d1`.
+- Streamlit now uses a session password widget for the queue. API mode has no local audit or
+  mutation controls, and local demo review starts with unchecked attestations.
+- Dashboard and demo focused suite passed 35 tests. A transport outage and an unsupported
+  credential both produce a safe user message. SQLite migration round-trip and compile checks
+  passed. Next: verify the final offline suite and document hosted CI and browser limitations.
+
+### 2026-11-18 07:05 UTC — UI-001 analyst queue handoff
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `audit/ui-001-analyst-queue`,
+  [draft PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86) to main
+  `5f700f66e87455b555e85e3ddbe4f1e4df129c28`.
+- Last verified remote before this handoff `cb61b74bf9d76dcfc8915b9def0938feef023f71`.
+  UI-001 remains PARTIAL. The authorized API queue and read-only Streamlit viewer now have
+  offline acceptance evidence. No migration or permission changes to existing endpoints.
+- Validation: the focused API group passed 25 tests, the dashboard group passed 35 tests, and
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 269 tests with 475 warnings. Fresh SQLite migration round-trip returned to
+  `b4d9d93f2a10`. Compile, tracked `data/` and `storage/` isolation, and diff checks passed.
+- Browser: minimal Chromium startup failed creating a socket. Hosted Actions returned failure
+  with zero jobs on main and the implementation checkpoint. Docker/PostgreSQL were unavailable.
+- Changed in this checkpoint: API guide, audit matrix, master plan, ledger, and handoff. No
+  uncommitted implementation work. Verify the remote head and draft PR before resuming.
+- Next: document the P1-002 durable event identity and transaction contract with explicit
+  version checks, restart recovery, and migration rollback tests. Recheck browser and hosted CI
+  acceptance when a runnable environment is available.
