@@ -42,7 +42,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P0 · **Status** `PARTIAL` · **Workstream** Dashboard availability
 - **Impact and requirement** A feed error can leave residents without reliable context. [Runtime safety](../adr/ADR-001-canonical-runtime.md)
 - **Current behavior** The adapter returns no fixture events on a configured empty or failed feed and distinguishes unavailable from empty.
-- **Code** backend_service.py; pages/1
+- **Code** [Dashboard adapter](../../backend_service.py), [1 🌍 Public Dashboard](../../pages/1_🌍_Public_Dashboard.py)
 - **Dependencies and blockers** Canonical publication boundary in [PR #75](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/75). Browser evidence outstanding.
 - **Acceptance** Empty, invalid and failed API responses stay free of CSV rows. Valid responses map and error states are visible in the browser.
 - **Evidence** [PR #81](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/81) and [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85); tests/test_dashboard_api_fail_closed.py, tests/test_streamlit_public_pages.py.
@@ -60,7 +60,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P0 · **Status** `COMPLETE` · **Workstream** Dashboard moderation
 - **Impact and requirement** A canonical review failure must preserve local state. [Functionality audit](FUNCTIONALITY_GAP_AUDIT.md)
 - **Current behavior** Review calls in API mode return failure without local updates. Local demo uses its explicit path.
-- **Code** backend_service.py update_event_status
+- **Code** [Dashboard adapter update_event_status](../../backend_service.py)
 - **Dependencies and blockers** P0-001. No unmet acceptance item for this slice.
 - **Acceptance** API failure cannot change the local event or audit records or report success.
 - **Evidence** [PR #81](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/81); tests/test_dashboard_api_fail_closed.py.
@@ -75,7 +75,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P0 · **Status** `COMPLETE` · **Workstream** Dashboard demo boundary
 - **Impact and requirement** Residents and partners need to separate demo exposures from observed products. [ADR-001](../adr/ADR-001-canonical-runtime.md)
 - **Current behavior** No operational or API-backed local exposure. Standalone demo surfaces carry the simulation watermark.
-- **Code** backend_service.py; streamlit_app.py; pages
+- **Code** [Dashboard adapter](../../backend_service.py), [Streamlit entry point](../../streamlit_app.py), [Streamlit pages](../../pages)
 - **Dependencies and blockers** P0-001 and explicit demo modes. No unmet acceptance item for this slice.
 - **Acceptance** Watermark all demo outputs and suppress unrelated exposure in operational views.
 - **Evidence** [PR #84](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/84); tests/test_p0003_exposure_boundary.py.
@@ -95,7 +95,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `BLOCKED` · **Workstream** Workflow recovery
 - **Impact and requirement** Operators need a safe outcome after a process crash. [Persistence architecture](../architecture.md#workflow-retries-and-recovery)
 - **Current behavior** Atomic claims and retries exist. A crash can strand queued or running work.
-- **Code** src/pakistan_flood_monitor/workflow; alembic
+- **Code** [workflow](../../src/pakistan_flood_monitor/workflow), [Canonical migrations](../../alembic)
 - **Dependencies and blockers** Accepted ownership, fencing and idempotency contract before implementation.
 - **Acceptance** Restart recovery rejects stale results and duplicate side effects, with migration and concurrent-worker coverage.
 - **Evidence** [PR #76](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/76); tests/test_workflow_concurrent_retry.py.
@@ -110,7 +110,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `BLOCKED` · **Workstream** Review persistence
 - **Impact and requirement** Analysts need review state and audit history retained across restarts. [Review flow](../architecture-user-and-review-flows.md#c-canonical-flood-event-lifecycle)
 - **Current behavior** A draft can be written to SQL. Review transitions and audit remain partly process-local.
-- **Code** src/pakistan_flood_monitor/api/main.py; alembic
+- **Code** [main.py](../../src/pakistan_flood_monitor/api/main.py), [Canonical migrations](../../alembic)
 - **Dependencies and blockers** Durable identity, versioning and audit transaction contract before implementation.
 - **Acceptance** Authorized transitions and their audit persist atomically and safely across retry, concurrency and rollback.
 - **Evidence** [PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86) and [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97); tests/test_canonical_review_queue.py verifies the current queue.
@@ -126,7 +126,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Reviewed publication
 - **Impact and requirement** Residents need provenance and authority for shared results. [Publication contract](../api.md#publication-lineage)
 - **Current behavior** Eligible events are available. Raw run/advisory views are guarded. Draft-time published_at does not establish actual publication time.
-- **Code** src/pakistan_flood_monitor/api/main.py; src/pakistan_flood_monitor/services/publication_eligibility.py
+- **Code** [main.py](../../src/pakistan_flood_monitor/api/main.py), [publication_eligibility.py](../../src/pakistan_flood_monitor/services/publication_eligibility.py)
 - **Dependencies and blockers** P1-002, DATA-001. Reviewed-product and source freshness contracts outstanding.
 - **Acceptance** Authorize only eligible reviewed products and show unambiguous provenance, freshness and unavailable states.
 - **Evidence** [PR #75](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/75) and [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97); tests/test_publication_lineage_boundary.py.
@@ -142,7 +142,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Public and analyst UI
 - **Impact and requirement** Residents and analysts need visible source limitations and reliable actions. [UX acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md)
 - **Current behavior** Grouped public navigation and a read-only canonical queue are merged. Prototype operator actions still have pending feedback checks.
-- **Code** streamlit_app.py; pages; dashboard; backend_service.py
+- **Code** [Streamlit entry point](../../streamlit_app.py), [Streamlit pages](../../pages), [Dashboard](../../dashboard), [Dashboard adapter](../../backend_service.py)
 - **Dependencies and blockers** P0-001, P0-002. Browser and assistive-technology evidence outstanding. P1-002 gates live mutations.
 - **Acceptance** Verify navigation, publication, privacy, mode, freshness and failure states across component and browser checks.
 - **Evidence** [PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86), [PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93), [PR #94](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/94); tests/test_streamlit_public_pages.py, tests/test_streamlit_analyst_queue.py.
@@ -175,7 +175,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `BLOCKED` · **Workstream** Environmental processing
 - **Impact and requirement** Operators need traceable inputs and typed unavailable results. [ADR-001](../adr/ADR-001-canonical-runtime.md)
 - **Current behavior** Required operational inputs are incomplete. The downstream guard has a confirmed missing exception import when extraction is stubbed.
-- **Code** src/pakistan_flood_monitor/pipeline/runner.py; src/pakistan_flood_monitor/data
+- **Code** [runner.py](../../src/pakistan_flood_monitor/pipeline/runner.py), [data](../../src/pakistan_flood_monitor/data)
 - **Dependencies and blockers** Real inputs require licensed sources, validated processing and independent evidence. Downstream failure hardening is eligible offline.
 - **Acceptance** Evidence covers provider and processor failure, provenance, calibrated units and public eligibility before any operational result.
 - **Evidence** [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97) and [PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98); tests/test_operational_data_integrity.py covers upstream missing-data cases.
@@ -190,7 +190,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Spatial audit
 - **Impact and requirement** Incorrect CRS, area or overlay alignment misstates potential exposure. [Geospatial contract](../architecture-environmental-data.md#meaning-freshness-and-provenance)
 - **Current behavior** Canonical geodesic and projected measurement helpers have tests. Full raster and overlay audit remains open.
-- **Code** src/pakistan_flood_monitor/geo/measurements.py; src/app/db/spatial.py
+- **Code** [measurements.py](../../src/pakistan_flood_monitor/geo/measurements.py), [spatial.py](../../src/app/db/spatial.py)
 - **Dependencies and blockers** DATA-001 for operational validation. Offline known-geometry audit is eligible.
 - **Acceptance** Verify metric units, projection, nodata, alignment and boundaries with known fixtures and measured metadata.
 - **Evidence** [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97); tests/test_geo_measurements.py. The helper baseline is evidence for this limited slice.
@@ -203,7 +203,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Canonical interfaces
 - **Impact and requirement** Contributors need one supported entry point and a safe migration path. [ADR-001](../adr/ADR-001-canonical-runtime.md)
 - **Current behavior** Canonical and legacy runtimes and independent migration heads are documented. Compatibility of remaining legacy callers is open.
-- **Code** src/pakistan_flood_monitor; src/app; alembic
+- **Code** [Canonical package](../../src/pakistan_flood_monitor), [Legacy package](../../src/app), [Canonical migrations](../../alembic)
 - **Dependencies and blockers** ADR-001 and route/consumer parity. Legacy migration choices require review.
 - **Acceptance** Preserve public contracts and verify upgrade, rollback and caller parity in the chosen migration path.
 - **Evidence** [PR #79](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/79) and [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97); tests/test_canonical_runtime_smoke.py.
@@ -217,7 +217,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Security and privacy
 - **Impact and requirement** Authorization and report confidentiality must survive UI and API changes. [API access contract](../api.md#authorization)
 - **Current behavior** The canonical API checks roles and public eligibility. The settings web route is read-only and internal reports have receipt ownership tests.
-- **Code** src/pakistan_flood_monitor/api/main.py; pages/8; tests/test_field_report_boundaries.py
+- **Code** [main.py](../../src/pakistan_flood_monitor/api/main.py), [8 🔑 Settings](../../pages/8_🔑_Settings.py), [test_field_report_boundaries.py](../../tests/test_field_report_boundaries.py)
 - **Dependencies and blockers** P0-001, P0-002; remaining export, upload and source trust paths require evidence.
 - **Acceptance** Unauthorized calls fail safely and sensitive data stays out of responses, logs and exports.
 - **Evidence** [PR #74](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/74), [PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89), [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95).
@@ -232,7 +232,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `BLOCKED` · **Workstream** Deployment verification
 - **Impact and requirement** Maintainers need reproducible installs and confidence in database upgrades. [Deployment guide](../deployment.md)
 - **Current behavior** Python 3.11 and 3.12 and local SQLite pass. Compose parses. Package metadata advertises 3.10, which fails the canonical import.
-- **Code** pyproject.toml; Dockerfile; docker-compose.yml; .github/workflows/canonical-checks.yml
+- **Code** [pyproject.toml](../../pyproject.toml), [Dockerfile](../../Dockerfile), [docker-compose.yml](../../docker-compose.yml), [Offline CI](../../.github/workflows/canonical-checks.yml)
 - **Dependencies and blockers** Docker runtime, PostGIS and live provider verification need suitable infrastructure. Packaging can proceed separately.
 - **Acceptance** Verify correct install constraints and a target deployment upgrade/rollback smoke with safe environment settings.
 - **Evidence** [PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98); [compatibility evidence](../testing.md#python-compatibility).
@@ -248,7 +248,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `IN_PROGRESS` · **Workstream** Independent QA
 - **Impact and requirement** Maintainers need reproducible evidence across runtime and user journeys. [Functionality audit](FUNCTIONALITY_GAP_AUDIT.md)
 - **Current behavior** Offline checks cover publication, browser components and reporting. Browser/device, production database and provider evidence remain open.
-- **Code** tests; .github/workflows/canonical-checks.yml
+- **Code** [Test suite](../../tests), [Offline CI](../../.github/workflows/canonical-checks.yml)
 - **Dependencies and blockers** Browser with usable startup, Docker/PostGIS and permitted provider access for those slices.
 - **Acceptance** Dated fixtures, exact commands and reproducible outcomes for each tested surface. Domain validation needs independent evidence.
 - **Evidence** [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85), [PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89), [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95); [farmer and livestock QA](../product/FARMER_LIVESTOCK_QA_MATRIX.md).
@@ -270,7 +270,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** My Area
 - **Impact and requirement** Residents need known coverage and a way to select a supported corridor. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-001--my-area).
 - **Current behavior** Configured pilot selector and published event association are merged. Unknown area and empty states remain explicit.
-- **Code** pages/1; backend_service.py; src/pakistan_flood_monitor/config.py
+- **Code** [1 🌍 Public Dashboard](../../pages/1_🌍_Public_Dashboard.py), [Dashboard adapter](../../backend_service.py), [config.py](../../src/pakistan_flood_monitor/config.py)
 - **Dependencies and blockers** UI-001, P0-003, P1-003; licensed local boundaries and browser verification outstanding.
 - **Acceptance** Show configured corridors even on outage, keep unmapped events in all-events view and avoid parcel safety inference.
 - **Evidence** [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87), [PR #88](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/88); tests/test_streamlit_public_pages.py.
@@ -297,7 +297,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Source directory
 - **Impact and requirement** Residents need issuer and scope before following an official link. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-002--official-source-hub).
 - **Current behavior** The merged directory shows attributed FFD, NDMA and provincial links without live-bulletin ingestion.
-- **Code** official_sources.py; pages/16
+- **Code** [official_sources.py](../../official_sources.py), [16 📚 Official Information](../../pages/16_📚_Official_Information.py)
 - **Dependencies and blockers** P0-003. Source permissions and ongoing link/accessibility review before any ingestion.
 - **Acceptance** Keep issuer, scope and review date visible; an unavailable link gives no current advisory status.
 - **Evidence** [PR #82](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/82); tests/test_official_sources_directory.py.
@@ -316,7 +316,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `PARTIAL` · **Workstream** Language and accessibility
 - **Impact and requirement** Low-bandwidth and Urdu users need essential text, readable order and keyboard access. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-003--urdu-and-low-bandwidth-access).
 - **Current behavior** Text-first guidance and print views exist. Translation readiness is documented. Urdu and browser acceptance are open.
-- **Code** streamlit_app.py; pages/1; pages/17; pages/18
+- **Code** [Streamlit entry point](../../streamlit_app.py), [1 🌍 Public Dashboard](../../pages/1_🌍_Public_Dashboard.py), [17 🌾 Farmer Preparedness](../../pages/17_🌾_Farmer_Preparedness.py), [18 🐄 Livestock Preparedness](../../pages/18_🐄_Livestock_Preparedness.py)
 - **Dependencies and blockers** UI-001, P0-003; qualified Urdu reviewers and real browsers/devices.
 - **Acceptance** Verify reviewed Urdu/RTL, assistive technology, responsive text and readiness without tiles.
 - **Evidence** [PR #94](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/94) and [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95); [UX evidence](../product/UI_UX_ACCEPTANCE_MATRIX.md).
@@ -334,7 +334,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1 · **Status** `NOT_STARTED` · **Workstream** Community sharing
 - **Impact and requirement** Forwarded text needs an issuer, expiry and clear review status. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-004--community-sharing-cards).
 - **Current behavior** Demo partner text and notification stubs exist. They provide no verified sharing or delivery.
-- **Code** src/pakistan_flood_monitor/services/alert_templates.py; src/pakistan_flood_monitor/services/notifications.py; pages/4
+- **Code** [alert_templates.py](../../src/pakistan_flood_monitor/services/alert_templates.py), [notifications.py](../../src/pakistan_flood_monitor/services/notifications.py), [4 🤝 Partner Mode](../../pages/4_🤝_Partner_Mode.py)
 - **Dependencies and blockers** P1-003, PK-003; authorized reviewed material and issue/expiry data.
 - **Acceptance** Keep source, area, status and expiry intact through copying or exporting, with demo labels where appropriate.
 - **Evidence** [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97) documents the boundary. See tests/test_notifications.py for the stub contract.
@@ -351,7 +351,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P1/P2 · **Status** `BLOCKED` · **Workstream** Relief directory
 - **Impact and requirement** Farmers and residents need clearly verified relief and veterinary contact information. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-005--verified-relief-directory).
 - **Current behavior** Preparedness pages link to official resources. Maintained operational service status is unavailable.
-- **Code** pages/16; pages/18; official_sources.py
+- **Code** [16 📚 Official Information](../../pages/16_📚_Official_Information.py), [18 🐄 Livestock Preparedness](../../pages/18_🐄_Livestock_Preparedness.py), [official_sources.py](../../official_sources.py)
 - **Dependencies and blockers** P1-002, SEC-001 and verified service ownership, scope and expiry.
 - **Acceptance** Only verified, attributed and current records can claim service availability. Test expired and unverified states.
 - **Evidence** [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95) covers veterinary link attribution. FL-04 records directory gaps.
@@ -368,7 +368,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P2 · **Status** `PARTIAL` · **Workstream** Community reporting
 - **Impact and requirement** Residents need consent and a durable private receipt before believing a report was sent. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-006--community-reports).
 - **Current behavior** The demo supplies a preview without saving. The canonical role-restricted API uses process-local report state.
-- **Code** pages/3; backend_service.py; src/pakistan_flood_monitor/api/main.py
+- **Code** [3 📱 Field Reports](../../pages/3_📱_Field_Reports.py), [Dashboard adapter](../../backend_service.py), [main.py](../../src/pakistan_flood_monitor/api/main.py)
 - **Dependencies and blockers** P1-002, SEC-001; durable storage, consent, privacy and retention approval for resident intake.
 - **Acceptance** Verify no mutation in demo preview and enforce privacy, durability, abuse handling and authorization in operational intake.
 - **Evidence** [PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89), [PR #92](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/92); tests/test_field_report_boundaries.py.
@@ -394,7 +394,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P2 · **Status** `BLOCKED` · **Workstream** Agricultural exposure
 - **Impact and requirement** Farm households need estimated exposure, reports and verified loss kept distinct. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-007--farmers-and-livestock).
 - **Current behavior** Agricultural report categories and prerequisite specification are present. Parcel-level exposure remains blocked.
-- **Code** src/pakistan_flood_monitor/models/report_categories.py; src/pakistan_flood_monitor/core/exposure.py
+- **Code** [report_categories.py](../../src/pakistan_flood_monitor/models/report_categories.py), [exposure.py](../../src/pakistan_flood_monitor/core/exposure.py)
 - **Dependencies and blockers** DATA-001, GIS-001, PK-006; licensed field boundaries, consent and validated inundation.
 - **Acceptance** Verify spatial and time alignment, units, uncertainty and authorization by data product.
 - **Evidence** [PR #90](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/90); tests/test_report_categories.py and [exposure specification](../product/AGRICULTURAL_EXPOSURE_SPECIFICATION.md).
@@ -414,7 +414,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P2 · **Status** `BLOCKED` · **Workstream** River observations
 - **Impact and requirement** Users need measured stage and freshness for supported locations. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-008--river-observation-explorer).
 - **Current behavior** Research hydromet views and source references exist. Canonical validated gauge observations are not available.
-- **Code** pages/10; nasa_service.py; src/pakistan_flood_monitor/pipeline/feature_generation.py
+- **Code** [10 🌧️ NASA Hydromet](../../pages/10_🌧️_NASA_Hydromet.py), [nasa_service.py](../../nasa_service.py), [feature_generation.py](../../src/pakistan_flood_monitor/pipeline/feature_generation.py)
 - **Dependencies and blockers** DATA-001; licensed, calibrated gauge data, timestamps and stage definitions.
 - **Acceptance** Verify observation source, units, valid stage and missing/stale states before public display.
 - **Evidence** [PR #91](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/91) covers prototype failure messaging; [provider boundary](../architecture-environmental-data.md#research-and-integration-boundaries).
@@ -430,7 +430,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P2 · **Status** `PARTIAL` · **Workstream** Partner exports
 - **Impact and requirement** Partners need authorized reviewed summaries that protect sensitive information. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-009--partner-and-ngo-information).
 - **Current behavior** Standalone demo export is labelled. Reviewed public export and operational advisory composition are pending.
-- **Code** pages/4; pages/5; src/pakistan_flood_monitor/api/main.py
+- **Code** [4 🤝 Partner Mode](../../pages/4_🤝_Partner_Mode.py), [5 📤 Export Center](../../pages/5_📤_Export_Center.py), [main.py](../../src/pakistan_flood_monitor/api/main.py)
 - **Dependencies and blockers** P1-002, P1-003, SEC-001; role and redaction policy needed.
 - **Acceptance** Export only permitted fields and preserve source and expiry. Verify role boundaries and audit.
 - **Evidence** [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85), [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97); tests/test_streamlit_demo_export.py.
@@ -447,7 +447,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P3 · **Status** `PARTIAL` · **Workstream** Preparedness and history
 - **Impact and requirement** Farmers and livestock keepers need sourced practical material and unambiguous historical dates. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-010--historical-and-preparedness-explorer).
 - **Current behavior** English guides with checklists and print views merged. Historical map provenance and reviewed Urdu remain open.
-- **Code** pages/12; pages/17; pages/18; data/historical_flood_regions.json
+- **Code** [12 🗺️ Historical Flood Map](../../pages/12_🗺️_Historical_Flood_Map.py), [17 🌾 Farmer Preparedness](../../pages/17_🌾_Farmer_Preparedness.py), [18 🐄 Livestock Preparedness](../../pages/18_🐄_Livestock_Preparedness.py), [historical_flood_regions.json](../../data/historical_flood_regions.json)
 - **Dependencies and blockers** DATA-001, GIS-001 for history; qualified translation review under PK-003.
 - **Acceptance** Keep history separate from forecast and verify attributed, accessible, text-first preparedness guidance.
 - **Evidence** [PR #90](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/90), [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95); tests/test_public_preparedness_journeys.py.
@@ -472,7 +472,7 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P3 · **Status** `BLOCKED` · **Workstream** Forecast validation
 - **Impact and requirement** An unvalidated model must not be presented as actionable guidance. [Feature specification](../product/PAKISTAN_FEATURE_ROADMAP.md#pk-011--validated-forecasting).
 - **Current behavior** Operational forecast and dam pages fail closed. Demo separates simulated research from official advice.
-- **Code** pages/13; pages/15; src/pakistan_flood_monitor/services/forecast_service.py
+- **Code** [13 🔮 Flood Forecasting](../../pages/13_🔮_Flood_Forecasting.py), [15 🏗️ Dam Flood Risk](../../pages/15_🏗️_Dam_Flood_Risk.py), [forecast_service.py](../../src/pakistan_flood_monitor/services/forecast_service.py)
 - **Dependencies and blockers** DATA-001; independent hindcast, gauge datasets and calibration evidence.
 - **Acceptance** Preserve disabled operational views and prove calibration, provenance and failure semantics before exposure.
 - **Evidence** [PR #91](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/91); tests/test_safety_gates_and_community_reporting.py.
@@ -489,11 +489,11 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - **Priority** P2 · **Status** `PARTIAL` · **Workstream** Agent and documentation workflow
 - **Impact and requirement** Contributors need one recoverable task, evidenced checkpoints and working links. [Agent contract](../../AGENTS.md)
 - **Current behavior** Root contract, Git helpers, vault navigation and runtime diagrams are merged. Current slice is on `docs/backlog-verification` from `8938d60`.
-- **Code** AGENTS.md; docs; scripts/agent_*.sh; .github/workflows/canonical-checks.yml
+- **Code** [Root contract](../../AGENTS.md), [Documentation](../../docs), [Agent checkpoint script](../../scripts/agent_checkpoint.sh), [documentation checker](../../scripts/check_docs.py), [Offline CI](../../.github/workflows/canonical-checks.yml)
 - **Dependencies and blockers** Current GitHub integration and hosted CI work. Authenticated gh and GitHub/Obsidian visual previews require suitable access.
 - **Acceptance** IDs and statuses are unique and verifiable. Startup, diff check, CI, remote ref and handoff give an agent enough information to resume.
 - **Evidence** [PR #83](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/83), [PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96), [PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97), [PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98); tests/test_agent_git_workflow.py and [hosted verification](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44355477233).
-- **Next action** Verify the backlog and local docs gate, then request maintainer review of the draft.
+- **Next action** Verify the rendered Pending Work entry and diagrams in GitHub and Obsidian, then record evidence for maintainer review of [PR #99](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/99).
 
 - [x] Open a draft PR after initial workflow documentation checkpoint.
 - [x] Implement and exercise preflight, checkpoint and recovery helpers with isolated local remotes (7 tests).
@@ -509,4 +509,4 @@ The execution baseline for this reconciliation is `8938d60` on main (353 offline
 - [x] Consolidate the root startup, scope and safety rules, align branch and ownership steps, and publish the [engineering standards](ENGINEERING_STANDARDS.md). The 11 focused contract and Git helper tests passed.
 - [x] Verify the development commands and compatibility evidence, fix the existing CI expression scope and document a staged quality baseline. See [PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98).
 - [x] Reconcile all authoritative task records against merged PRs and verification evidence. Add direct Pending Work navigation.
-- [ ] Verify and integrate the offline documentation check, record its tested scope, and update the handoff.
+- [x] Verify the offline documentation baseline and failure cases. Integrate the check into the existing workflow and record its scope in [testing](../testing.md#documentation-checks) and the handoff.

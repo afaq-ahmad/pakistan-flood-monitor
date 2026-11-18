@@ -42,7 +42,8 @@ and baseline evidence. See [Diátaxis](https://diataxis.fr/).
    language names on code fences. Use a table when it helps readers compare
    equivalent information.
 2. Use relative Markdown links for notes inside `docs/`. Use descriptive
-   labels, forward slashes and escaped spaces. Link to a file if the heading
+   labels and forward slashes. For paths with spaces, use URL encoding or
+   enclose the link destination in angle brackets. Link to a file if the heading
    fragment renders differently between readers. For a target outside the
    vault, give its repository path or a GitHub URL that also works from
    Obsidian. Pin links to a commit when citing historical code.
@@ -58,9 +59,27 @@ and baseline evidence. See [Diátaxis](https://diataxis.fr/).
    navigation from the index and check cited code at the stated revision.
    Spot-check external references that support changed claims. Record what
    you ran, the result, and any rendering or environment limits in the PR.
-6. When an implementation changes, update its owning reference, task evidence
-   and handoff. Record the environment and exact test command. Keep pending
-   work in the master plan and link there from related pages.
+6. Run the [offline documentation checks](testing.md#documentation-checks).
+   Verify the preview in GitHub and Obsidian for changes that affect layout
+   or diagrams. Record manual checks that were unavailable.
+
+## Keep documentation current
+
+Update the owning documentation in the same PR whenever a change affects
+public behavior, API contracts, runtime configuration, architecture,
+database schema, scientific semantics, data-provider assumptions,
+publication or authorization, user workflows, deployment, or completion
+evidence. Update the relevant diagrams and examples along with prose.
+Record the test environment and exact evidence under the task and handoff.
+If the change needs no documentation update, give the reason in the PR.
+Use the affected reference, tutorial or QA record rather than editing an
+unrelated landing page.
+
+The [master plan](engineering/MASTER_TASK_PLAN.md#pending-work) owns task
+priority, status, acceptance and next action. Remaining Work links to it.
+The implementation ledger and product QA documents preserve dated
+evidence. The roadmap keeps specifications and dependencies. Append
+verified handoffs and supersede accepted ADRs through a new ADR.
 
 References for [Obsidian Markdown links](https://obsidian.md/help/links) and
 [GitHub Mermaid diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).

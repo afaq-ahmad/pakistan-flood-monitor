@@ -16,12 +16,18 @@ jobs:
       APP_MODE: test
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: pip
       - name: Install project and offline test guard
         run: python -m pip install -e '.[dev,dashboard]' pytest-socket==0.8.1
+      - name: Verify documentation and PR diff
+        env:
+          DOCS_DIFF_BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || '' }}
+        run: python scripts/check_docs.py --base "$DOCS_DIFF_BASE"
       - name: Run full test suite with network sockets disabled
         env:
           DATABASE_URL: sqlite:///${{ runner.temp }}/flood-monitor-ci.db

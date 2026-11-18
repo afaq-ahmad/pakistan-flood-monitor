@@ -83,6 +83,34 @@ adoption steps.
 No new quality tools are required by this baseline. Record any proposed gate,
 its scope and its clean baseline before enabling it in CI.
 
+## Documentation checks
+
+After installing the usual project extras, run from the repository root:
+
+```bash
+python scripts/check_docs.py
+python scripts/check_docs.py --staged
+python scripts/check_docs.py --base origin/main
+```
+
+The first command checks tracked Markdown against the working tree.
+Stage new documents so they enter the checked set. The second command
+also screens staged paths and added text. The third screens the committed
+diff from the given local base to HEAD. The script only reads files and
+uses the existing PyYAML dependency. GitHub Actions checks documentation
+on each run and screens the PR merge diff against its first parent.
+The existing tracked `storage/` and `data/` check still runs.
+
+The validator checks required entry files and navigation, ordinary local
+Markdown links, ATX heading anchors, YAML frontmatter, task IDs, statuses
+and record fields. Its Mermaid check verifies fence closure, supported
+diagram headers and nonempty bodies. It does not validate the full
+Mermaid grammar. Review actual rendering for edited diagrams. Network
+availability, rich Markdown extensions and renderer-specific anchors
+need separate checks. The diff guard checks common sensitive paths and
+secret signatures. Review staged contents privately as required by the
+[agent workflow](engineering/AGENT_GITHUB_WORKFLOW.md#small-durable-checkpoints).
+
 ## Report scope
 
 The workflow definition in `.github/workflows/canonical-checks.yml` targets
