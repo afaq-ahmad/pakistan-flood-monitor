@@ -33,7 +33,7 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Audit district data and show no-data/unknown coverage; never infer property risk.
-- **Farmer and community acceptance.** Keep configured corridor names visible before the live event request, including empty, offline, and unconfigured states. Validate licensed district, tehsil and mouza identifiers and aliases separately. Keep parcel and village coverage unknown until verified.
+- **Farmer and community acceptance.** Keep configured corridor names visible before the live event request, including empty, offline, and unconfigured states. Validate licensed district, tehsil and mouza identifiers and aliases separately. Keep parcel and village coverage unknown until verified. Use an exact configured corridor ID selector and reviewed public event association for the next bounded slice. Preserve the all-events view when the association is unavailable.
 
 
 ### PK-002 — Official source hub
@@ -139,7 +139,7 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Distinguish history from prediction; validate maps and legends.
-- **Farmer and community acceptance.** Add the extent source, event dates, resolution and confidence, distinguishing historical extent, estimated crop exposure and field-verified loss. Remove unsupported ground-truth language. Keep authoritative preparedness links dated and usable without imagery.
+- **Farmer and community acceptance.** Add the extent source, event dates, resolution and confidence, distinguishing historical extent, estimated crop exposure and field-verified loss. Remove unsupported ground-truth language. Keep authoritative preparedness links dated and usable without imagery. The text-first English preparedness slice can proceed when government or humanitarian source material is verified. Cover crop and seed supplies, equipment, chemicals and records, then species-relevant animal water, fodder and welfare guidance. Require human-reviewed Urdu before publication. PK-005 owns verified service availability and PK-007 retains exposure validation.
 
 
 ### PK-011 — Validated forecasting

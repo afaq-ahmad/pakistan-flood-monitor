@@ -98,3 +98,22 @@ semantics. The [feature roadmap](PAKISTAN_FEATURE_ROADMAP.md) records remaining 
 The walkthrough used AppTest and injected HTTP responses, plus code inspection. It did not
 verify actual flood conditions, field needs, a fully offline first load, mobile rendering,
 assistive technologies, source permissions, or scientific accuracy.
+
+## My Area coverage and selection
+
+Follow-up baseline `6f35e9e` includes the reference catalogue from merged PR #87. On an empty
+or unavailable feed, its names appear as text, with no area selector. On a populated feed the
+existing district selector uses event-row properties that the canonical collection omits.
+
+| Inventory | Evidence | Accepted use |
+|---|---|---|
+| Canonical pilot corridor list | Six IDs in `settings.pilot_corridors`, also used for AOI validation and the public corridor catalogue. | Identity for a corridor selector. This demonstrates configuration, without proving provider coverage or freshness. |
+| Canonical event association | The event producer stores `review_event.aoi`; database hydration restores `corridor_aoi`. The public collection currently omits that value. | Add a nullable public corridor ID after the existing publication gate. Only publish IDs exactly matching the pilot list. |
+| Local reference lines | `data/corridors.csv` has five lines and lacks Kabul-Nowshera. The lines are drawn from endpoints. | Existing illustrative map context only. A missing line does not rule out an ID, and a line does not define a district or catchment. |
+| District, tehsil, village and farm coverage | Configuration's district field includes province names. Demo events carry sample district/tehsil strings, and the legacy asset builder can accept district layers. No validated public locality registry or association is established. | Keep geographic mapping unavailable pending licensed boundaries and independent validation. Preserve labelled demo district filtering. |
+
+The next PK-001 slice will filter a single published snapshot by the selected configured ID.
+All-events remains available for records without a usable association. Empty matches, feed
+failure, freshness unknown, and unavailable measurements each retain explicit text. Use the
+official-source directory for current notices. Selection uses no identity, precise location,
+additional network request, or geometry inference.

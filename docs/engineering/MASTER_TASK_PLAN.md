@@ -147,21 +147,28 @@ work remains open and a reproducible session log exists. Do not interpret test p
 Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Reproducible farmer, livestock and community findings are in the [QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
 
 ### PK-001 — My Area
-Priority: P1; Status: PARTIAL; reference catalogue in [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87); baseline `d24fa22`.
+Priority: P1; Status: IN_PROGRESS for the corridor selector slice. The reference catalogue merged in
+[PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87). Current baseline `6f35e9e`.
+Workstream branch `feat/pk-001-my-area-corridor`.
 Dependencies for validated local coverage: UI-001, P0-003, P1-003, and validated administrative boundaries.
 Reference catalogue dependencies: the existing canonical pilot corridor settings.
 Files: `pages/1_🌍_Public_Dashboard.py`, `src/pakistan_flood_monitor/config.py`,
-`backend_service.py`, and `tests/test_streamlit_public_pages.py`.
+`backend_service.py`, `src/pakistan_flood_monitor/api/main.py`, and public dashboard/publication tests.
 
-**Problem and scope.** Residents lose area context when the published feed is empty or unavailable.
-Show configured reference names independently from the feed. The current slice displays no
-administrative or property coverage and changes no publication or scientific product contract.
-The district filter retains its existing published-event behavior.
+**Problem and scope.** The merged reference list survives an empty response. The interactive
+district filter still depends on event rows, and the canonical public collection omits the
+recorded corridor association. Use configured pilot corridor IDs as the selectable resolution.
+Expose a nullable corridor ID on eligible published records when the stored value matches the
+canonical catalogue. Use exact ID matching in a single published snapshot. The separate
+district filter remains labelled demo-only.
 
-**Acceptance and tests.** In offline AppTest, an empty 200, 503, timed-out or unconfigured endpoint
-leaves the label list and official-source navigation visible. Display no inferred village-level
-coverage, safety status, synthetic observations, impact metrics, or map on these paths. Show
-configured absence explicitly and preserve successful demo district filtering.
+**Acceptance and tests.** The corridor selector and Official Information link appear before any
+feed stop. Verified states include empty, error, timeout, unconfigured, unknown association,
+selected corridor with no match, and a published match. Unassociated events stay available in
+the all-events view. A result count measures records only. Keep missing measurements unavailable,
+show publication and detection dates separately when supplied, and avoid area/safety inference.
+Use the map container's width and render text without needing map tiles. Verify keyboard and
+mobile behavior with a real browser where available.
 
 - [x] Trace canonical names, public event fields and published-only data path (FL-01/01B/06).
 - [x] Reproduce missing area context on empty response, 503 and timeout using AppTest.
@@ -170,6 +177,11 @@ configured absence explicitly and preserve successful demo district filtering.
 - [x] Verify reference names and official navigation for an empty 200, 503, timeout, and API absence. Verify that an empty configured catalogue has an explicit state.
 - [x] Verify demo/published filtering, fail-closed publication, and official navigation with 30 focused tests.
 - [x] Run the full offline suite (274 passed, 475 warnings) and record delivery evidence.
+- [x] Audit the six canonical pilot IDs against the five legacy CSV map lines and the event-side district labels. See [coverage evidence](../product/FARMER_LIVESTOCK_USER_JOURNEYS.md#my-area-coverage-and-selection).
+- [ ] Verify a failing integration test for the missing corridor API field and selector.
+- [ ] Verify allowlisted published-only API projection, corridor filtering and no-area states in AppTest.
+- [ ] Verify opt-in responsive map, source navigation, timestamps, and demo district filtering.
+- [ ] Run the offline suite and publish the narrow selector slice.
 - [ ] Verify browser/mobile and keyboard behavior when a browser is available.
 - [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
 - [ ] Show reviewed observations, official notices and history separately, with source/issue times.
@@ -233,6 +245,7 @@ Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Moderated fi
 - [ ] Design categories, evidence, deduplication and retention.
 - [ ] Test sensitive-location and publication boundaries.
 - [ ] Reproduce local moderation result handling in isolation and design resident consent, categories, receipt and private evidence checks (FL-05).
+- [ ] Define a private acknowledgement and retry/idempotency contract with minimal coarse-area fields, moderation states and retention rules. Exercise unauthorized, duplicate/spam and write-failure cases before enabling operational intake. Verify durable storage and explicit consent for any onward integration.
 
 
 ### PK-007 — Farmers and livestock
@@ -244,6 +257,7 @@ Priority: P2; Status: BLOCKED; Dependencies: DATA-001, GIS-001, PK-006. Data: Va
 - [ ] Validate spatial overlays and separate reported from verified damage.
 - [ ] Test units, temporal alignment and unsupported compensation claims.
 - [ ] Specify crop-stage, storage, irrigation and livestock data separately; validate methods, licensing and unknown-versus-zero semantics (FL-03/04).
+- [ ] Require licensed field boundaries, informed consent and access control, validated flood extents, CRS/projection and spatial/temporal alignment. Compare baseline and new inundation, quantify crop and model uncertainty, and keep estimated exposure separate from verified loss. Property-level exposure remains BLOCKED.
 
 
 ### PK-008 — River observation explorer
@@ -275,6 +289,9 @@ Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated lice
 - [ ] Distinguish history from forecasts and unknown coverage.
 - [ ] Verify preparedness guidance and legend tests.
 - [ ] Check provenance and permissions of bundled historical flood outlines; distinguish approximate outlines from verified training evidence (FL-03).
+- [ ] Verify and attribute English government or humanitarian guidance for crops, grain/seed, equipment, chemicals, records and recovery. Make text usable without maps or a live event feed.
+- [ ] Verify and attribute guidance for animal water/fodder, identification, welfare, veterinary links and recovery for applicable species. Treat service availability as unknown unless the provider verifies it (PK-005).
+- [ ] Review Urdu translations with a qualified human reviewer before publication. Keep preparedness content separate from model outputs, evacuation routes or operational notices.
 
 
 ### PK-011 — Validated forecasting

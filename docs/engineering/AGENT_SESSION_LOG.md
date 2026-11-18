@@ -220,3 +220,15 @@ Append entries; never rewrite earlier handoffs.
   page in operational mode before any provider call or alert-style output. Dam fallback masking,
   district/tehsil/mouza validation, real device checks and agricultural resource verification
   remain separate pending steps.
+
+### 2026-11-18 UTC — PK-001 My Area selector planning checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `feat/pk-001-my-area-corridor`
+  from `6f35e9e3765ce5c8e9d0b37fdd55dad19b2911e4`. PR #87 is merged and no open draft
+  owns this work. The user's current priorities select PK-001 ahead of the earlier PK-011 handoff.
+- Audited six configured pilot IDs, five reference map lines, demo district labels and the
+  canonical published event projection. Verified that the public collection omits its stored AOI.
+- Claimed the exact-ID selector slice, recorded scope and objective tests, and added existing-task
+  prerequisites for sourced preparedness, report protection and property exposure. Locality mapping
+  stays dependent on trustworthy boundaries. Next: verify this planning checkpoint remotely, open
+  the draft, and run the new regression tests before editing API or Streamlit code.
