@@ -99,3 +99,10 @@ Append entries; never rewrite earlier handoffs.
   `ModuleNotFoundError: No module named 'folium'` from Public Dashboard after
   installing `.[dev,dashboard]`; home opened without a demo warning. Full baseline running.
 - Next: fix the public feed boundary, dashboard install and demo export; exercise pages offline.
+
+- Draft PR: [#85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85).
+  Documentation checkpoint verified at remote `d9418868a8c8632c358f3aa22e93f4515e669f4a`.
+- Public snapshot, no-API fail-closed behavior and dashboard dependency fixes implemented.
+  `.venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py tests/test_dashboard_api_fail_closed.py tests/test_p0003_exposure_boundary.py -q --tb=short`
+  passed 31 tests. Baseline full offline suite passed 228 tests with 475 warnings.
+- Next: constrain demo export, verify actual downloads, run full checks, then update PR and ledger.
