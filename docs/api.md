@@ -47,7 +47,11 @@ sequenceDiagram
 ## Core Endpoints
 
 ### Public Routes (`/public`)
-- `GET /public/corridors`: Returns the list of active monitored river corridors.
+- `GET /public/corridors`: Lists configured pilot river corridors. This catalogue does not establish current observations, freshness, or administrative coverage.
+- `GET /public/events`: Returns the eligible published event snapshot. Each record includes a nullable
+  `corridor_id`. The ID is the stored association when it exactly matches a configured pilot corridor.
+  Unknown or absent associations are null. My Area filters the snapshot locally, and unassociated
+  records remain available in the all-events view. Record timestamps remain distinct from feed freshness.
 - `GET /public/corridors/{aoi_name}/events`: Returns active flood events for a given corridor.
 - `GET /public/events/{event_id}`: Retrieves details for a specific flood event.
 - `GET /public/alerts/feed`: Returns a feed of recent alerts.

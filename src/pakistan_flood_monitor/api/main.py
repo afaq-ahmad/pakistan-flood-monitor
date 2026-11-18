@@ -1266,7 +1266,15 @@ def corridor_events(
 @public_router.get("/events")
 def list_public_events() -> dict[str, Any]:
     fields = ("event_id", "event_class", "status", "geometry", "source_scenes", "lineage", "confidence_breakdown", "notes", "timestamps")
-    events = [{key: event.get(key) for key in fields} for event in _all_events() if _is_public_event(event)]
+    configured_corridors = {corridor.name for corridor in settings.pilot_corridors}
+    events = []
+    for event in _all_events():
+        if not _is_public_event(event):
+            continue
+        area = event.get("aoi")
+        row = {key: event.get(key) for key in fields}
+        row["corridor_id"] = area if isinstance(area, str) and area in configured_corridors else None
+        events.append(row)
     return {"schema": "event-collection/v1", "events": events}
 
 

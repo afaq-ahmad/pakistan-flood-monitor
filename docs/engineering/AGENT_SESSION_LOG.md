@@ -232,3 +232,15 @@ Append entries; never rewrite earlier handoffs.
   prerequisites for sourced preparedness, report protection and property exposure. Locality mapping
   stays dependent on trustworthy boundaries. Next: verify this planning checkpoint remotely, open
   the draft, and run the new regression tests before editing API or Streamlit code.
+
+- The document-only checkpoint `2c232c2885923e3ed6b9135cda39366751598e17` was
+  verified on GitHub and [draft PR #88](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/88)
+  was opened before application code edits.
+
+- Four baseline regressions failed before implementation, including a timestamp-null record that
+  caused the adapter to reject a valid published snapshot. The canonical list now projects exact,
+  allowlisted corridor IDs, and the dashboard selects from that catalogue before reading the feed.
+  Text stays available without tiles. Missing times and exposure show unavailable, and the map
+  becomes optional with container width. The 34-test focused suite passed.
+- Next: publish this implementation checkpoint, confirm the final suite, and record browser and
+  hosted CI status. No locality mapping, new measurements or user data collection was added.

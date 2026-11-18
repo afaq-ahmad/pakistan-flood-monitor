@@ -178,9 +178,9 @@ mobile behavior with a real browser where available.
 - [x] Verify demo/published filtering, fail-closed publication, and official navigation with 30 focused tests.
 - [x] Run the full offline suite (274 passed, 475 warnings) and record delivery evidence.
 - [x] Audit the six canonical pilot IDs against the five legacy CSV map lines and the event-side district labels. See [coverage evidence](../product/FARMER_LIVESTOCK_USER_JOURNEYS.md#my-area-coverage-and-selection).
-- [ ] Verify a failing integration test for the missing corridor API field and selector.
-- [ ] Verify allowlisted published-only API projection, corridor filtering and no-area states in AppTest.
-- [ ] Verify opt-in responsive map, source navigation, timestamps, and demo district filtering.
+- [x] Reproduce the missing corridor field and null-timestamp failure with four failing API/UI test cases before editing.
+- [x] Verify allowlisted published-only projection, selected/no-match and unassigned all-events states, and empty, timeout, unavailable and unconfigured feeds.
+- [x] Verify opt-in responsive map configuration, source navigation, separate timestamps, and demo district filtering with 34 focused API/UI tests.
 - [ ] Run the offline suite and publish the narrow selector slice.
 - [ ] Verify browser/mobile and keyboard behavior when a browser is available.
 - [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
