@@ -413,3 +413,9 @@ Append entries; never rewrite earlier handoffs.
 - Seven homepage cases failed before the edit. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py -q --tb=short` passed 18 tests (4 warnings). Same command with `tests/` passed 341 tests (480 warnings). Temporary SQLite round-trip to `b4d9d93f2a10`, compilation, clean tracked data and whitespace checks passed.
 - Chromium reported socket permission denied before rendering. Screenshot, responsive layout and assistive-technology acceptance remain pending. The implementation SHA and hosted CI observations are recorded on the PR.
 - Next UI-001 / SEC-001 slice: using an isolated temporary configuration, test the Settings threshold and weight save handlers against the agreed authorization boundary. If configuration changes lack a protected service contract, make the hosted UI read-only and retain the developer file-based workflow. Keep this separate from Operations and Training acknowledgement work.
+
+### 2026-11-18 14:40 UTC · UI-001 grouped navigation
+
+- Main `a876e61` includes merged PR #93. No open UI PR or issue at intake. Branch `ux/ui-001-public-navigation` starts the follow-up, with a draft PR after this checkpoint.
+- The existing Streamlit entrypoint now registers Home plus all 18 existing pages using a single native top menu. Public information, Research and Operations are grouped. The AppTest registry comparison matches all prior paths. The existing specialist handlers continue enforcing their own permissions. Streamlit 1.46 is the minimum for the top menu.
+- Baseline offline suite passed 341 tests. The public-page, analyst and report boundary modules passed 45 tests after this increment. Next: put availability and action-oriented language in the homepage and share presentation with My Area.

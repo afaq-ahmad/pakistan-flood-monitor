@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
+import streamlit as st
 from fastapi.testclient import TestClient
 from streamlit.testing.v1 import AppTest
 
@@ -38,6 +39,36 @@ def assert_public_home_navigation(page):
     order = [item.type if item.type == "page_link" else getattr(item, "value", None) for item in page.main]
     assert max(i for i, kind in enumerate(order) if kind == "page_link") < order.index("Published events")
     assert not page.button
+
+
+def test_native_navigation_groups_public_pages_and_keeps_all_existing_urls(dashboard, monkeypatch):
+    navigation = st.navigation
+    calls = []
+
+    def track_navigation(pages, *, position):
+        groups = {
+            section: [st.Page(item).url_path if isinstance(item, str) else item.url_path for item in items]
+            for section, items in pages.items()
+        }
+        calls.append((groups, position))
+        return navigation(pages, position=position)
+
+    monkeypatch.setattr(st, "navigation", track_navigation)
+    page = AppTest.from_file(HOME).run()
+
+    assert not page.exception
+    (groups, position), = calls
+    assert position == "top"
+    assert list(groups) == ["", "Public information", "Research", "Operations"]
+    assert groups[""] == [""]
+    assert groups["Public information"] == [
+        "Public_Dashboard", "Farmer_Preparedness", "Livestock_Preparedness",
+        "Official_Information", "Field_Reports",
+    ]
+    assert "Analyst_Review" in groups["Operations"]
+    assert "Satellite_Viewer" in groups["Research"]
+    expected_routes = [path.stem.split("_", 2)[2] for path in (ROOT / "pages").glob("*.py")]
+    assert sorted(route for group in groups.values() for route in group) == sorted(["", *expected_routes])
 
 
 def test_home_links_resolve_to_existing_public_pages(dashboard, monkeypatch):
