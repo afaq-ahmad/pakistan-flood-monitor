@@ -351,3 +351,35 @@ Append entries; never rewrite earlier handoffs.
 - Urdu translation marked as required subtask (PK-003), not implemented.
 - Next: commit and push, open draft PR, record handoff with verified remote SHA.
   PK-011/FL-08 operational forecast guard and browser/mobile acceptance remain pending.
+
+### 2026-11-18 UTC — Operational safety gates and community reporting
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `feat/pk-safety-gates-and-reporting`
+  from `300d60c` (merged PR #90 on main). No open PR owns this work.
+- Addressed confirmed presentation defects and community report intake:
+  1. `pages/13_🔮_Flood_Forecasting.py` (FL-08 / PK-011): Gated operational mode with fail-closed
+     unavailability message. Added DEMO_WATERMARK in demo mode, guarded optional Plotly import,
+     and eliminated automatic evacuation notice directives, replacing with simulated threshold
+     indications citing official FFD/NDMA bulletins.
+  2. `pages/15_🏗️_Dam_Flood_Risk.py` (FL-08): Gated operational mode with fail-closed message
+     preventing synthetic proxy execution. Added DEMO_WATERMARK and replaced alarmist alerts with
+     simulated research estimates citing official WAPDA/NDMA sources.
+  3. `pages/10_🌧️_NASA_Hydromet.py` (FL-09): Fixed false success reporting when corridor rainfall
+     requests fail. Separately counts successful and failed corridors, reporting an explicit error
+     when all attempts fail.
+  4. `pages/12_🗺️_Historical_Flood_Map.py` (FL-03 / PK-010): Removed unsupported "ground-truth targets"
+     language, added contextual reference disclaimer, official source link, and DEMO_WATERMARK.
+  5. `pages/3_📱_Field_Reports.py` (FL-05 / PK-006): Integrated community report intake section with
+     the 8 standard agricultural report categories (`CATEGORY_REGISTRY`), location privacy notices
+     for sensitive assets, mandatory consent verification, data minimization, and deterministic
+     receipt ID generation.
+  6. `tests/test_safety_gates_and_community_reporting.py`: 11 deterministic offline tests covering
+     operational fail-closed gates, evacuation language removal, watermark rendering, official links,
+     historical disclaimer, consent requirement, receipt generation, and hydromet error reporting.
+  7. Updated `docs/engineering/REMAINING_WORK.md`, `docs/product/FARMER_LIVESTOCK_QA_MATRIX.md`,
+     `docs/engineering/MASTER_TASK_PLAN.md`, and `docs/engineering/IMPLEMENTATION_STATUS.md`.
+- Tests:
+  - `pytest tests/test_safety_gates_and_community_reporting.py -v`: 11 passed.
+  - `pytest tests/test_field_report_boundaries.py -v`: 15 passed.
+  - Full offline suite: 333 passed, 0 failed, 978 warnings.
+- Next: commit and push to remote, open draft PR, verify remote SHA and status.

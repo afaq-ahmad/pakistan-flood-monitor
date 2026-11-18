@@ -293,3 +293,16 @@ specification for 9 prerequisites for agricultural field exposure added (PK-007,
 Focused tests passed 29 tests (17 preparedness page tests, 12 category tests). Full offline suite
 passed 322 tests with 973 warnings. Compilation and git diff checks passed. Browser and mobile
 rendering remain unverified in this environment.
+
+## Operational safety gates, hydromet accuracy, and community report workflow
+
+Branch `feat/pk-safety-gates-and-reporting` from `300d60c`. Remediated P0 presentation risks (FL-08)
+by adding operational fail-closed gates to predictive flood forecasting (`pages/13`) and dam risk
+analysis (`pages/15`), while removing evacuation directives and alarmist wording. Corrected NASA Hydromet
+(`pages/10`) failure tracking to report failed corridors rather than misleading unconditional success (FL-09).
+Replaced unsupported ground-truth claims on historical flood regions (`pages/12`) with contextual reference
+disclaimers and demo watermarks (FL-03). Integrated community report categories into `pages/3` with
+explicit consent, data minimization, location privacy notices, and stable receipt generation (PK-006 / FL-05).
+
+11 new offline tests in `tests/test_safety_gates_and_community_reporting.py` passed. Full offline suite
+passed 333 tests with 978 warnings.

@@ -319,10 +319,10 @@ Priority: P3; Status: BLOCKED; Dependencies: DATA-001. Data: Independent histori
 
 PK-002 initial slice: static, attributed FFD and NDMA source links only; no live feed or claims of active warnings. Link review date 2026-11-18. Browser/mobile and ongoing link verification remain pending.
 
+- [x] Treat FL-08 as P0 presentation risk. Gated prototype forecast (`pages/13`) and dam analysis (`pages/15`) in operational mode. Removed evacuation wording and uncalibrated alarmist alerts. 6 offline tests pass in `tests/test_safety_gates_and_community_reporting.py`.
 - [ ] Audit model maturity and candidate datasets.
 - [ ] Compare defensible baselines with out-of-sample validation.
 - [ ] Test probabilistic calibration and preserve operational disablement.
-- [ ] Treat FL-08 as P0 presentation risk. First reproduce and gate the prototype forecast page and missing-imagery dam paths in operational mode. Assert unavailable output and absence of evacuation language in offline tests.
 
 
 ## ENG-001 — Resumable agent GitHub workflow

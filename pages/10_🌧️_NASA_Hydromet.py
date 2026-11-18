@@ -33,10 +33,18 @@ from nasa_service import (
     NASA_BEARER,
 )
 
+from backend_service import DEMO_WATERMARK, DataService
+
 st.set_page_config(page_title="NASA Hydromet Dashboard", page_icon="🌧️", layout="wide")
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.title("🌧️ NASA Hydromet & Satellite Dashboard")
+st.page_link("pages/16_📚_Official_Information.py", label="Official flood information and bulletins")
+
+data_service = DataService()
+if data_service.is_demo_mode:
+    st.warning(DEMO_WATERMARK)
+
 st.markdown(
     "Live data from **NASA POWER** (rainfall/climate) and **NASA CMR** (HLS satellite scenes). "
     "Authenticated with your NASA Earthdata account."
@@ -94,7 +102,14 @@ with tab1:
             data[corr] = fetch_corridor_rainfall(corr, int(days_back))
         prog.empty()
         st.session_state["power_data"] = data
-        st.success(f"✅ NASA POWER data loaded for {len(data)} corridors")
+        success_corrs = [c for c, d in data.items() if "error" not in d]
+        failed_corrs = [c for c, d in data.items() if "error" in d]
+        if failed_corrs and not success_corrs:
+            st.error(f"NASA POWER data failed to load for {len(failed_corrs)} corridor(s). Check connectivity or Earthdata API status.")
+        elif failed_corrs:
+            st.warning(f"NASA POWER data loaded for {len(success_corrs)} corridor(s); {len(failed_corrs)} corridor(s) returned errors.")
+        else:
+            st.success(f"✅ NASA POWER data loaded for {len(success_corrs)} corridors")
 
     power_data = st.session_state.get("power_data")
 

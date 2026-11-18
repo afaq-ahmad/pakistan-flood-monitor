@@ -10,11 +10,10 @@
 
 | Metric | Value |
 |---|---|
-| Last verified main commit | `d37488a` |
-| Full offline test suite | 293+ passed (baseline before this branch) |
-| Open draft PRs | PR #89 (PK-006 field report QA) |
-| Merged PRs this session | #87 (reference catalogue), #88 (corridor selector), #89 (field report QA) |
-| Pages implemented | 18 (1–16 existing + 17 Farmer + 18 Livestock new in this branch) |
+| Last verified main commit | `300d60c` |
+| Full offline test suite | 322 passed (0 failed, 973 warnings) |
+| Merged PRs | #87 (reference catalogue), #88 (corridor selector), #89 (field report QA), #90 (preparedness & categories) |
+| Pages implemented | 18 (1–16 existing + 17 Farmer Preparedness + 18 Livestock Preparedness) |
 
 ---
 
@@ -29,15 +28,19 @@
 | UI-001 Dashboard audit | PARTIAL | PRs #85, #86 | 269 tests; analyst queue done |
 | PK-001 My Area | PARTIAL | PRs #87, #88 | Corridor selector + reference list; 278 tests |
 | PK-002 Official sources | PARTIAL | Community | Static FFD/NDMA links |
-| PK-006 Community reports | PARTIAL | PR #89 | FL-05 boundary fixes; 293 tests |
+| PK-006 Community reports | PARTIAL | PRs #89, #90 | FL-05 boundary fixes, category taxonomy & consent rules |
+| PK-007 Farmers & livestock | BLOCKED | PR #90 | 9 prerequisites documented in exposure spec; kept BLOCKED |
+| PK-010 Preparedness | PARTIAL | PR #90 | Farmer (`pages/17`) & Livestock (`pages/18`) guides; 17 tests |
 
-## 2. Work In This Branch (Uncommitted)
+## 2. Work In This Workstream
 
-| Item | File | Status |
+| Item | Focus | Status |
 |---|---|---|
-| Farmer Preparedness page | `pages/17_🌾_Farmer_Preparedness.py` | ✅ Written, 8 tests pass |
-| Livestock Preparedness page | `pages/18_🐄_Livestock_Preparedness.py` | ✅ Written, 9 tests pass |
-| Preparedness tests | `tests/test_preparedness_pages.py` | ✅ 17/17 pass |
+| FL-08 P0 Forecast presentation risk | Gate operational forecast, eliminate evacuation wording, add watermark | In progress |
+| FL-08 P0 Dam risk presentation risk | Gate operational dam analysis, eliminate alarmist alerts, add watermark | In progress |
+| FL-09 NASA Hydromet counter | Fix misleading success count on failed corridor retrievals | In progress |
+| FL-03 Historical Map ground truth | Remove unsupported "ground truth" claims, add disclaimer & watermark | In progress |
+| FL-05 / PK-006 Resident report workflow | Add community reporting UI, consent, and category integration | In progress |
 
 ## 3. Remaining Work — By Priority
 
