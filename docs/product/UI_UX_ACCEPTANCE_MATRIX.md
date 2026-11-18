@@ -23,3 +23,18 @@ Prototype actions were tested without real providers or configuration writes.
 | UX-A13 | Researcher · Satellite Viewer / Hydromet | Search with no STAC results → open rainfall with provider failure → inspect statuses | Empty search distinct from unavailable. Rainfall failures identified individually. | STAC showed success with zero scenes. Hydromet showed six failed requests. | Provider error interpreted as zero observations or successful retrieval | Observed AppTest with providers stubbed; pages 9 and 10. | P2 | PARTIAL / UI-001, DATA-001 |
 | UX-A14 | Resident · Forecast / Dam | Open pages 13 and 15 in operational mode → look for actionable outputs → use official link | Operational gate before prototype results, official route available | Both gates rendered. Demo boundary has existing AppTests. | Operational output from an unvalidated model or proxy | Observed AppTest; safety gate tests. | P1 | PASS for mode gates / PK-011 |
 | UX-A15 | Low-bandwidth or assistive-tech user · Home → My Area | Resize to 360 and 320 CSS px → Tab and activate links → block map assets → read status with screen reader → repeat with Urdu when approved | No loss of essential content or actions; accessible names/focus/reflow/contrast; reviewed RTL | Component logic runs. Chromium startup failed before rendering. Human-reviewed Urdu pending. | Clipped content, invisible focus, unreadable status or wrong reading order | Chromium socket error and AppTest only. Screenshots pending. | P1 | UNVERIFIED / UI-001, PK-003 |
+
+## Homepage checkpoint in PR #93
+
+| Scenario | Actual after change | Evidence and status |
+|---|---|---|
+| UX-A01 | Home gives the coverage and emergency-information context before the five public routes. Streamlit resolves native links to the current pages, and each destination renders in AppTest. | PASS in component tests. Browser clicks and focus remain part of UX-A15. |
+| UX-A02 | Navigation precedes publication status with empty, 503, timeout, published and unconfigured feeds. The configured request uses the existing two-second timeout, once per run. An empty feed explicitly leaves conditions unknown. | PASS for fixture states. `test_home_keeps_public_links_when_event_feed_changes` and the unconfigured operational test. |
+| UX-A03 | The existing watermark precedes the standalone demo count. Demo and authorized-publication filters retain their established behavior. The Community Reporting entry explains that real submission is unavailable. | PASS for the tested publication and mode boundaries. Existing page 3 regressions continue to pass. |
+
+The selection of homepage cases failed seven times before the change, with one
+existing non-Home case passing. All 18 tests in
+`tests/test_streamlit_public_pages.py` and all 341 offline tests passed after
+the change. No browser screenshots were captured because Chromium failed
+before rendering. Keyboard, focus, contrast, reflow, assistive technology and
+Urdu acceptance remain open.

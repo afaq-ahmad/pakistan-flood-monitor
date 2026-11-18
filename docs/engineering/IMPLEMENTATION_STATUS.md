@@ -316,3 +316,14 @@ PARTIAL under PK-006, with durable private receipts blocked on P1-002 / SEC-001.
 Six acceptance cases reproduced the presentation gaps. After the fix, 29 focused
 and 336 offline tests passed. The SQLite migration round trip reached
 `b4d9d93f2a10`. Browser and field usability remain pending.
+
+## UI-001 public Home orientation
+
+Draft [PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93)
+records the all-page design audit before implementing five task-based links on
+Home. The published-event section follows the links and uses the existing
+public-only adapter and timeout. AppTest verified route resolution, destination
+rendering, demo labelling and distinct empty and unavailable responses.
+Eighteen focused and 341 full offline tests passed. UI-001 remains PARTIAL
+pending browser acceptance and the specialist control findings. See the
+[UX acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md).
