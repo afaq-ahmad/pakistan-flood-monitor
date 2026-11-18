@@ -1,16 +1,18 @@
 # Contributing to Pakistan Flood Monitor
 
 1. Use [local setup](setup.md) for the tested Python environment and install
-   steps. Create a focused branch from current `main`.
-2. Check the [master task plan](engineering/MASTER_TASK_PLAN.md) for related
-   work. Agents must also read the repository-root `AGENTS.md`, the
-   [agent workflow](engineering/AGENT_GITHUB_WORKFLOW.md), [implementation status](engineering/IMPLEMENTATION_STATUS.md)
-   and [accepted decisions](adr/README.md).
-3. Keep changes focused and add deterministic checks for changed behavior.
-   Use [offline testing](testing.md) and record exact commands and results.
+   steps. Check the [master task plan](engineering/MASTER_TASK_PLAN.md) and
+   active PRs for ownership. Resume a suitable workstream or branch from
+   current `main`. Agents start with root `AGENTS.md` and follow the
+   [agent GitHub workflow](engineering/AGENT_GITHUB_WORKFLOW.md).
+2. Follow the [engineering standards](engineering/ENGINEERING_STANDARDS.md)
+   for code placement, failure handling and self-review. Keep the diff
+   focused. Add deterministic checks for changed behavior and record
+   exact commands and results from [offline testing](testing.md).
+3. Open a focused draft PR with the repository template. Request human
+   review when the acceptance checks are met.
 4. Update the owning page according to the [documentation guide](DOCUMENTATION_GUIDE.md).
-   Submit a PR describing scope, evidence, limitations and any follow-up.
-   Use the repository PR template. If the PR changes an architecture
+   If the PR changes an architecture
    contract, API boundary, workflow transition, scientific-data semantics
    or storage responsibility, review the affected documentation and
    Mermaid diagrams. Link any updated sections in the PR.

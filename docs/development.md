@@ -1,7 +1,22 @@
 # Local development workflow
 
-Start with [local setup](setup.md). Find the supported entry points and
-storage boundaries in [runtime architecture](architecture.md).
+Start with [local setup](setup.md) for editable installation, or
+[deployment](deployment.md) for the Compose commands. From the repository
+root, use the canonical FastAPI command and the Streamlit entry point
+shown in setup. The [runtime architecture](architecture.md) maps their
+storage and provider boundaries.
+
+Use the package extras declared in `pyproject.toml`. The `dev` extra
+adds pytest and `dashboard` supplies Streamlit, Folium, the Streamlit
+Folium integration and Plotly. Use both for local CI parity. Install
+`ml`, `dl` or `workflow` only when the affected feature requires it.
+[Testing](testing.md) owns the separate offline test guard.
+
+For a clean install or packaging check, use a disposable checkout and
+environment. Editable installs can rewrite the currently tracked
+`src/pakistan_flood_monitor.egg-info/` files. Inspect that diff and
+exclude generated metadata from ordinary changes. Packaging follow-up
+is tracked in [OPS-001](engineering/MASTER_TASK_PLAN.md#ops-001--deployment-and-operational-verification).
 
 ## Change a Streamlit page
 
@@ -17,11 +32,11 @@ storage boundaries in [runtime architecture](architecture.md).
 
 ## Change the canonical backend
 
-Extend `src/pakistan_flood_monitor/`. Treat `src/app/` as a migration source.
-Check [ADR-001](adr/ADR-001-canonical-runtime.md), existing contracts and
-callers before changing data or persistence. Apply schema changes through the
-canonical Alembic chain. Add tests that preserve published-data eligibility,
-role checks, provenance, scientific units and failure states as applicable.
+Use the [engineering standards](engineering/ENGINEERING_STANDARDS.md) to
+identify the canonical owner and interfaces before editing. Check
+[ADR-001](adr/ADR-001-canonical-runtime.md) for applicable architecture
+and safety constraints. Use the [canonical migration chain](deployment.md#migrate-the-canonical-database)
+for schema changes and the [API reference](api.md) for contracts.
 
 ## Validate and document
 

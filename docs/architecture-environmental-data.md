@@ -12,7 +12,8 @@ flowchart TD
     Discovery -->|Provider failure or empty result in operational mode| Blocked["Unavailable or no data"]
     Discovery -->|Scene metadata or labelled demo fixtures| Features["Feature extraction and integrity checks"]
     Links["Supporting source references"] -->|URIs only| Features
-    Features -->|Operational input or processor missing| Blocked
+    Features -->|Required operational input missing| Blocked
+    Features -->|Operational processor gate reached| Failed["Persist failed task and fail closed"]
     Blocked --> Degraded["Persist degraded task and fail closed"]
     Features -->|Test or demo| Candidate["Candidate report with lineage"]
     Candidate -->|Persist run and tasks| Run["Durable workflow result"]
@@ -35,8 +36,11 @@ at least two arrays are readable. It does not establish a calibrated backscatter
 change model. Canonical NDWI, IMERG rainfall, GloFAS return period and floodplain
 distance are currently unimplemented as real feature inputs. Operational mode
 stops on missing inputs and also has a separate gate for the absent validated
-hazard, flood extent and exposure processors. No operational candidate
-pipeline completes today.
+hazard, flood extent and exposure processors. With acquisition and feature
+extraction stubbed, that later guard currently raises `NameError` because
+`OperationalDataIntegrityError` is missing from the runner's imports.
+The workflow records a failure. No operational candidate pipeline
+completes today. DATA-001 tracks restoring the typed failure path.
 
 Test/demo can use deterministic fixtures for missing features. On success the
 extractor writes a feature snapshot, and the runner builds a report with run

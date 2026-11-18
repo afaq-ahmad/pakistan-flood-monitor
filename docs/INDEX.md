@@ -46,6 +46,7 @@ Inside a checkout it is at the repository root, beside the `docs/` folder.
 ## Develop, test and operate
 
 - [Local setup](setup.md), [development tasks](development.md), and [contributor guidance](contributing.md)
+- [Engineering standards and review checks](engineering/ENGINEERING_STANDARDS.md)
 - [Offline testing, workflow checks and validation limits](testing.md)
 - [Deployment and database migrations](deployment.md)
 - [Troubleshooting](troubleshooting.md)

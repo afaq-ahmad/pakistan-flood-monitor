@@ -1,10 +1,11 @@
 # Run Pakistan Flood Monitor locally
 
 This tutorial starts a labelled local demo. Use Python 3.12 to match the offline
-CI environment. Runtime imports require Python 3.11 or newer because they use
-`datetime.UTC`. The package metadata still advertises Python 3.10, which
-cannot import that symbol. See the [configuration reference](configuration.md)
-for how mode and database settings are selected.
+CI environment. Python 3.11 is the lowest verified runtime. Python 3.10
+fails on the canonical API's `datetime.UTC` import, even though package
+metadata still advertises 3.10. See [compatibility evidence](testing.md#python-compatibility)
+and the [configuration reference](configuration.md) for mode and database
+settings.
 
 ## Install the project
 

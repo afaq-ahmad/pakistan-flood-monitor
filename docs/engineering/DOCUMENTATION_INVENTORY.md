@@ -143,3 +143,19 @@ Source baseline `bbf988e`. Evidence and test references are in
 | Lifecycle rejection | The API described transitions through approval and publication without their terminal state or the `reject` alias. | The lifecycle permits retraction from `published` only. The handler normalizes `reject` to `retracted`. Invalid transitions and failed publication QA leave the stored record unchanged. | Show the exact states and failures in diagram C, with the alias documented in the lifecycle contract. |
 | Publication date | The event example listed `published_at` without explaining its semantics. | `_record_run` assigns the value when creating the draft. The review handler does not replace it at publication. Observation and evaluation timestamps have separate sources. | Annotate the API field and record the unresolved publication timestamp contract in P1-003. |
 | Provider integration | The architecture summary grouped providers with canonical processing without tracing acquisition. | Earth Search supplies discovery metadata. Some support assets have only a URI, and the real-input processor rejects incomplete operational features. Separate Streamlit research tools can call providers directly. | Draw the discovery and unavailable paths in diagram B. Diagram A shows direct research access independently. |
+
+## Agent instruction and engineering command audit
+
+Base `ec8700b`. The root contract owns the agent safeguards. The
+[agent workflow](AGENT_GITHUB_WORKFLOW.md) owns the Git procedure, the
+[engineering standards](ENGINEERING_STANDARDS.md) own code and review
+guidance, and [testing](../testing.md) owns command evidence.
+
+| Finding | Observed evidence | Resolution |
+|---|---|---|
+| Startup order and current-task context were split across the root contract and Git guide. | The root said to read status first. The workflow placed contract reading after branch recovery and baseline checks before task selection. | Read the initial contract and reread after branch recovery. Verify prior evidence, record the task and ownership, then run the task-specific baseline before editing. |
+| The root expected agents to inspect both package trees for every change. | ADR-001 names the canonical package and legacy migration source. Some tasks have no legacy dependency. | Inspect the affected callers and legacy implementation when relevant. Preserve parity evidence for ports, and keep canonical, transport and storage boundaries explicit. |
+| PR ownership, screenshots and change evidence were repeated or ambiguous. | The Git guide required one draft. The PR template expected screenshots even where UI verification was unavailable. | Link one engineering review checklist and distinguish exact evidence from unverified checks. The PR template records UI evidence or the reason it could not be captured. |
+| Python minimum had only source-level evidence. | 3.10.22 failed the canonical import. Fresh 3.11.18 and 3.12.14 passed 353 offline tests each. Editable installation regenerated tracked egg-info. | Record compatibility and clean-checkout instructions. Track package metadata repair under OPS-001. |
+| Offline CI referred to the runner at job environment scope. | Actionlint 1.7.7 rejected `runner.temp` there. The migration step already has its own valid step-level override. | Move the test database variable to the test step. Validate the workflow with Actionlint and retain the existing offline and migration gates. |
+| The documented downstream operational gate implied structured degradation. | Ruff found an undefined exception name. A mocked extraction reached the guard and reproduced `NameError` before any candidate was produced. | Correct the flow description and track the typed failure and regression test under DATA-001. |

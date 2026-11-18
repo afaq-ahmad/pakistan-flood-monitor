@@ -21,8 +21,10 @@ behavior. Later sections record earlier verification snapshots.
 
 See the [documentation homepage](../INDEX.md) for the current guides and the
 [master task plan](MASTER_TASK_PLAN.md) for pending verification. Python 3.10
-cannot load the runtime's `datetime.UTC` imports. Package metadata still
-declares 3.10 and is a tracked follow-up. Docker/PostGIS, browser accessibility,
+cannot load the runtime's `datetime.UTC` imports. Fresh 3.11.18 and 3.12.14
+environments passed the offline suite and SQLite migration round-trip.
+Metadata still declares 3.10 and is tracked under OPS-001. Docker image
+builds, PostGIS, browser accessibility,
 reviewed Urdu and scientific readiness remain open.
 
 ## Current contract
@@ -387,3 +389,17 @@ route/method comparisons, all 25 event-state pairs and four action aliases
 passed. The focused offline suite passed 121 tests and the full suite
 passed 353 tests. Rendered GitHub and Obsidian previews remain pending.
 P1-003 tracks the publication timestamp contract.
+
+## ENG-001 agent instructions and engineering baseline
+
+[Draft PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98)
+links one root agent contract to branch recovery, the task plan, engineering
+standards, offline evidence and the PR template. Fresh Python 3.11.18 and
+3.12.14 installs passed 353 tests each, loopback API and Streamlit startup
+and the SQLite upgrade/downgrade/re-upgrade to `b4d9d93f2a10`.
+Actionlint confirmed the pre-existing job-level `runner.temp` expression
+error and passed after moving the test database variable to step scope.
+Compose v2.40.3 parsed the configuration. Image and PostGIS runtime
+verification are pending. A correctness lint pilot exposed a reproducible
+undefined exception at the downstream operational processor gate. It is
+tracked under DATA-001. No application behavior or schema changed.
