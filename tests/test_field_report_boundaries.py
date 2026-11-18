@@ -61,6 +61,7 @@ def test_non_demo_field_reports_do_not_load_or_moderate_csv(demo_reports, monkey
     page = _page()
     assert not page.exception
     assert any("Field report moderation is unavailable" in item.value for item in page.info)
+    assert any("Resident report submission is unavailable" in item.value for item in page.info)
     assert not page.metric
     assert not page.expander
     assert not page.button
@@ -128,7 +129,7 @@ def test_unreadable_or_incomplete_demo_data_reports_unavailable(demo_reports, co
     page = _page()
     assert not page.exception
     assert any("Demo field reports are unavailable" in item.value for item in page.info)
-    assert not page.button
+    assert [button.key for button in page.button] == ["sub_submit_btn"]
 
 
 @pytest.fixture

@@ -383,3 +383,18 @@ Append entries; never rewrite earlier handoffs.
   - `pytest tests/test_field_report_boundaries.py -v`: 15 passed.
   - Full offline suite: 333 passed, 0 failed, 978 warnings.
 - Next: commit and push to remote, open draft PR, verify remote SHA and status.
+
+### 2026-11-18 13:09 UTC — PK-006 / FL-05 documentation checkpoint
+
+- Claimed `fix/pk-006-report-receipts` at verified main `90062a0`. PRs #89–91 merged. No open PRs or issues returned.
+- Reconciled REMAINING_WORK with merged work, documented the hash-only receipt and acceptance cases in the master plan and farmer QA matrix.
+- Baseline: `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` — 333 passed, 480 warnings. Next: reproduce the preview and empty-state failures before changing page 3.
+
+### 2026-11-18 13:13 UTC — PK-006 / FL-05 implementation handoff
+
+- Draft [PR #92](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/92), branch `fix/pk-006-report-receipts`, base `90062a0`. Documentation-first remote head verified at `6ac33242e442eecfc79fd6a9829bd0b40fcd4703`.
+- Page 3 displays only a structured practice preview. Empty fixture data and empty configured corridors have independent states. The real-report, private receipt and restart work stays blocked.
+- Changed page 3, the field-report boundary and safety-gate AppTests, remaining-work report, master plan, QA matrix, status ledger and this handoff.
+- Six acceptance cases failed before repair. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_field_report_boundaries.py tests/test_safety_gates_and_community_reporting.py -q --tb=short` passed 29 (9 warnings). Same command with `tests/` passed 336 (480 warnings).
+- SQLite upgrade/downgrade/re-upgrade, package/page compile, tracked data isolation and diff checks passed. Chromium headless startup at 360 px failed with socket permission denied before rendering. No browser, participant or operational safety validation.
+- Next: agree the PK-006 private receipt and retention contract and test commit failure, authorized lookup and retry after restart against durable storage. Final implementation SHA and hosted check state are recorded on the PR.
