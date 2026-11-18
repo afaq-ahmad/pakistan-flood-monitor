@@ -1722,30 +1722,39 @@ def ingest_field_report(
     principal_id = auth_context["principal_id"]
     dedupe_key = payload.client_report_id or f"{payload.event_id}:{payload.observed_at.isoformat()}:{payload.location.get('lat')}:{payload.location.get('lon')}:{principal_id}"
     report_id = f"fr-{hashlib.sha256(dedupe_key.encode('utf-8')).hexdigest()[:16]}"
-    if report_id in field_reports:
-        return {"status": "accepted_duplicate", "report": field_reports[report_id]}
+    with state_lock:
+        existing = field_reports.get(report_id)
+        if existing is not None:
+            metadata = existing.get("reporter_metadata")
+            if (
+                existing.get("event_id") != payload.event_id
+                or not isinstance(metadata, dict)
+                or metadata.get("submitted_by") != principal_id
+            ):
+                raise HTTPException(status_code=409, detail="Report receipt conflicts with an existing submission.")
+            return {"status": "accepted_duplicate", "report": existing}
 
-    created_at = datetime.now(UTC).isoformat()
-    report = {
-        "report_id": report_id,
-        "event_id": payload.event_id,
-        "observed_at": payload.observed_at.isoformat(),
-        "location": payload.location,
-        "reporter_metadata": payload.reporter_metadata | {"submitted_by": principal_id},
-        "evidence_urls": payload.evidence_urls,
-        "notes": payload.notes,
-        "status": "submitted",
-        "trusted": False,
-        "moderation_reason": "",
-        "moderation_tags": [],
-        "created_at": created_at,
-        "updated_at": created_at,
-    }
-    field_reports[report_id] = report
-    event.setdefault("linked_field_reports", []).append(report_id)
-    event.setdefault("field_report_summary", {"trusted_count": 0, "total_count": 0})
-    event["field_report_summary"]["total_count"] += 1
-    return {"status": "accepted", "report": report}
+        created_at = datetime.now(UTC).isoformat()
+        report = {
+            "report_id": report_id,
+            "event_id": payload.event_id,
+            "observed_at": payload.observed_at.isoformat(),
+            "location": payload.location,
+            "reporter_metadata": payload.reporter_metadata | {"submitted_by": principal_id},
+            "evidence_urls": payload.evidence_urls,
+            "notes": payload.notes,
+            "status": "submitted",
+            "trusted": False,
+            "moderation_reason": "",
+            "moderation_tags": [],
+            "created_at": created_at,
+            "updated_at": created_at,
+        }
+        field_reports[report_id] = report
+        event.setdefault("linked_field_reports", []).append(report_id)
+        event.setdefault("field_report_summary", {"trusted_count": 0, "total_count": 0})
+        event["field_report_summary"]["total_count"] += 1
+        return {"status": "accepted", "report": report}
 
 
 @internal_router.post("/field-reports/{report_id}/moderate")

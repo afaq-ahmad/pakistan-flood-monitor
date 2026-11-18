@@ -81,6 +81,10 @@ sequenceDiagram
   a distinct access-denied or unavailable state. Live transitions and audit remain available
   through the existing role-protected API. A durable review and audit contract is tracked in P1-002.
 - `POST /internal/admin/review-event`: Advances an event through the lifecycle (`draft` -> `review` -> `approved` -> `published`).
+- `POST /internal/reports/field`: Role-protected intake into process-local report state. A
+  duplicate receipt returns `accepted_duplicate` only for the same authenticated role principal
+  and event. Conflicting reuse returns HTTP 409 without the existing payload. Report IDs retain
+  their current format. Shared role credentials do not establish distinct reporter identities.
 - `POST /internal/field-reports/{report_id}/moderate`: Moderates a crowdsourced field report.
 
 #### Settings & Configurations

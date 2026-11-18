@@ -124,7 +124,7 @@ PR #74 rejected unsigned role tokens; PR #75 restricted publication. Confirm XSS
 CSV injection, rate limits and sensitive data exposure with tests; do not assume prior fixes cover all.
 - [x] Record prior authentication/publication changes.
 - [ ] Verify remaining trust boundaries and document reproducible findings.
-- [ ] Verify that PK-006 replay receipts are bound to the existing authenticated identity and event. Reject conflicting receipt reuse without returning private report data.
+- [x] Verify PK-006 idempotent receipt ownership and sanitized conflict responses with synthetic canonical API records.
 
 ## OPS-001 — Deployment and operational verification
 Status: BLOCKED; files: `Dockerfile`, `docker-compose.yml`, CI, migrations.
@@ -251,10 +251,10 @@ demo boundary and canonical role checks.
 - [ ] Design categories, evidence, deduplication and retention.
 - [ ] Test sensitive-location and publication boundaries.
 - [x] Reproduce FL-05 page 3 loading local report metrics/actions in API mode and giving no visible error when an AppTest moderation write is declined.
-- [ ] Run failing demo boundary and failed-write tests, plus canonical receipt ownership regressions with synthetic reports.
-- [ ] Verify blocked report CSV reads and writes in operational and API-backed modes, an explicit unavailable page state and labelled demo moderation.
-- [ ] Verify stale actions and write failures produce an error and preserve demo records. Check successful updates via isolated CSV and Streamlit rerun.
-- [ ] Verify an idempotent same-identity, same-event receipt and a sanitized conflict otherwise. Keep existing authorization and report IDs.
+- [x] Reproduce 13 failing FL-05 regression cases before application edits.
+- [x] Verify no report CSV reads/writes in operational and API-backed modes, explicit unavailable state and labelled demo moderation.
+- [x] Verify stale and failed writes preserve demo CSV and return a failure. Verify every button's failure message and acknowledged success across AppTest rerun.
+- [x] Verify an idempotent same-identity, same-event receipt, sanitized conflicts, concurrent same-process retry linkage, and unchanged authorization and IDs. The related suite passed 64 tests.
 - [ ] Design resident consent, categories, receipt and private evidence checks for future intake (FL-05).
 - [ ] Define a private acknowledgement and retry/idempotency contract with minimal coarse-area fields, moderation states and retention rules. Exercise unauthorized, duplicate/spam and write-failure cases before enabling operational intake. Verify durable storage and explicit consent for any onward integration.
 

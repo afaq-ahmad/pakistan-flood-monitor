@@ -11,6 +11,7 @@ import math
 import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
 import pandas as pd
@@ -318,7 +319,15 @@ class DataService:
 
     # ── Field Reports ────────────────────────────────────
     def get_field_reports(self) -> pd.DataFrame:
-        return self._load("field_reports")
+        if not self.is_demo_mode:
+            return pd.DataFrame()
+        try:
+            reports = self._load("field_reports")
+        except (OSError, UnicodeError, pd.errors.EmptyDataError, pd.errors.ParserError):
+            return pd.DataFrame()
+
+        required = {"report_id", "event_id", "reporter_channel", "status", "moderation_tags"}
+        return reports if required.issubset(reports.columns) else pd.DataFrame()
 
     def get_reports_for_event(self, event_id: str) -> pd.DataFrame:
         df = self.get_field_reports()
@@ -326,15 +335,39 @@ class DataService:
             return df
         return df[df["event_id"] == event_id]
 
-    def moderate_report(self, report_id: str, new_status: str, reason: str = ""):
-        df = self.get_field_reports()
-        idx = df.index[df["report_id"] == report_id]
-        if len(idx) == 0:
+    def moderate_report(self, report_id: str, new_status: str, reason: str = "") -> bool:
+        if new_status not in {"approved", "rejected", "flagged_spam"}:
             return False
-        df.loc[idx[0], "status"] = new_status
-        df.loc[idx[0], "trusted"] = (new_status == "approved")
-        df.loc[idx[0], "moderation_reason"] = reason
-        df.to_csv(DATA_DIR / "field_reports.csv", index=False)
+        df = self.get_field_reports()
+        if df.empty:
+            return False
+        matching = df.index[df["report_id"] == report_id]
+        if len(matching) != 1 or df.at[matching[0], "status"] not in {"submitted", "needs_more_info"}:
+            return False
+
+        row = matching[0]
+        df.at[row, "status"] = new_status
+        if "trusted" not in df:
+            df["trusted"] = False
+        if "moderation_reason" not in df:
+            df["moderation_reason"] = ""
+        df["moderation_reason"] = df["moderation_reason"].astype("string")
+        df.at[row, "trusted"] = new_status == "approved"
+        df.at[row, "moderation_reason"] = reason
+        path = DATA_DIR / "field_reports.csv"
+        pending = None
+        try:
+            with NamedTemporaryFile(mode="w", encoding="utf-8", newline="", dir=path.parent, delete=False) as handle:
+                pending = Path(handle.name)
+                df.to_csv(handle, index=False)
+            pending.replace(path)
+        except OSError:
+            if pending is not None:
+                try:
+                    pending.unlink(missing_ok=True)
+                except OSError:
+                    pass
+            return False
         return True
 
     def field_report_summary(self, event_id: str) -> dict:

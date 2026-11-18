@@ -278,3 +278,15 @@ Append entries; never rewrite earlier handoffs.
 - Reused QA-001, PK-006 and SEC-001. Added the incremental acceptance matrix and selected FL-05
   acceptance cases before application edits. Next: publish docs, open the draft, and run
   failing mode, moderation, and canonical receipt regressions with synthetic data.
+
+- The documentation-only checkpoint `ba221c05262509315423b4622b8756795bbd0ceb`
+  was verified remotely and [draft PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89)
+  opened before application edits.
+
+- Focused pre-fix suite returned 13 failures and one pass. The implementation gates CSV reads
+  and writes behind standalone demo mode, displays the actual moderation result after rerender,
+  and uses temporary-file replacement to preserve previous bytes on a failed write.
+- Canonical receipt response now checks stored event and resolved role principal under the existing
+  process lock. Tested with synthetic API records, concurrent retries and unauthorized moderation.
+  The selected application/API regressions passed 64 tests. Next: verify the full local suite,
+  hosted workflow and exact handoff before closing the checkpoint.
