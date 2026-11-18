@@ -337,3 +337,15 @@ unavailable and freshness presentation. No operational freshness threshold is
 inferred. Registry, route smoke tests and 48 focused regressions passed, as did
 the full offline suite of 345 tests. UI-001 remains PARTIAL pending browser
 verification and specialist follow-up.
+
+## PK-010 preparedness and public acceptance
+
+[Draft PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95)
+adds stage checklists, sourced details and a print view to both guides. The
+livestock guide uses local professional advice for feed planning and clinical
+questions. Six offline public journeys passed. Official source links have
+distinct names and the unauthenticated Settings route only shows operator
+guidance. The canonical review and administrator checks returned 401 for an
+anonymous request. PK-003 now has an Urdu readiness plan. Browser, physical
+printing, assistive technology and human-reviewed Urdu remain open. The full
+offline suite passed 353 tests.

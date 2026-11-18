@@ -50,3 +50,46 @@ Urdu acceptance remain open.
 
 Verification used Streamlit 1.67.0. The dashboard dependency requires 1.46 or
 later to support native top navigation. The full offline suite passed 345 tests.
+
+## Preparedness and public-journey follow-up in PR #95
+
+The steps below are the browser journey. The offline suite resolves each
+native link target and calls Streamlit's route switch in the same AppTest
+session. AppTest can change selectors, checkboxes and buttons. It cannot
+physically click links, open a collapsed detail panel or measure layout.
+
+| Journey and tracking | Exact steps | Result and evidence |
+|---|---|---|
+| A · UX-A05, PK-010 | Open Home → Prepare my farm → read Before flooding → open Crops, equipment and chemicals → turn on Show all details for printing → View official flood information → choose the FFD bulletin. | The pump and storage checklist appears inline. The detail topic and extension reference are present. The print toggle renders the topic as a heading, with sources. The official page identifies FFD and its destination, link review date and need to check bulletin issue time and area. Component PASS. |
+| B · UX-A06, PK-010 | Open Home → Prepare my livestock → read Before flooding → open Feed and water before flooding → turn on Show all details for printing → find Veterinary Information and Official Resources → locate the Sindh and Punjab contact links → View official flood information. | Feed, water, identification and shelter appear in order. LEGS and provincial sources are linked. The page explains that service availability is unknown. The fixed fodder duration and wound-treatment instruction are absent. Component PASS. |
+| C · UX-A04, PK-001 | Open Home with a 200 response containing an empty list → Open My Area → select Chenab-Middle → read the result → View official flood information. | Clear message says there are no linked publications and local conditions may still be unknown. No event figure or map is rendered. FFD and NDMA links retain the source directory review date. Component PASS. |
+| D · UX-A02, PK-003 | Open Home with a simulated timeout → Open My Area → select Chenab-Middle → read the unavailable message → View official flood information. | Failed requests remain distinct from empty results. No fixture fallback, map or count. The official directory renders after the failure. Three two-second-timeout requests were issued across Home, initial area and selector change, with zero on the official page. Component PASS. |
+| E · UX-A08, PK-006 | Open standalone demo Home → Community Reporting → Practice a community report (demo) → choose Fodder or clean water need and Chenab-Middle → acknowledge → Preview example. Repeat in operational mode. | The preview explicitly says nothing was submitted, and the isolated data directory stays empty. Operational mode shows resident intake unavailable without a practice action. Component PASS. |
+| F · UX-A10 and UX-A12, UI-001 and SEC-001 | Open operational Home → inspect public links → navigate directly to Analyst Review without a credential → navigate to Settings → verify anonymous canonical review queue and state export responses. | Analyst Review displays a credential prompt without requesting a queue. Settings exposes neither editable controls nor server configuration. Temporary configuration remains unchanged. Canonical review and admin state export return 401. Component and API PASS for these interfaces. |
+
+Five journey cases initially failed. Four found identical link names on the
+official directory, which would appear with identical names in a screen reader's links list. The fifth found settings controls that could edit server files without an
+authenticated web operator. PR #95 gives FFD and NDMA distinct action labels and
+replaces hosted settings controls with server-side configuration guidance.
+
+### Low-bandwidth and accessibility evidence
+
+Both guides use a centered single column, plain checklist text before optional
+details, a consistent heading order and a labelled print checkbox. The external
+references are navigation links. The guide routes and print reruns perform zero
+event/provider requests or fixture reads in the isolated checks. In five local
+AppTest samples per guide, median initial component times were 68.0 ms (farm)
+and 69.2 ms (livestock). Median print reruns were 6.6 ms for each. These measure
+local component execution. Device, tile throttling, Internet, print and assistive
+technology performance remain unverified.
+
+Home and My Area still use one canonical event request per run when configured.
+Changing the corridor re-runs that request and keeps the selected corridor.
+The map remains optional and the directory loads independently of the feed.
+There is no offline cold-load guarantee for a browser that cannot reach the app.
+
+Chromium startup failed on a denied socket before rendering. Browser screenshots
+and actual Android print pagination, focus/activation, zoom, target sizes,
+contrast and screen-reader announcements remain unverified. UX-A15 needs a
+browser-enabled run at 320, 360, 390, 768 and 1440 px. A links-list and expanded
+details check should include the names, focus and source dates.

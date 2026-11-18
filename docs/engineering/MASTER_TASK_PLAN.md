@@ -99,7 +99,8 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
 - [x] Audit Home, the 18 Streamlit pages, standalone dashboard and adapter. Record the [UX plan](../product/UI_UX_IMPROVEMENT_PLAN.md) and [acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md).
 - [x] Implement and verify UX-A01–03 on `ux/ui-001-public-home` ([draft PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93)). Home has five native public links and one fail-closed published-event snapshot. AppTest verified destinations and feed states. Browser acceptance remains open.
-- [ ] Verify and constrain specialist configuration writes under SEC-001. Follow with honest Operations and Training feedback, using the existing UI-001 workstream.
+- [x] Remove unauthenticated browser settings edits and configuration display. Verify the public journey and canonical access boundary under SEC-001.
+- [ ] Improve Operations and Training action feedback in UI-001.
 - [x] Register the existing pages in one native grouped menu ([draft PR #94](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/94)). Verify all 18 legacy route paths and the five public destinations in AppTest. Keep access checks in their existing handlers.
 - [ ] Verify menu reflow, keyboard focus and browser history at 320, 360, 390, 768 and 1440 px. Track language and mobile acceptance under PK-003.
 - [x] Refine Home's hierarchy and share availability guidance on Home and My Area. Verify absent source, empty feed, timeout and API error without fixture fallback. Display the existing stale status for demo processing and keep operational feed freshness unknown.
@@ -219,7 +220,8 @@ Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003. Data: Human-reviewe
 - [ ] Audit translations, mobile layout, text-only and print views.
 - [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
 
-- [ ] Audit critical English/Urdu text and translation fallback.
+- [x] Inventory English public copy and existing Urdu fields. Document language selection, fallback, units, review and RTL requirements in the UX plan.
+- [ ] Add reviewed Urdu strings and verify screen-reader language switching.
 - [ ] Design mobile, text-only, printable low-bandwidth views.
 - [ ] Test accessibility and record regional-language needs.
 - [ ] Test 360 px reflow, reviewed Urdu/RTL, keyboard order and essentials without tiles (FL-06/12).
@@ -318,7 +320,7 @@ Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated lice
 - [x] Add Livestock Preparedness page (`pages/18_🐄_Livestock_Preparedness.py`) with sourced English guidance for animal water/fodder, identification, welfare, veterinary links and recovery. Service availability treated as unknown. 9 offline tests pass.
 - [x] Add visible stage checklists, sourced topic details, and a text-first print view to Farmer Preparedness.
 - [x] Apply the stage and print pattern to Livestock Preparedness. Replace the untraceable fixed fodder duration and unsupported treatment details. Add attributed provincial veterinary contact sources.
-- [ ] Execute the six public journeys and record component evidence, remaining browser checks and Urdu readiness.
+- [x] Verify all six public journeys with offline component and API tests. Document source labels, request counts, browser gaps and Urdu readiness. See [draft PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95).
 - [ ] Verify and attribute additional government or humanitarian guidance for remaining agricultural topics.
 - [ ] Verify and attribute guidance for additional species-specific livestock needs. Treat service availability as unknown unless the provider verifies it (PK-005).
 - [ ] Review Urdu translations with a qualified human reviewer before publication. Keep preparedness content separate from model outputs, evacuation routes or operational notices.

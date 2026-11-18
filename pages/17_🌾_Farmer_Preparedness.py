@@ -2,6 +2,7 @@
 
 import streamlit as st
 
+from backend_service import DataService
 from preparedness_ui import NDMA_FLOOD_GUIDE, begin_guide, show_checklist, show_detail
 
 FAO_GRAIN = "https://www.fao.org/pakistan/news/detail-events/en/c/1709335/"
@@ -18,6 +19,7 @@ show_all = begin_guide(
     "Farmer Preparedness Guide", "🌾",
     "General guidance for crops, stored grain, equipment and farm records. "
     "Follow NDMA, PDMA and local agricultural extension instructions for your area.",
+    service=DataService(),
 )
 
 show_checklist("Before flooding", (

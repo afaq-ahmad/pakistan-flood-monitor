@@ -2,6 +2,7 @@
 
 import streamlit as st
 
+from backend_service import DataService
 from preparedness_ui import NDMA_FLOOD_GUIDE, begin_guide, show_checklist, show_detail
 
 LEGS_HANDBOOK = "https://www.livestock-emergency.net/download-legs/"
@@ -12,6 +13,7 @@ show_all = begin_guide(
     "Livestock Preparedness Guide", "🐄",
     "General guidance for owners of cattle, buffalo, goats, sheep and poultry. "
     "Follow official flood instructions and ask a veterinary professional about animal health.",
+    service=DataService(),
 )
 
 show_checklist("Before flooding", (
