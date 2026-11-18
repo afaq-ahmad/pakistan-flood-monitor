@@ -20,6 +20,8 @@ else:
 # Search my area
 st.subheader("🔍 Search My Area")
 all_events = data_service.get_events()
+if data_service.event_api_error:
+    st.error("Event information is unavailable. Follow official NDMA/PDMA guidance.")
 districts = sorted(all_events["district"].dropna().unique().tolist()) if not all_events.empty and "district" in all_events.columns else []
 search = st.selectbox("Search by district", ["All"] + districts)
 events = all_events[all_events["district"] == search] if search != "All" and not all_events.empty and "district" in all_events.columns else all_events
@@ -61,7 +63,10 @@ published = data_service.get_events_by_status(["published", "active", "approved"
 if search != "All" and not published.empty and "district" in published.columns:
     published = published[published["district"] == search]
 if published.empty:
-    st.info("No active alerts at this time.")
+    if data_service.event_api_error:
+        st.warning("Alerts are unavailable; an empty list does not indicate safe conditions.")
+    else:
+        st.info("No published alerts are currently available.")
 else:
     for _, ev in published.iterrows():
         sev = str(ev.get("severity","")).upper()
