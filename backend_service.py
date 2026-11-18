@@ -11,6 +11,7 @@ import math
 import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 import yaml
@@ -414,61 +415,65 @@ class DataService:
 
     # ── Export Center ────────────────────────────────────
     def generate_export(self, event_id: str, fmt: str) -> dict:
-        """Generate a mock export artifact matching export_center.md."""
+        """Write a labelled GeoJSON point and its manifest for a local demo event."""
+        if not self.is_demo_mode:
+            return {"error": "GIS export is unavailable for API-backed or operational events."}
+        if fmt != "geojson":
+            return {"error": "Only GeoJSON demo point export is available."}
         event = self.get_event(event_id)
         if event is None:
-            return {"error": f"Event {event_id} not found"}
-        export_id = f"exp-{event_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+            return {"error": f"Event {event_id} not found."}
+
+        try:
+            lon, lat = float(event["longitude"]), float(event["latitude"])
+        except (KeyError, TypeError, ValueError):
+            return {"error": "Event coordinates are unavailable."}
+        if not (-180 <= lon <= 180 and -90 <= lat <= 90):
+            return {"error": "Event coordinates are outside valid WGS84 bounds."}
+
+        export_id = f"exp-{uuid4().hex}"
         export_dir = Path(".cache/exports") / export_id
-        export_dir.mkdir(parents=True, exist_ok=True)
+        output_path = export_dir / "event.geojson"
+        manifest_path = export_dir / "manifest.json"
 
-        ext_map = {"geojson": ".geojson", "cog": ".tif", "geoparquet": ".parquet"}
-        ext = ext_map.get(fmt, ".geojson")
-        output_path = export_dir / f"{event_id}{ext}"
-
-        # Write mock data
-        if fmt == "geojson":
-            geojson = {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [float(event.get("longitude", 0)), float(event.get("latitude", 0))]},
-                    "properties": {"event_id": event_id, "severity": event.get("severity"), "confidence": event.get("confidence")}
-                }]
-            }
-            output_path.write_text(json.dumps(geojson, indent=2))
-        else:
-            output_path.write_text(f"Mock {fmt} export for {event_id}")
-
+        labels = {"product_label": "SIMULATED", "demo_watermark": DEMO_WATERMARK}
+        geojson = {
+            "type": "FeatureCollection",
+            **labels,
+            "features": [{
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                "properties": {"event_id": event_id, **labels},
+            }],
+        }
+        output = json.dumps(geojson, indent=2, ensure_ascii=False).encode("utf-8")
         manifest = {
             "schema": "pakistan-flood-monitor/export-manifest/v1",
             "export_id": export_id,
             "event_id": event_id,
             "format": fmt,
             "generated_at": datetime.now(timezone.utc).isoformat(),
+            **labels,
             "lineage": {
-                "source_endpoint": f"/public/events/{event_id}",
-                "exposure_endpoint": f"/public/events/{event_id}/exposure",
-                "processing_version": "2.1.0",
+                "source_type": "local_demo_fixture",
+                "dataset": str(DATA_DIR / "flood_events.csv"),
             },
-            "outputs": [{"path": str(output_path), "size_bytes": output_path.stat().st_size}],
+            "geometry": "GeoJSON point in WGS84 longitude/latitude order",
+            "outputs": [{"path": output_path.name, "size_bytes": len(output)}],
         }
-        manifest_path = export_dir / "manifest.json"
-        manifest_path.write_text(json.dumps(manifest, indent=2))
+        try:
+            export_dir.mkdir(parents=True)
+            output_path.write_bytes(output)
+            manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            return {"error": "Unable to write the demo export."}
 
         return {
             "export_id": export_id,
             "output_path": str(output_path),
             "manifest_path": str(manifest_path),
             "format": fmt,
-            # NOTE: validation checks are hardcoded stubs — not real validation.
-            # Real exports require CRS/nodata/range checks against reviewed products.
-            "validation": {
-                "valid": True,
-                "checks_passed": ["format_valid", "crs_present", "non_empty"],
-                "note": "Stub validation — not verified against reviewed product specifications.",
-            },
-            "demo_watermark": DEMO_WATERMARK if not API_BASE_URL else None,
+            "demo_watermark": DEMO_WATERMARK,
         }
 
     # ── Release Checklist ────────────────────────────────

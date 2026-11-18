@@ -106,3 +106,9 @@ Append entries; never rewrite earlier handoffs.
   `.venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py tests/test_dashboard_api_fail_closed.py tests/test_p0003_exposure_boundary.py -q --tb=short`
   passed 31 tests. Baseline full offline suite passed 228 tests with 475 warnings.
 - Next: constrain demo export, verify actual downloads, run full checks, then update PR and ledger.
+
+- Export checkpoint follows verified remote `8b2ba961a659d6ccd6f87cc30141a1fdc7ab3eb3`.
+  Export Center generates labelled local-demo GeoJSON and a manifest, rejects placeholder
+  formats and exposes download buttons. Export and P0-003 focused tests passed 23 tests.
+- Full offline suite passed 242 tests with 475 warnings. SQLite migration round-trip,
+  byte-compilation and tracked-data check passed. Next: review CI and finalize the audit/ledger.

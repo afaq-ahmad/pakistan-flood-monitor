@@ -1,57 +1,42 @@
+from pathlib import Path
+
 import streamlit as st
-from backend_service import data_service, DEMO_WATERMARK
+
+from backend_service import DEMO_WATERMARK, DataService
 
 st.set_page_config(page_title="Export Center", page_icon="📤", layout="wide")
 st.title("📤 Export Center")
-st.markdown("Generate validated GIS exports — GeoJSON, COG, GeoParquet — with manifests and QGIS guidance.")
 
-# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
-if data_service.is_demo_mode:
-    st.warning(
-        f"**{DEMO_WATERMARK}**  \n"
-        "Exports generated in demo mode contain mock vector and raster data for pipeline verification only. "
-        "They do NOT represent actual flood extent."
-    )
+data_service = DataService()
+if not data_service.is_demo_mode:
+    st.info("GIS export is unavailable for API-backed or operational events.")
+    st.stop()
+
+st.warning(DEMO_WATERMARK)
+st.write("Download a demo event location as a GeoJSON point and its provenance manifest.")
 
 events = data_service.get_events()
 if events.empty:
-    st.info("No events to export.")
+    st.info("No demo events are available to export.")
     st.stop()
 
-c1, c2 = st.columns(2)
-selected = c1.selectbox("Select Event", events["event_id"].tolist())
-fmt = c2.selectbox("Export Format", ["geojson", "cog", "geoparquet"])
+selected = st.selectbox("Select demo event", events["event_id"].tolist())
+if st.button("Generate demo export", type="primary"):
+    st.session_state["demo_export"] = (selected, data_service.generate_export(selected, "geojson"))
 
-st.markdown("""
-| Format | Extension | Description |
-|--------|-----------|-------------|
-| GeoJSON | `.geojson` | FeatureCollection vector — universal GIS compatibility |
-| COG | `.tif` | Cloud Optimized GeoTIFF — tiled raster with overviews |
-| GeoParquet | `.parquet` | Columnar geospatial — fast analytics with CRS metadata |
-""")
-
-if st.button("🚀 Generate Export", type="primary"):
-    with st.spinner("Generating export..."):
-        result = data_service.generate_export(selected, fmt)
+selected_export = st.session_state.get("demo_export")
+if selected_export and selected_export[0] == selected:
+    result = selected_export[1]
     if "error" in result:
         st.error(result["error"])
     else:
-        st.success(f"Export generated: `{result['export_id']}`")
-        st.json(result)
-
-# QGIS Integration Guide
-st.subheader("🗺️ QGIS Integration Guide")
-with st.expander("GeoJSON Import"):
-    st.markdown("1. Open QGIS → Layer → Add Layer → Add Vector Layer\n2. Source: File → Browse to `.geojson`\n3. Click Add\n4. Verify CRS is EPSG:4326")
-with st.expander("COG Import"):
-    st.markdown("1. Layer → Add Layer → Add Raster Layer\n2. Browse to `.tif`\n3. Check Layer Properties → CRS and overviews")
-with st.expander("GeoParquet Import"):
-    st.markdown("1. Requires QGIS with GDAL Parquet support\n2. Layer → Add Layer → Add Vector Layer → `.parquet`\n3. Validate feature count matches GeoJSON")
-with st.expander("Manifest-Assisted QA"):
-    st.markdown("""
-    Use `manifest.json` alongside imported layers:
-    - `export_id`: tie map products to exact export run
-    - `generated_at`: timestamp for reproducibility
-    - `lineage.source_endpoint`: confirms event geometry source
-    - `lineage.processing_version`: confirms processing version
-    """)
+        try:
+            geojson = Path(result["output_path"]).read_bytes()
+            manifest = Path(result["manifest_path"]).read_bytes()
+        except OSError:
+            st.error("Demo export is unavailable. Generate it again to retry.")
+        else:
+            st.download_button("Download GeoJSON", geojson, file_name="demo-event.geojson",
+                               mime="application/geo+json")
+            st.download_button("Download manifest", manifest, file_name="manifest.json",
+                               mime="application/json")
