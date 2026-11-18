@@ -1,6 +1,6 @@
 # Pakistan feature roadmap
 
-The authoritative checklist and task statuses are in [MASTER_TASK_PLAN.md](../engineering/MASTER_TASK_PLAN.md). This document is a design aid, not a second progress tracker. Research: [needs and evidence](PAKISTAN_USER_NEEDS_AND_EVIDENCE.md).
+The authoritative checklist and task statuses are in [MASTER_TASK_PLAN.md](../engineering/MASTER_TASK_PLAN.md). This document is a design aid, not a second progress tracker. Research and validation are documented in [needs and evidence](PAKISTAN_USER_NEEDS_AND_EVIDENCE.md), [farmer and livestock journeys](FARMER_LIVESTOCK_USER_JOURNEYS.md), and the [QA matrix](FARMER_LIVESTOCK_QA_MATRIX.md).
 
 ## Value and feasibility matrix
 
@@ -33,6 +33,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Audit district data and show no-data/unknown coverage; never infer property risk.
+- **Farmer and community acceptance.** Keep configured corridor names visible before the live event request, including empty, offline, and unconfigured states. Validate licensed district, tehsil and mouza identifiers and aliases separately. Keep parcel and village coverage unknown until verified.
+
 
 ### PK-002 — Official source hub
 - **Priority/status:** P1 / PARTIAL. **Dependencies:** P0-003.
@@ -43,6 +45,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** low for static links; larger for ingestion. **Next:** Static attributed directory implemented; verify ongoing link maintenance and accessibility.
+- **Farmer and community acceptance.** Separate national and provincial channels and check issue time and geography at the publisher. Maintain a dated source registry. A direct-link timeout must not be turned into an active notice or outage inference about its services.
+
 
 ### PK-003 — Urdu and low-bandwidth access
 - **Priority/status:** P1 / PARTIAL. **Dependencies:** UI-001, P0-003.
@@ -53,6 +57,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Audit translations, mobile layout, text-only and print views.
+- **Farmer and community acceptance.** Test essential text on an inexpensive Android device at 360 px and under throttling or failed tiles. Review Urdu and RTL with local speakers and test keyboard and screen-reader order. Verify forwardable plain text and cold offline behavior separately.
+
 
 ### PK-004 — Community sharing cards
 - **Priority/status:** P1 / NOT_STARTED. **Dependencies:** P1-003, PK-003.
@@ -63,6 +69,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Design source-attributed cards; test expiry and publication authorization.
+- **Farmer and community acceptance.** Require issuer, source link, issue time, expiry, area, review state and uncertainty in the forwarded text. Preserve demo labels and exclude expired or unreviewed products. Provider stub receipts do not establish delivery.
+
 
 ### PK-005 — Verified relief directory
 - **Priority/status:** P1/P2 / BLOCKED. **Dependencies:** P1-002, SEC-001.
@@ -73,6 +81,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Design verification, expiry and moderation; never infer active shelter availability.
+- **Farmer and community acceptance.** For veterinary, fodder, safe-water and animal shelter listings, require a verified operator, supported area/species, timestamp and expiry. Track reported road/access constraints separately from authoritative closure status.
+
 
 ### PK-006 — Community reports
 - **Priority/status:** P2 / PARTIAL. **Dependencies:** P1-002, SEC-001.
@@ -83,6 +93,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Audit existing field-report flow; distinguish reports from verified observations.
+- **Farmer and community acceptance.** Separate crop, stored grain, livestock, road, irrigation and water incidents. Future consent, receipt and moderation should work without requiring a land title. Prevent public disclosure of exact locations or raw evidence, and preserve state across restarts.
+
 
 ### PK-007 — Farmers and livestock
 - **Priority/status:** P2 / BLOCKED. **Dependencies:** DATA-001, GIS-001, PK-006.
@@ -93,6 +105,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Separate estimated exposure, reported losses and verified damage.
+- **Farmer and community acceptance.** Support crop stage, irrigated land, pumps and stored grain as distinct information needs. Calibrate crop exposure with licensed spatial and seasonal data, maintain units and resolution, and keep livestock losses and verified damage separate. Provide only sourced, dated preparedness materials until scientific and provider validation exists.
+
 
 ### PK-008 — River observation explorer
 - **Priority/status:** P2 / BLOCKED. **Dependencies:** DATA-001.
@@ -113,6 +127,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Audit partner mode; constrain access and sensitive data.
+- **Farmer and community acceptance.** Do not describe local advisories or exports as authorized. Test that source, area, issue/expiry and demo markers survive copying, while personal details and raw evidence stay protected.
+
 
 ### PK-010 — Historical and preparedness explorer
 - **Priority/status:** P3 / PARTIAL. **Dependencies:** DATA-001, GIS-001.
@@ -123,6 +139,8 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Distinguish history from prediction; validate maps and legends.
+- **Farmer and community acceptance.** Add the extent source, event dates, resolution and confidence, distinguishing historical extent, estimated crop exposure and field-verified loss. Remove unsupported ground-truth language. Keep authoritative preparedness links dated and usable without imagery.
+
 
 ### PK-011 — Validated forecasting
 - **Priority/status:** P3 / BLOCKED. **Dependencies:** DATA-001.
@@ -133,3 +151,4 @@ Common requirements: English and reviewed Urdu where appropriate; text-first mob
 - **Frontend:** text-first mobile view with language and accessibility review; communicate uncertainty and no-data. **Backend/model:** preserve source, timestamp, status and lineage; use canonical authorization.
 - **Privacy/science:** minimize personal information, moderate reports, validate units/CRS and independently evaluate any model before operational use. **Tests:** offline unit/API/UI, negative, stale and unauthorized cases; no live network dependency.
 - **Complexity/blockers:** medium/high; dependent on source access and safety validation. **Next:** Keep operational forecast disabled until independently validated.
+- **Farmer and community acceptance.** Prioritize guarding unvalidated prototype water-level and dam views in operational mode. Replace evacuation wording and missing-imagery flood scores with explicit unavailable states pending hindcast, gauge and provider validation.

@@ -177,3 +177,16 @@ Append entries; never rewrite earlier handoffs.
 - Next: document the P1-002 durable event identity and transaction contract with explicit
   version checks, restart recovery, and migration rollback tests. Recheck browser and hosted CI
   acceptance when a runnable environment is available.
+
+### 2026-11-18 UTC — PK-001 farmer and livestock planning checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor, branch `audit/pk-001-farmer-livestock-journeys`,
+  base `d24fa22b19b8aba30d5e9917c40794d7ea798462`. PR #86 was merged and no open
+  farmer/community PR was found. Existing task IDs and phased boundaries are preserved.
+- Revalidated supplied historical evidence and traced the 14 requested application surfaces.
+  Direct Punjab PDMA retrieval timed out. AppTest reproduced missing area selection for
+  empty/503/timeout feeds, misleading NASA success and operational Field Reports using local
+  fixtures. The deterministic dam probe returned a synthetic number with no image.
+- Added user journeys and QA matrix, extended the existing feature roadmap and master plan,
+  and noted the scientific and browser gaps. Next: publish this document-only checkpoint,
+  open one draft PR, then add the failing PK-001 regression and fix reference area access.

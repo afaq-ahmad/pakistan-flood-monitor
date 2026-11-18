@@ -233,3 +233,12 @@ Continue ENG-001 validation before human review; other backlog statuses remain u
 - Next, propose the P1-002 durable event identity and the review/audit transaction,
   including a review version check, restart behavior, migration, and rollback criteria.
   Keep live dashboard transitions and public products pending contract review.
+
+## Farmer and community audit (18 November 2026)
+
+Base `d24fa22` includes the merged read-only analyst queue from PR #86. The
+[persona walkthrough](../product/FARMER_LIVESTOCK_USER_JOURNEYS.md) and
+[QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md) record deterministic evidence and
+remaining evidence needs. PK-001 starts with reference-only scope. FL-08's unsafe
+prototype presentation, report protection, reviewed products and validated farm-level
+exposure remain open in the master plan.

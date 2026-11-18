@@ -109,3 +109,14 @@ Review decisions still depend on the existing canonical API. The queue covers th
 process and may be incomplete after restart. P1-002 tracks a transactional review and audit
 contract before exposing live transitions in the dashboard. This slice adds no product
 publication, scientific inputs, or validated warning capabilities.
+
+## Rural user and agriculture walkthrough
+
+The [simulated farmer and livestock journeys](../product/FARMER_LIVESTOCK_USER_JOURNEYS.md)
+and [QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md) trace deployment behavior from
+`d24fa22`. Empty/failed event requests hid My Area. Offline NASA auto-load reported a
+success count despite provider errors. The operational Field Reports screen rendered local
+records, and the missing-imagery dam probe returned a synthetic number marked as a satellite
+proxy. Forecast wording that can be mistaken for an official warning was confirmed by source
+inspection. The first implementation slice is limited to PK-001's static reference catalogue,
+with no claim of administrative coverage.
