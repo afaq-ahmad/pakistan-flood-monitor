@@ -267,6 +267,8 @@ Priority: P2; Status: BLOCKED; Dependencies: DATA-001, GIS-001, PK-006. Data: Va
 - [ ] Separate estimated exposure, reported losses and verified damage.
 - [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
 
+- [x] Define agricultural report categories with metadata, privacy flags and consent requirements. See `src/pakistan_flood_monitor/models/report_categories.py` and 12 offline tests.
+- [x] Document the agricultural exposure specification and 9 prerequisites in `docs/product/AGRICULTURAL_EXPOSURE_SPECIFICATION.md`. All prerequisites remain BLOCKED.
 - [ ] Inventory agricultural datasets and exposure methods.
 - [ ] Validate spatial overlays and separate reported from verified damage.
 - [ ] Test units, temporal alignment and unsupported compensation claims.
@@ -303,8 +305,10 @@ Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated lice
 - [ ] Distinguish history from forecasts and unknown coverage.
 - [ ] Verify preparedness guidance and legend tests.
 - [ ] Check provenance and permissions of bundled historical flood outlines; distinguish approximate outlines from verified training evidence (FL-03).
-- [ ] Verify and attribute English government or humanitarian guidance for crops, grain/seed, equipment, chemicals, records and recovery. Make text usable without maps or a live event feed.
-- [ ] Verify and attribute guidance for animal water/fodder, identification, welfare, veterinary links and recovery for applicable species. Treat service availability as unknown unless the provider verifies it (PK-005).
+- [x] Add Farmer Preparedness page (`pages/17_🌾_Farmer_Preparedness.py`) with sourced English guidance for crops, grain/seed, equipment, chemicals, records and recovery. Text-first, no maps or live feed dependency. 8 offline tests pass.
+- [x] Add Livestock Preparedness page (`pages/18_🐄_Livestock_Preparedness.py`) with sourced English guidance for animal water/fodder, identification, welfare, veterinary links and recovery. Service availability treated as unknown. 9 offline tests pass.
+- [ ] Verify and attribute additional government or humanitarian guidance for remaining agricultural topics.
+- [ ] Verify and attribute guidance for additional species-specific livestock needs. Treat service availability as unknown unless the provider verifies it (PK-005).
 - [ ] Review Urdu translations with a qualified human reviewer before publication. Keep preparedness content separate from model outputs, evacuation routes or operational notices.
 
 

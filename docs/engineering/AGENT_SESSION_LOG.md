@@ -310,3 +310,44 @@ Append entries; never rewrite earlier handoffs.
 - Next: reproduce PK-011 / FL-08 in an offline operational AppTest with optional forecast
   dependencies present, then review the presentation guard before any provider invocation
   or warning-like output. Keep scientific validation and durable report intake open.
+
+### 2026-11-18 UTC — Farmer and livestock preparedness implementation
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `feat/pk-farmer-livestock-ux`
+  from `d37488a` (merged PRs #87, #88, #89 from main). No open PR owns this work.
+- Read AGENTS.md, AGENT_GITHUB_WORKFLOW.md, MASTER_TASK_PLAN.md, AGENT_SESSION_LOG.md,
+  FARMER_LIVESTOCK_USER_JOURNEYS.md, FARMER_LIVESTOCK_QA_MATRIX.md and
+  PAKISTAN_FEATURE_ROADMAP.md. Reconciled against updated code from latest main.
+- Implemented:
+  1. `pages/17_🌾_Farmer_Preparedness.py` — sourced English guidance page covering crops,
+     grain, equipment, chemicals, farm records, pre-flood preparedness and post-flood
+     recovery. Text-first, no fabricated observations or live data. Demo watermark,
+     official link, limitations. Attribution to FAO, NDMA, PARC.
+  2. `pages/18_🐄_Livestock_Preparedness.py` — sourced English guidance for animal owners
+     covering ID/records, fodder/water, shelter/movement, animal health, post-flood
+     recovery. Does not claim service availability without verification.
+  3. `tests/test_preparedness_pages.py` — 17 deterministic offline tests covering both
+     pages: rendering, demo watermark, operational mode, official links, key sections,
+     no fabricated observations, limitations, Urdu subtask mention, and livestock
+     service-availability caveat.
+  4. `src/pakistan_flood_monitor/models/report_categories.py` — agricultural report
+     category taxonomy with 8 categories (crop_damage, livestock_affected,
+     fodder_water_need, irrigation_damage, road_bridge_inaccessible, equipment_damage,
+     water_contamination, general_flood_impact), metadata, privacy flags and consent
+     requirements. Categories only; no submission workflow.
+  5. `tests/test_report_categories.py` — 12 offline tests for category taxonomy,
+     uniqueness, privacy constraints and consent documentation.
+  6. `docs/product/AGRICULTURAL_EXPOSURE_SPECIFICATION.md` — full specification with
+     9 prerequisites for property-level exposure analysis. All BLOCKED.
+  7. `docs/engineering/REMAINING_WORK.md` — comprehensive remaining-work documentation
+     across all repository dimensions.
+  8. Updated `docs/engineering/MASTER_TASK_PLAN.md` with PK-007 and PK-010 progress.
+- Tests:
+  - `pytest tests/test_preparedness_pages.py -v`: 17 passed.
+  - `pytest tests/test_report_categories.py -v`: 12 passed.
+  - `pytest tests/ -q --tb=short`: 310 passed (baseline 293 + 17 new), 973 warnings.
+  - Full suite including report category tests pending final confirmation.
+- No migration, data writes, publication or scientific changes.
+- Urdu translation marked as required subtask (PK-003), not implemented.
+- Next: commit and push, open draft PR, record handoff with verified remote SHA.
+  PK-011/FL-08 operational forecast guard and browser/mobile acceptance remain pending.
