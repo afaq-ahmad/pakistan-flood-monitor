@@ -52,7 +52,7 @@ class TestFarmerPreparedness:
     def test_farmer_page_has_official_link(self, dashboard):
         page = AppTest.from_file(HOME).switch_page(str(FARMER_PAGE)).run()
         page_links = page.get("page_link")
-        assert any("Official" in pl.proto.label for pl in page_links)
+        assert any(pl.proto.page == "Official_Information" for pl in page_links)
 
     def test_farmer_page_contains_key_sections(self, dashboard):
         page = AppTest.from_file(HOME).switch_page(str(FARMER_PAGE)).run()
@@ -81,6 +81,23 @@ class TestFarmerPreparedness:
         assert "Urdu" in all_text
 
 
+    def test_farmer_checklists_and_print_view(self, dashboard):
+        page = AppTest.from_file(HOME).switch_page(str(FARMER_PAGE)).run()
+        assert not page.exception
+        assert [header.value for header in page.header[:3]] == [
+            "Before flooding", "During flooding", "After flooding",
+        ]
+        assert any("portable pumps" in block.value for block in page.main.markdown)
+        assert any(detail.label == "Crops, equipment and chemicals" for detail in page.expander)
+
+        page.checkbox[0].check().run()
+        assert not page.exception
+        assert not page.expander
+        assert any(heading.value == "Crops, equipment and chemicals" for heading in page.subheader)
+        assert any("University of Vermont Extension" in block.value for block in page.markdown)
+        assert any("FAO Pakistan" in block.value for block in page.markdown)
+
+
 # ── Livestock Preparedness ───────────────────────────────────────────────────
 
 class TestLivestockPreparedness:
@@ -107,7 +124,7 @@ class TestLivestockPreparedness:
     def test_livestock_page_has_official_link(self, dashboard):
         page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
         page_links = page.get("page_link")
-        assert any("Official" in pl.proto.label for pl in page_links)
+        assert any(pl.proto.page == "Official_Information" for pl in page_links)
 
     def test_livestock_page_contains_key_sections(self, dashboard):
         page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
@@ -138,3 +155,22 @@ class TestLivestockPreparedness:
         page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
         all_text = " ".join(m.value for m in page.markdown)
         assert "Urdu" in all_text
+
+    def test_livestock_checklists_sources_and_print_view(self, dashboard):
+        page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
+        assert not page.exception
+        assert [header.value for header in page.header[:3]] == [
+            "Before flooding", "During flooding", "After flooding",
+        ]
+        assert any("protected fodder and clean water" in block.value for block in page.main.markdown)
+        body = " ".join(block.value for block in page.markdown)
+        assert "2–4 weeks" not in body
+        assert "Treat visible wounds" not in body
+        assert "https://livestock.sindh.gov.pk/contact-us" in body
+        assert "https://lahoredivision.punjab.gov.pk/provincial" in body
+
+        page.checkbox[0].check().run()
+        assert not page.exception
+        assert not page.expander
+        assert any(heading.value == "Feed and water before flooding" for heading in page.subheader)
+        assert any("LEGS, feed and water chapters" in block.value for block in page.markdown)

@@ -5,12 +5,14 @@ OFFICIAL_SOURCES = (
         "name": "Pakistan Meteorological Department — Flood Forecasting Division",
         "coverage": "Pakistan; consult the source for applicable areas",
         "url": "https://ffd.weather.gov.pk/flood-ews",
+        "link_label": "Open FFD flood bulletins",
         "purpose": "Flood bulletins, forecasts and advisories published by the FFD",
     },
     {
         "name": "National Disaster Management Authority — Situation Reports",
         "coverage": "Pakistan; consult individual reports for their scope",
         "url": "https://www.ndma.gov.pk/sitreps?cat_id=3",
+        "link_label": "Open NDMA situation reports",
         "purpose": "NDMA situation reports and their publication dates",
     },
 )

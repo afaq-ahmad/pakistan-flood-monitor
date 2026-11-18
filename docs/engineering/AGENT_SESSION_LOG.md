@@ -426,3 +426,25 @@ Append entries; never rewrite earlier handoffs.
 - Refined Home reading order and action labels. Home and My Area share textual availability, demo freshness and the official-information link in `public_information.py`. The operational feed supplies no feed-level update time. Local demo processing uses the existing freshness classification.
 - `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py tests/test_streamlit_analyst_queue.py tests/test_field_report_boundaries.py -q --tb=short` passed 48 tests (4 warnings). The same command with `tests/` passed 345 tests (480 warnings). All 18 existing routes rendered in an offline AppTest smoke run. Temporary SQLite round-trip to `b4d9d93f2a10`, compilation, tracked-data isolation and whitespace checks passed.
 - Chromium stopped before rendering because its startup socket was denied. Complete viewport benchmarks and keyboard/assistive checks on a browser-enabled runner. Verify the grouped menu, deep-link/back navigation and screenshots at 320, 360, 390, 768 and 1440 px as the next UI acceptance slice.
+
+### 2026-11-18 15:11 UTC · PK-010 farm preparedness
+
+- Main `a804429` includes PR #94. No open workstream PR at intake. Branch `ux/pk-010-preparedness-journeys`.
+- Existing farmer guide now shows a short checklist at each stage and offers detailed sections with specific references and an expanded print view. Uses native controls and local content. The existing Pakistan Agricultural Research Council link could not be verified in this session, so local soil and replanting questions point to district extension offices and the section has a specific technical reference.
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_preparedness_pages.py -q --tb=short` passed 18 tests. Chromium failed at startup with a denied socket, so physical print fidelity and mobile rendering remain unverified.
+- Next: improve the livestock guide using the same components, verify the quantity and animal-health changes, then run the cross-page acceptance matrix.
+
+### 2026-11-18 15:14 UTC · PK-010 livestock preparedness
+
+- [Draft PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95). Farm checkpoint verified on remote at `3ebf1e6538a4412dcf062f9ac1b745ae64fe72bd`.
+- Livestock checklist and all-details print view use the same native components. Replaced the untraceable fixed fodder duration and removed unsupported wound-treatment and disease-list copy. Linked the LEGS handbook, NDMA guidance and provincial contact pages. Local shelter and veterinary availability remain unverified.
+- Preparedness AppTest suite passed 19 tests. Next: run journeys A–F using the real Home route and deterministic fixtures. Address any verified public boundary gap and record browser, language and bandwidth evidence.
+
+### 2026-11-18 15:20 UTC · PK-010 and UI-001 cross-page acceptance
+
+- [Draft PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95) on `ux/pk-010-preparedness-journeys` from `a804429`. The livestock checkpoint reached remote `56c9eed21bf814d9bf6d29ce190317951f7b6cf5`.
+- Ran A–F from the real Home route with deterministic fixtures. Renamed duplicate official link labels and removed browser settings read/write controls. The temporary configuration file stayed unchanged. Canonical anonymous review and state export returned 401.
+- Extended the existing UX plan with the Urdu inventory and proposed catalogue, fallback, persistence and RTL/AT checks. The UX acceptance matrix records exact steps, component timings, network counts and browser limitations.
+- Focused guide and public, directory, review, reporting and dashboard suites passed 74 tests. The first full run exposed stale module references in guide mode selection after test reloads. The page now supplies the active DataService to the shared renderer. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) after correction.
+- SQLite migration round trip to `b4d9d93f2a10`, compile checks, tracked-data isolation and diff validation passed. Chromium was denied its startup socket. No rendered screenshots, print pagination or actual keyboard and screen-reader validation.
+- Next: run UX-A05, UX-A06 and UX-A15 on a browser-enabled runner at 320, 360, 390, 768 and 1440 px. Tab from Home to each guide, open a detail, enable the print view, inspect PDF pagination and verify the official notices remain accessible without tiles. Record viewport evidence before accepting the responsive and assistive checks.

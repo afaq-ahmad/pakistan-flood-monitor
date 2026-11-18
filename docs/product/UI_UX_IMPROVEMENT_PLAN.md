@@ -137,3 +137,26 @@ Scientific readiness, official publication, relief availability, and service or
 hazard validation remain governed by existing roadmap dependencies. Use the
 [acceptance matrix](UI_UX_ACCEPTANCE_MATRIX.md) for journeys and the
 [master plan](../engineering/MASTER_TASK_PLAN.md) for task ownership.
+
+## Urdu readiness for the preparedness journeys (PK-003)
+
+**Current inventory.** Home and My Area use English for navigation, coverage
+limits, status and help. Both preparedness guides and the official-source
+directory are English. My Area renders an existing Urdu event-summary field
+only in demo mode. The separate Partner brief can interpolate the same field
+with an Urdu heading. These existing strings have no reviewed translation
+catalogue, per-string language metadata or verified RTL presentation. Review
+them before using them in any future localized release.
+
+| Area | Implementation proposal and release check |
+|---|---|
+| Translation catalogue | Use stable message keys with English as the source locale. Keep values and links separate from labels. Store Urdu text with the English revision, reviewer and review date. A changed, missing or unreviewed entry falls back to English. |
+| Critical scope | Prioritize emergency and official-source wording, demo/unavailable/empty/stale states, coverage limitations and report acknowledgement. Next review headings, checklists, links and widget labels. Use bilingual subject-matter reviewers for emergency, food-safety and animal-health wording. |
+| Language selection | Add an English/Urdu selector in the common entrypoint only once an approved set exists. Keep the choice in Streamlit session state across routes. If deep-link persistence is needed, accept an allowlisted language query value. Use English for missing or invalid choices. Do not persist personal data in URLs. |
+| Dates and units | Keep the original source timestamp and its meaning. Display a clear date and explicit timezone. Test local formatting separately from the data value. Keep numeric units and URLs readable in mixed-script lines. |
+| Reading direction | Set language and direction together for reviewed Urdu blocks where the renderer supports both. Preserve English links and names in their own directional context. Verify mirrored reading order, heading structure, focus and mobile reflow. Avoid global CSS that changes specialist pages. |
+| Assistive technology | Ensure translated controls have descriptive accessible names. Test the document language and language changes on mixed-language text with TalkBack or another screen reader. Check keyboard navigation, focus instructions and pronunciation of dates and units. |
+
+The current guides retain their English wording until a qualified Urdu
+reviewer and a browser/assistive-technology runner are available. AppTest
+checks the visible English scope, source links and print-detail structure.

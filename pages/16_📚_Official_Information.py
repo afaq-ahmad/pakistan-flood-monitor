@@ -15,5 +15,5 @@ for source in OFFICIAL_SOURCES:
     st.subheader(source["name"])
     st.write(source["purpose"])
     st.caption(source["coverage"])
-    st.markdown(f"[Visit the official source]({source['url']})")
+    st.markdown(f"[{source['link_label']}]({source['url']})")
 st.info("For immediate assistance, contact the relevant local emergency authorities directly using their verified contact information.")
