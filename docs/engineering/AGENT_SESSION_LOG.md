@@ -455,3 +455,10 @@ Append entries; never rewrite earlier handoffs.
 - Indexed the 33 baseline Markdown files with audience, Diátaxis form, authority, code/task references, dispositions, revision and links. Added the Obsidian homepage and contributor guide.
 - Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) on Python 3.12.14.
 - Next: correct README and setup guidance, show actual architecture and persistence, reconcile API descriptions and relabel historical/status snapshots. Preserve ownership of task state, evidence, handoffs and ADRs.
+
+### 2026-11-18 UTC · ENG-001 onboarding and architecture
+
+- Draft [PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96) opened after remote index checkpoint `6bc43f4098ebace34d69256c7e6a746ced4bef07`.
+- README now leads to the index and one setup tutorial. Verified Home plus 18 registered pages and six configured corridors from the merged router and canonical settings. Explained canonical, Streamlit, standalone and legacy entry points, and distinguished workflow persistence from process-local review state.
+- Python 3.12.14 passed the baseline suite. Python 3.11 is required by the runtime's `datetime.UTC` import. The broader package metadata remains a follow-up. Checked 34 local links in the six updated pages.
+- Next: reconcile configuration, deployment, testing and HTTP references and record each discrepancy with its evidence.

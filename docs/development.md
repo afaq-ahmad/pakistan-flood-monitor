@@ -1,67 +1,31 @@
-# Local Development Workflow
+# Local development workflow
 
-This document outlines the directory structure and common tasks for developers working on the Pakistan Flood Monitor.
+Start with [local setup](setup.md). Find the supported entry points and
+storage boundaries in [runtime architecture](architecture.md).
 
-## Directory Structure
+## Change a Streamlit page
 
-```text
-pakistan-flood-monitor/
-├── .env.local                 # Local environment variables
-├── streamlit_app.py           # Streamlit entry point
-├── dashboard_app.py           # Standalone HTML prototype for local demo/test only
-├── backend_service.py         # Data wrapper reading from CSVs
-├── nasa_service.py            # NASA POWER integration
-├── satellite_ml_service.py    # STAC discovery & ML water detection
-│
-├── pages/                     # Streamlit multi-page routes
-│   ├── 1_🌍_Public_Dashboard.py
-│   ├── 11_🤖_ML_Water_Detection.py
-│   ├── 15_🏗️_Dam_Flood_Risk.py
-│   └── ...                    # (15 pages total)
-│
-├── src/pakistan_flood_monitor/
-│   ├── api/                   # FastAPI routes (in-memory state)
-│   ├── core/                  # Legacy core pipeline logic
-│   ├── models/                # Pydantic schemas
-│   └── services/              # Domain-specific logic
-│       ├── dam_service.py     # Dam DB and analysis
-│       ├── forecast_service.py # Open-Meteo & LSTM
-│       └── advanced_ml_service.py # SAR & Topography
-│
-├── data/                      # Local JSON/CSV Data Store
-│   ├── historical_flood_regions.json
-│   ├── corridors.csv
-│   └── ...
-│
-├── config/thresholds/         # YAML threshold configurations
-├── storage/                   # File-based runtime storage
-├── tests/                     # Pytest suite
-└── docs/                      # Technical Documentation
-```
+1. Read the existing page and its AppTest. Keep public routes usable when a
+   source is unavailable or no eligible events are published.
+2. For a new route, register its file with `st.navigation` in
+   `streamlit_app.py` under the appropriate group. Preserve existing URL paths
+   when changing menu labels. The registry determines the routes.
+3. Use the shared public status presentation for Home and My Area where the
+   same contract applies. Keep authentication in the handler and API.
+4. Add deterministic component tests for the affected mode, data and empty or
+   failure paths. See the [UX acceptance matrix](product/UI_UX_ACCEPTANCE_MATRIX.md).
 
-## Creating a New Dashboard Page
+## Change the canonical backend
 
-Streamlit uses the `pages/` directory to automatically route multi-page applications.
+Extend `src/pakistan_flood_monitor/`. Treat `src/app/` as a migration source.
+Check [ADR-001](adr/ADR-001-canonical-runtime.md), existing contracts and
+callers before changing data or persistence. Apply schema changes through the
+canonical Alembic chain. Add tests that preserve published-data eligibility,
+role checks, provenance, scientific units and failure states as applicable.
 
-1. Create a new Python file in `pages/` named with a number prefix (to enforce ordering) and an emoji for UI appeal. E.g., `pages/16_📊_Analytics_Report.py`.
-2. Import the necessary data services (e.g., `from backend_service import data_service`).
-3. Build the UI using standard `streamlit` widgets (`st.dataframe`, `st.metric`, `st.map`).
-4. Ensure the page handles exceptions gracefully, as Streamlit re-renders the file entirely on state changes.
+## Validate and document
 
-## Adding a New Backend Service
-
-If you need a new domain (e.g., `drought_service.py`):
-1. Create the module inside `src/pakistan_flood_monitor/services/`.
-2. Keep data storage file-based (in `storage/` or `data/`). Avoid requiring complex database migrations unless structurally necessary.
-3. Import your service into the relevant `pages/` Streamlit script.
-4. Ensure you add unit tests in the `tests/` directory.
-
-## Testing Your Changes
-
-Before committing changes, ensure tests pass locally.
-
-```bash
-python -m pytest tests/ -v
-```
-
-See [testing.md](testing.md) for more details.
+Use the [offline checks](testing.md) for the affected layer. Update the owning
+contract or how-to as described in the [documentation guide](DOCUMENTATION_GUIDE.md).
+For PR and agent checkpoint expectations, see [contributing](contributing.md)
+and the [agent workflow](engineering/AGENT_GITHUB_WORKFLOW.md).

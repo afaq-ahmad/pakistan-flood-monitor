@@ -1,27 +1,37 @@
-# Overview
+# Project overview
 
-**Pakistan Flood Monitor** is a satellite-driven flood monitoring and early warning system designed for situational awareness across Pakistan's major river corridors.
+Pakistan Flood Monitor explores flood situational awareness using public
+Earth observation and meteorological sources. The current application
+provides a corridor reference catalogue, an eligible published event view,
+official information links and general preparedness guides. Use official
+agencies and local authorities for warnings and emergency instructions.
 
-## Core Objective
+## Public experience
 
-The system aims to combine free Earth Observation data (Sentinel-1, Sentinel-2, Landsat) with meteorological inputs (NASA POWER rainfall, Open-Meteo forecasts) to assess flood risk, identify inundated areas, and monitor infrastructure such as dams and embankments.
+- **My Area** lets users choose a configured river corridor. Published events
+  without a confirmed configured association stay in the all-events view.
+  Administrative district, tehsil, village and farm coverage remain unverified.
+- **Official flood information** links to government sources. Check the
+  bulletin's issue date and applicable area at the source.
+- **Preparedness** provides English farm and livestock checklists with sources,
+  optional details and a view for printing. Reviewed Urdu guidance and browser
+  accessibility verification remain open.
+- **Community reporting** offers a standalone demo practice preview.
+  Operational resident intake and private durable acknowledgements are pending.
 
-## Key Features
+The configured corridor names are Indus-Lower, Indus-Upper, Chenab-Middle,
+Jhelum-Lower, Sutlej-Lower and Kabul-Nowshera. They are static references from
+`Settings.pilot_corridors` in the canonical configuration. Catalogue membership,
+an available service, or an empty event list does not establish conditions
+on the ground.
 
-- **Public Dashboard**: A multi-page Streamlit application offering a complete view of live flood maps, historical data, and forecasts.
-- **Spectral Water Detection**: Uses NDWI, MNDWI, and AWEI indices to analyze satellite imagery and detect water bodies. Replaces the prototype K-Means clustering method.
-- **Dam-Aware Flood Risk**: Monitors upstream dam fills (including cross-border dams) via surface area proxies to modify downstream flood probability.
-- **Flood Forecasting**: Integrates 14-day weather forecasts with a Model Leaderboard, comparing PyTorch LSTM against persistence and linear baselines.
-- **Advanced SAR Analysis**: A simulated module demonstrating Synthetic Aperture Radar (SAR) signals to detect flood anomalies through cloud cover, combined with terrain height metrics (HAND).
-- **Analyst Workflow**: A built-in lifecycle management system (draft -> review -> published) for flood event moderation.
-- **NASA Hydromet Integration**: Pulls live precipitation data from NASA POWER.
-- **Historical Backtesting**: An automated framework that replays 2010, 2014, and 2022 flood events to evaluate the system's detection capabilities.
+## Research and limitations
 
-## System Interfaces
+Forecasting and dam-risk pages are restricted to standalone demo or test
+contexts. The LSTM is untrained for operational use, and the dam surface
+extent is a proxy. Advanced SAR uses simulation, water detection includes
+RGB proxies, and replay scenarios exercise software behavior. Independent
+validation is required for operational use of these outputs.
 
-1. **Streamlit UI (`streamlit_app.py`)**: The primary interface. It loads data from a CSV-backed backend service and provides a 15-page dashboard.
-2. **Canonical FastAPI Backend (`pakistan_flood_monitor.api.main:app`)**: The supported runtime for programmatic access to internal monitoring endpoints and public feed data. It currently uses an in-memory data store for events and configurations.
-
-## Limitations and Disclaimers
-
-> **Limitations:** This system is built for situational awareness. The models and detection confidence scores are estimations based on heuristics and untrained baselines. Many features (like SAR and LSTM) are currently operational prototypes or simulations. This platform should **not** be used as the sole trigger for emergency evacuation. Always follow official instructions from local disaster management authorities like NDMA or PDMA.
+For current capabilities and blockers see [implementation status](engineering/IMPLEMENTATION_STATUS.md).
+For feature requirements see the [Pakistan product roadmap](product/PAKISTAN_FEATURE_ROADMAP.md).
