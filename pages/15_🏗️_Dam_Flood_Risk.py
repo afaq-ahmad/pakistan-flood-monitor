@@ -8,6 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from backend_service import DEMO_WATERMARK, DataService
 from src.pakistan_flood_monitor.services.dam_service import (
     get_upstream_dams, get_all_dams, compute_dam_aware_risk,
     detect_reservoir_fill, load_fill_history, CORRIDOR_RIVER_MAP,
@@ -17,8 +18,27 @@ from satellite_ml_service import CORRIDOR_BBOXES, RIVER_PATHS
 
 st.set_page_config(page_title="Dam-Aware Flood Risk", page_icon="🏗️", layout="wide")
 st.title("🏗️ Dam-Aware Flood Risk Analysis")
+st.page_link("pages/16_📚_Official_Information.py", label="Official flood information and bulletins")
+
+data_service = DataService()
+if not data_service.is_demo_mode:
+    st.error(
+        "Dam-aware flood risk analysis is unavailable in operational mode pending "
+        "calibrated reservoir bathymetry, verified live release data, and satellite imagery validation."
+    )
+    st.caption(
+        "Per ADR-001, synthetic reservoir proxies must not be used for operational flood hazard assessment. "
+        "Refer to official WAPDA and provincial irrigation department bulletins."
+    )
+    st.stop()
+
+st.warning(DEMO_WATERMARK)
+st.caption(
+    "SIMULATED / RESEARCH PROTOTYPE — Upstream dam fill levels and risk scores are estimated from "
+    "optical/synthetic proxies and do not reflect verified reservoir storage or emergency release schedules."
+)
 st.markdown(
-    "Analyze how upstream dam fill levels affect downstream flood probability. "
+    "Analyze how upstream dam fill levels affect downstream flood probability in simulated scenarios. "
     "Includes cross-border dams in India and Afghanistan."
 )
 
@@ -176,16 +196,16 @@ with tabs[2]:
         c2.metric("Risk Level", level.upper())
         c3.metric("Upstream Dams", risk["dam_count"])
 
-        # Alert
+        # Simulated risk indication — not an authoritative alert
         if level in ("high", "critical"):
             st.error(
-                f"🚨 **DAM-AWARE ALERT — {corridor}**: Flood probability is "
-                f"**{prob}%** ({level.upper()}). Immediate monitoring recommended."
+                f"⚠️ **SIMULATED DAM RISK INDICATION — {corridor}**: Estimated prototype score is "
+                f"**{prob}%** ({level.upper()}). This is an uncalibrated research estimate; consult official WAPDA / NDMA bulletins for operational water management advisories."
             )
         elif level == "medium":
-            st.warning(f"⚠️ Moderate flood risk ({prob}%) on {corridor}.")
+            st.warning(f"⚠️ Moderate prototype risk estimate ({prob}%) on {corridor}. Research output only.")
         else:
-            st.success(f"✅ Low flood risk ({prob}%) on {corridor}.")
+            st.info(f"ℹ️ Low prototype risk estimate ({prob}%) on {corridor}.")
 
         # Explanations
         st.subheader("Why this risk level?")

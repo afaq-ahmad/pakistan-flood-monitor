@@ -5,9 +5,24 @@ from streamlit_folium import st_folium
 from pathlib import Path
 import pandas as pd
 
+from backend_service import DEMO_WATERMARK, DataService
+
 st.set_page_config(page_title="Historical Flood Map", page_icon="🗺️", layout="wide")
 st.title("🗺️ Historical Flood Map (Past 20 Years)")
-st.markdown("Explore the heavily affected regions from major flood events in Pakistan over the last two decades. The data is based on NDMA, OCHA, and news reports, with geocoding provided by OpenStreetMap.")
+st.page_link("pages/16_📚_Official_Information.py", label="Official flood information and bulletins")
+
+data_service = DataService()
+if data_service.is_demo_mode:
+    st.warning(DEMO_WATERMARK)
+
+st.markdown(
+    "Explore approximate regions affected by major flood events in Pakistan over the last two decades. "
+    "Data compiled from historical disaster reports (NDMA, OCHA, media reports) with approximate coordinates."
+)
+st.caption(
+    "⚠️ Historical flood extents are approximate contextual reference data only. Past inundation does not predict "
+    "future flood boundaries, and unhighlighted areas are not guaranteed safe. For current alerts, consult official sources."
+)
 
 @st.cache_data
 def load_historical_data():
@@ -105,5 +120,9 @@ with col2:
     st_folium(m, width=800, height=600)
 
 st.markdown("---")
-st.markdown("### Integration with Machine Learning")
-st.info("These highlighted regions provide ground-truth targets for historical ML training. By cross-referencing these bounding boxes with our Earth Search STAC archive (`storage/satellite/historical_floods/`), we can automatically retrieve Sentinel-2 or Landsat optical imagery for these precise coordinates during the flood months, and train our K-Means/Deep Learning models on verified disaster zones.")
+st.markdown("### Historical Context & Machine Learning")
+st.info(
+    "These approximate regions provide historical context and candidate bounding boxes for retrospective "
+    "satellite imagery retrieval (`storage/satellite/historical_floods/`). They represent approximate "
+    "disaster reporting extents and do not constitute ground-truth field boundaries or certified damage assessments."
+)
