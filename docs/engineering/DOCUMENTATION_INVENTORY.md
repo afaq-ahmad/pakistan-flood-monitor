@@ -129,3 +129,17 @@ positions of links added by this workstream.
 | Milestones and older diagnostics | Progress report called the 15-page dashboard complete. Existing QA rows include early failures. | Current code, tests and dated handoffs show later fixes and remaining browser/scientific gaps. | Keep the historical report and QA history, with a current entry point and clear dated evidence. |
 | Task authority | Remaining Work duplicated pending tasks and described the old receipt as implemented. Product specs included status labels. | PR #92 removed the unbacked receipt. The master plan owns live state. The roadmap owns requirements. | Preserve the #92 evidence and direct remaining work to the master plan. Label roadmap statuses as planning context. |
 | Setup, credentials and deployment | README, setup and deployment repeated scripts with mismatched extras and `.env.local` or `DATABASE_DSN`. Setup called Earthdata required. | `pyproject.toml`, `config.py`, `backend_service.py`, root Alembic and Compose specify the actual requirements. Demo and the offline suite run without provider credentials. | Setup owns installation. Config owns process and dotenv precedence. Deployment covers Compose and migrations. Test and troubleshooting pages link to those authorities. |
+
+## Verified runtime architecture follow-up
+
+Source baseline `bbf988e`. Evidence and test references are in
+[runtime architecture](../architecture.md),
+[environmental data](../architecture-environmental-data.md) and
+[public, review and reporting flows](../architecture-user-and-review-flows.md).
+
+| Topic | Previous wording or omission | Verified implementation | Documentation correction |
+|---|---|---|---|
+| Workflow and event persistence | Event state was described as process-local without the draft SQL write path. | Canonical `api/main.py` makes a best-effort draft write. The event read path can hydrate partial rows when its store is empty. Review edits, audit entries and field reports stay process-local. Workflow runs and tasks use a separate durable repository. | Distinguish workflow records, draft hydration and review durability in diagram A and the storage table. |
+| Lifecycle rejection | The API described transitions through approval and publication without their terminal state or the `reject` alias. | The lifecycle permits retraction from `published` only. The handler normalizes `reject` to `retracted`. Invalid transitions and failed publication QA leave the stored record unchanged. | Show the exact states and failures in diagram C, with the alias documented in the lifecycle contract. |
+| Publication date | The event example listed `published_at` without explaining its semantics. | `_record_run` assigns the value when creating the draft. The review handler does not replace it at publication. Observation and evaluation timestamps have separate sources. | Annotate the API field and record the unresolved publication timestamp contract in P1-003. |
+| Provider integration | The architecture summary grouped providers with canonical processing without tracing acquisition. | Earth Search supplies discovery metadata. Some support assets have only a URI, and the real-input processor rejects incomplete operational features. Separate Streamlit research tools can call providers directly. | Draw the discovery and unavailable paths in diagram B. Diagram A shows direct research access independently. |

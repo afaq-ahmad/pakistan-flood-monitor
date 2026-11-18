@@ -4,6 +4,39 @@ Status: IN PROGRESS. This guide governs repository-connected agents alongside AG
 The master task plan is the authoritative checklist; the session log is the handoff.
 User instructions and repository safety rules take precedence. Do not merge automatically.
 
+## F. Agent recovery and handoff
+
+```mermaid
+flowchart TD
+    Start["Agent starts or resumes"] --> Contract["Read operating instructions"]
+    Contract --> Remote["Verify checkout and inspect PR and checks"]
+    Remote --> Recovery{"Clean worktree and verified ownership?"}
+    Recovery -->|Conflict or divergence| Resolve["Preserve work and coordinate"]
+    Recovery -->|Verified| Branch["Recover or create the dedicated branch"]
+    Branch --> Task["Claim an eligible task"]
+    Task --> Change["Implement one scoped checkpoint"]
+    Change --> Test["Run checks and inspect diff"]
+    Test --> Commit["Record result and commit"]
+    Commit --> Push["Push without rewriting history"]
+    Push --> Verify["Verify remote HEAD"]
+    Verify --> PR["Create or update draft PR"]
+    PR --> Handoff["Record result and next action"]
+```
+
+This is a navigation aid for the existing procedure below. Verification
+uses the actual remote ref and the PR head, base and status. A rejected push
+leaves the local commit intact. Recover from the last verified checkpoint
+and the task plan before taking another slice. When a check fails, record the
+actual outcome and leave the PR draft while repairing it.
+
+**Traceability:** Repository-root `AGENTS.md`, this workflow, the
+[master task plan](MASTER_TASK_PLAN.md) and the [session handoff log](AGENT_SESSION_LOG.md).
+Optional scripts are `scripts/agent_preflight.sh`, `scripts/agent_resume.sh` and
+`scripts/agent_checkpoint.sh`. Their isolated regressions live in
+`tests/test_agent_git_workflow.py`. Task ENG-001 tracks workflow acceptance
+and hosted verification. [ADR-001](../adr/ADR-001-canonical-runtime.md) governs
+which runtime the agent may extend.
+
 ## Start or resume
 
 1. Verify repository identity, branch, HEAD, status, untracked files, upstream and remote

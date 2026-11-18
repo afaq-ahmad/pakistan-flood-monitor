@@ -30,6 +30,7 @@ Inside a checkout it is at the repository root, beside the `docs/` folder.
 
 - [Runtime architecture, entry points and persistence](architecture.md)
 - [Environmental processing and data contracts](architecture-environmental-data.md)
+- [Public reads, review, field reports and exports](architecture-user-and-review-flows.md)
 - [API contracts and access roles](api.md)
 - [Configuration, modes and credentials](configuration.md)
 - [Risk-summary data contract in the repository](https://github.com/afaq-ahmad/pakistan-flood-monitor/blob/main/data_contracts/README.md)

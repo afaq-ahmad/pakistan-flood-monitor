@@ -24,10 +24,9 @@ and [tests](testing.md) for validation scope.
 
 ```mermaid
 flowchart TB
-    Visitor["Public Streamlit pages"] -->|Read published events| API["Canonical FastAPI"]
-    Visitor -->|Standalone demo or test| Local["Local CSV fixtures"]
+    Streamlit["Public and analyst Streamlit"] -->|Read published events or role-scoped queue| API["Canonical FastAPI"]
+    Streamlit -->|Standalone demo or test| Local["Local CSV fixtures"]
     HTML["Standalone HTML app"] -->|Demo or test mock feed| Local
-    Analyst["Streamlit analyst queue"] -->|Read with role credential| API
     Research["Streamlit research pages"] -->|Direct provider queries| Providers["External providers"]
     CLI["Canonical CLI and worker entry"] --> Workflow["Canonical workflow"]
     API -->|Authorized run request| Workflow
@@ -109,4 +108,4 @@ external warning authority and independently validated observations are
 separate concerns. See [API contracts](api.md) and [public limitations](overview.md).
 
 Continue with [environmental processing and data contracts](architecture-environmental-data.md),
-and the [agent recovery workflow](engineering/AGENT_GITHUB_WORKFLOW.md).
+[public, review and reporting flows](architecture-user-and-review-flows.md), and the [agent recovery workflow](engineering/AGENT_GITHUB_WORKFLOW.md).

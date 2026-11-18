@@ -34,7 +34,7 @@ a trusted deployment.
 | `GET /health` | Service health and runtime mode. Service reachability gives no evidence of local flood conditions. |
 | `GET /public/limitations` | Public limitations statement. |
 | `GET /public/corridors` | Six configured pilot corridor references. Outside test mode, its state is unknown and no run is attached. The catalogue's `active` flag is not live monitoring status. |
-| `GET /public/events` | Eligible published snapshot with nullable configured `corridor_id`. Events without a configured association remain in the all-events view. Individual timestamps describe the record, not feed freshness. |
+| `GET /public/events` | Eligible published snapshot with nullable configured `corridor_id`. Events without a configured association remain in the all-events view. The draft timestamp named `published_at` is not the time of the publish transition. See [timestamp and provenance limits](architecture-environmental-data.md#meaning-freshness-and-provenance). |
 | `GET /public/corridors/{aoi_name}/events` | Eligible records for that corridor, optionally filtered by status or confidence bucket. Returns 404 if no corridor run history exists. |
 | `GET /public/events/{event_id}` | Eligible event detail or 404. |
 | `GET /public/alerts/feed` | Public-safe renderings derived from eligible events. |
@@ -66,7 +66,7 @@ a trusted deployment.
 - The API-connected Streamlit viewer uses a role credential supplied in that browser session.
   Use it from a trusted internal deployment. It has read-only triage controls and displays
   a distinct access-denied or unavailable state. Live transitions and audit remain available
-  through the existing role-protected API. A durable review and audit contract is tracked in P1-002.
+  through the existing role-protected API. A durable review and audit contract is tracked in P1-002. See [canonical lifecycle and failures](architecture-user-and-review-flows.md#c-canonical-flood-event-lifecycle).
 - `POST /internal/admin/review-event`: Admin, analyst and reviewer roles can
   submit allowed lifecycle transitions. Publication requires the publication gate.
 - `POST /internal/reports/field`: Internal intake into process-local report state for admin, analyst and reviewer. A

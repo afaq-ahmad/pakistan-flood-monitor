@@ -76,6 +76,7 @@ reviewed-product and persistence contract before implementation.
 Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending reviewed products.
 - [x] Identify intentionally unavailable raw-run/advisory endpoints.
 - [ ] Define reviewed-product provenance, authorization and public API/UI contracts.
+- [ ] Specify the publication timestamp contract. The API currently sets `published_at` when creating a draft. Define the actual publication timestamp, distinguish it from observation and evaluation time, and cover draft, publish, retract and public freshness behavior. See [verified ingestion semantics](../architecture-environmental-data.md).
 - [ ] Implement and test availability, freshness and safe degradation.
 
 ## UI-001 — Public and analyst dashboard end-to-end audit
@@ -350,7 +351,7 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [ ] Complete any remaining acceptance scenarios and request human review; keep PR draft until then.
 - [x] Inventory the 33 baseline Markdown files and add the [vault index](../INDEX.md) and [documentation guide](../DOCUMENTATION_GUIDE.md) on `docs/obsidian-knowledge-base` from `77dc8b7`.
 - [x] Correct onboarding, architecture, persistence, API and status discrepancies. Preserve historical reports and accepted decisions. See [the discrepancy audit](DOCUMENTATION_INVENTORY.md) and [draft PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96).
-- [ ] Open the vault in Obsidian and preview the index and runtime Mermaid diagram in both renderers. Record rendering and cross-vault navigation evidence.
+- [ ] Open the vault in Obsidian and preview the index and all six architecture Mermaid diagrams in GitHub and Obsidian. Record rendering and cross-vault navigation evidence.
 - [ ] Verify canonical imports and the SQLite workflow on Python 3.11, then reconcile package metadata with the actual supported floor (OPS-001).
 - [x] Document verified entry points, SQL boundaries and the canonical environmental processing path on `docs/verified-runtime-architecture` from `bbf988e`.
-- [ ] Trace and diagram the public read, event and field-report lifecycles and agent recovery. Verify source paths, transitions, route names and Mermaid syntax.
+- [x] Trace public reads, review, field reports and agent recovery. Verify six Mermaid diagrams at the grammar level, compare 26 route/method pairs with canonical OpenAPI, and verify all 25 event-state pairs and four aliases. See [draft PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97).
