@@ -201,3 +201,22 @@ Append entries; never rewrite earlier handoffs.
   30 tests. No provider, publication, map or district-filter behavior changed.
 - Next: publish the UI checkpoint, verify full suite and hosted CI, and leave the P0 prototype
   presentation follow-up in the existing plan.
+
+### 2026-11-18 UTC — PK-001 farmer and livestock handoff
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `audit/pk-001-farmer-livestock-journeys`,
+  [draft PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87) to
+  `d24fa22b19b8aba30d5e9917c40794d7ea798462`. Verified remote implementation checkpoint
+  `e784566e270db1b24172b3b977a7705babb579f2` before this handoff.
+- PK-001 remains PARTIAL. Reference corridor names, explicit unverified coverage and the official
+  information link are now visible independently of the event feed. Five baseline failures became
+  passing cases. The related API/UI suite passed 30 tests. The full offline suite passed 274
+  tests with 475 warnings. Compilation, tracked-data and diff checks passed.
+- This checkpoint updates the master plan, implementation ledger, matrix and handoff.
+  No migration, data writes or uncommitted implementation work.
+- Blockers: Chromium socket startup failed. Hosted Actions returned failure and zero jobs on
+  main and the implementation checkpoint. Local network behavior was tested with fixtures.
+- Next: reproduce PK-011 / FL-08 with injected forecast results, then gate the prototype forecast
+  page in operational mode before any provider call or alert-style output. Dam fallback masking,
+  district/tehsil/mouza validation, real device checks and agricultural resource verification
+  remain separate pending steps.

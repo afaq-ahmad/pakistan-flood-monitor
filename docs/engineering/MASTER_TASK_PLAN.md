@@ -147,8 +147,7 @@ work remains open and a reproducible session log exists. Do not interpret test p
 Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Reproducible farmer, livestock and community findings are in the [QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
 
 ### PK-001 — My Area
-Priority: P1; Status: IN_PROGRESS for the reference catalogue slice; branch
-`audit/pk-001-farmer-livestock-journeys`; baseline `d24fa22`.
+Priority: P1; Status: PARTIAL; reference catalogue in [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87); baseline `d24fa22`.
 Dependencies for validated local coverage: UI-001, P0-003, P1-003, and validated administrative boundaries.
 Reference catalogue dependencies: the existing canonical pilot corridor settings.
 Files: `pages/1_🌍_Public_Dashboard.py`, `src/pakistan_flood_monitor/config.py`,
@@ -170,13 +169,13 @@ configured absence explicitly and preserve successful demo district filtering.
 - [x] Add reference-list regressions before implementation. All five failed against the baseline.
 - [x] Verify reference names and official navigation for an empty 200, 503, timeout, and API absence. Verify that an empty configured catalogue has an explicit state.
 - [x] Verify demo/published filtering, fail-closed publication, and official navigation with 30 focused tests.
-- [ ] Run the full offline suite and record final delivery evidence.
+- [x] Run the full offline suite (274 passed, 475 warnings) and record delivery evidence.
 - [ ] Verify browser/mobile and keyboard behavior when a browser is available.
 - [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
 - [ ] Show reviewed observations, official notices and history separately, with source/issue times.
 
 **Blockers.** Authoritative local coverage, aliases, and scientific freshness are pending. The
-reference names can be shown now. Completion evidence will be added after the implementation tests.
+reference-name slice passed offline. Chromium startup was blocked and hosted workflows on main and the implementation checkpoint returned zero jobs. Browser and mobile acceptance remain open.
 
 ### PK-002 — Official source hub
 Priority: P1; Status: PARTIAL; Dependencies: P0-003. Data: Curated FFD and NDMA links; source permissions for any ingestion.

@@ -33,3 +33,18 @@ For Field Reports, select operational mode with an API configured and inspect th
 metrics without submitting anything. Use `TestClient` for the unauthorized internal report route.
 No real resident information, provider credentials, or delivery calls are needed. No emergency
 routing, herd advice, treatment, or claims decisions are part of the software tests.
+
+## Implemented slice and validation
+
+The [documentation-only checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/commit/170a2608d8ac3effec415da1d432fd03816ad288)
+preceded UI edits in draft PR #87. PK-001's reference list addressed the catalogue portion of FL-01
+and FL-06. It is independent of the published event feed and avoids map rendering on the tested
+empty or unavailable paths. FL-01B's district, tehsil and mouza mapping remains open.
+
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py -k reference -q --tb=short`
+  failed five times on the baseline, as expected. The five cases passed in the 30-test focused suite after the edit.
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 274 tests with 475 warnings. Compilation, tracked-data isolation, link checks and whitespace checks passed.
+- Chromium could not create a local socket. Mobile rendering, browser keyboard checks, screenshots and a
+  fully offline first load remain unverified. Hosted Actions on main and the implementation checkpoint
+  failed with zero jobs. No scientific source, authorization or output contract changed.
