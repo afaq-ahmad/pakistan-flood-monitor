@@ -190,3 +190,14 @@ Append entries; never rewrite earlier handoffs.
 - Added user journeys and QA matrix, extended the existing feature roadmap and master plan,
   and noted the scientific and browser gaps. Next: publish this document-only checkpoint,
   open one draft PR, then add the failing PK-001 regression and fix reference area access.
+
+- Draft [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87) opened to main
+  after the document-only checkpoint `170a2608d8ac3effec415da1d432fd03816ad288`.
+  The remote branch and planning tree were verified before the regression test and UI edit.
+
+- Added five offline regressions for reference availability and observed five expected failures
+  before the UI edit. Public Dashboard now renders canonical reference names and the coverage
+  limitation before fetching events. The focused dashboard, publication and source suite passed
+  30 tests. No provider, publication, map or district-filter behavior changed.
+- Next: publish the UI checkpoint, verify full suite and hosted CI, and leave the P0 prototype
+  presentation follow-up in the existing plan.

@@ -166,10 +166,11 @@ configured absence explicitly and preserve successful demo district filtering.
 
 - [x] Trace canonical names, public event fields and published-only data path (FL-01/01B/06).
 - [x] Reproduce missing area context on empty response, 503 and timeout using AppTest.
-- [ ] Commit and publish the planning documents before editing the public dashboard.
-- [ ] Add and run the failing reference-list regression before implementation.
-- [ ] Verify the reference list and official navigation in empty, failed and unconfigured states.
-- [ ] Verify demo/published filtering and run API and dashboard suites.
+- [x] Verify the [planning checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/commit/170a2608d8ac3effec415da1d432fd03816ad288) and open draft PR #87 before editing the public dashboard.
+- [x] Add reference-list regressions before implementation. All five failed against the baseline.
+- [x] Verify reference names and official navigation for an empty 200, 503, timeout, and API absence. Verify that an empty configured catalogue has an explicit state.
+- [x] Verify demo/published filtering, fail-closed publication, and official navigation with 30 focused tests.
+- [ ] Run the full offline suite and record final delivery evidence.
 - [ ] Verify browser/mobile and keyboard behavior when a browser is available.
 - [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
 - [ ] Show reviewed observations, official notices and history separately, with source/issue times.
