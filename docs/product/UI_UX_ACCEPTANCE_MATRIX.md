@@ -38,3 +38,15 @@ existing non-Home case passing. All 18 tests in
 the change. No browser screenshots were captured because Chromium failed
 before rendering. Keyboard, focus, contrast, reflow, assistive technology and
 Urdu acceptance remain open.
+
+## Homepage and grouped navigation follow-up in PR #94
+
+| Cases | Verified at the component level |
+|---|---|
+| UX-A01 and UX-A02 | One native top menu groups public, research and operations routes. Home and all 18 existing pages retain their paths. All destinations rendered in an offline AppTest smoke run. Home shows availability first, then area, farm, livestock and official information links. |
+| UX-A02 to UX-A04 | Home and My Area use the same wording for a missing publication source, a failed service, empty results and demo data. The stale notice describes demo processing only. A successful feed may still have unknown update timing. |
+| UX-A03 and UX-A10 | No local fixture fallback or research provider load during initial operational Home rendering. The single canonical request retains its two-second timeout. The analyst and reports boundary suites passed. |
+| UX-A15 | Reading order and native link labels verified in AppTest. Chromium could not open its startup socket, so screenshots, navigation overflow, keyboard focus, touch size, contrast and reflow at 320, 360, 390, 768 and 1440 px remain unverified. |
+
+Verification used Streamlit 1.67.0. The dashboard dependency requires 1.46 or
+later to support native top navigation. The full offline suite passed 345 tests.

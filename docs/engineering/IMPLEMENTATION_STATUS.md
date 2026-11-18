@@ -327,3 +327,13 @@ rendering, demo labelling and distinct empty and unavailable responses.
 Eighteen focused and 341 full offline tests passed. UI-001 remains PARTIAL
 pending browser acceptance and the specialist control findings. See the
 [UX acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md).
+
+## UI-001 public navigation and availability
+
+PR #93 is merged. [Draft PR #94](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/94)
+groups the existing routes under one native Streamlit top menu and moves public
+availability above action links. Home and My Area share the demo, empty,
+unavailable and freshness presentation. No operational freshness threshold is
+inferred. Registry, route smoke tests and 48 focused regressions passed, as did
+the full offline suite of 345 tests. UI-001 remains PARTIAL pending browser
+verification and specialist follow-up.

@@ -100,9 +100,9 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [x] Audit Home, the 18 Streamlit pages, standalone dashboard and adapter. Record the [UX plan](../product/UI_UX_IMPROVEMENT_PLAN.md) and [acceptance matrix](../product/UI_UX_ACCEPTANCE_MATRIX.md).
 - [x] Implement and verify UX-A01–03 on `ux/ui-001-public-home` ([draft PR #93](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/93)). Home has five native public links and one fail-closed published-event snapshot. AppTest verified destinations and feed states. Browser acceptance remains open.
 - [ ] Verify and constrain specialist configuration writes under SEC-001. Follow with honest Operations and Training feedback, using the existing UI-001 workstream.
-- [x] Register the existing pages in one native grouped menu. Verify all 18 legacy route paths and the five public destinations in AppTest. Keep access checks in their existing handlers.
+- [x] Register the existing pages in one native grouped menu ([draft PR #94](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/94)). Verify all 18 legacy route paths and the five public destinations in AppTest. Keep access checks in their existing handlers.
 - [ ] Verify menu reflow, keyboard focus and browser history at 320, 360, 390, 768 and 1440 px. Track language and mobile acceptance under PK-003.
-- [ ] Refine Home's hierarchy and use shared availability guidance on Home and My Area. Keep operational freshness unknown until supplied by the feed.
+- [x] Refine Home's hierarchy and share availability guidance on Home and My Area. Verify absent source, empty feed, timeout and API error without fixture fallback. Display the existing stale status for demo processing and keep operational feed freshness unknown.
 
 
 ## DATA-001 — Real environmental processing and validation
