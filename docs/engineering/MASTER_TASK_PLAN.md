@@ -1,6 +1,6 @@
 # Master engineering task plan
 
-Baseline: `58e735b` on `main`, 2026-11-17. This is the authoritative task checklist;
+Original baseline: `58e735b` on `main`, 2026-11-17. This is the authoritative task checklist;
 verify against code and history before claiming work. Status values: NOT_STARTED, IN_PROGRESS,
 PARTIAL, BLOCKED, COMPLETE. A checkmark means that specific subtask has evidence; COMPLETE requires
 all acceptance criteria and verification. Priorities reflect potential impact, not certified risk.
@@ -349,5 +349,6 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [ ] Verify real GitHub CLI authentication, hosted PR/CI behavior, and full suite on current main.
 - [ ] Complete any remaining acceptance scenarios and request human review; keep PR draft until then.
 - [x] Inventory the 33 baseline Markdown files and add the [vault index](../INDEX.md) and [documentation guide](../DOCUMENTATION_GUIDE.md) on `docs/obsidian-knowledge-base` from `77dc8b7`.
-- [ ] Correct onboarding, architecture, persistence, API and status discrepancies against current source. Keep historical reports and accepted decisions intact.
-- [ ] Verify both Markdown renderers when available and reconcile package metadata with the runtime Python floor (OPS-001).
+- [x] Correct onboarding, architecture, persistence, API and status discrepancies. Preserve historical reports and accepted decisions. See [the discrepancy audit](DOCUMENTATION_INVENTORY.md) and [draft PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96).
+- [ ] Open the vault in Obsidian and preview the index and runtime Mermaid diagram in both renderers. Record rendering and cross-vault navigation evidence.
+- [ ] Verify canonical imports and the SQLite workflow on Python 3.11, then reconcile package metadata with the actual supported floor (OPS-001).

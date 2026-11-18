@@ -1,64 +1,56 @@
-# Testing Strategy
+# Test and verify a change
 
-The Pakistan Flood Monitor employs a testing strategy centered around `pytest`. Because the system relies heavily on external satellite APIs and ML inferences, testing is divided into structural unit tests, data integrity tests, and historical backtesting.
+Install the project using [local setup](setup.md). Match the checked-in offline
+workflow by installing its test guard and starting in test mode:
 
-## Running Tests
-
-To run the entire test suite:
 ```bash
-python -m pytest tests/ -v
+python -m pip install pytest-socket==0.8.1
+APP_MODE=test python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short
+git diff --exit-code -- storage data
 ```
 
-## Historical Backtesting Framework
+In PowerShell set `$env:APP_MODE = "test"` and omit the Bash prefix. Tests
+choose a temporary SQLite database in `tests/conftest.py`. Test fixtures
+replace provider responses. Start with the affected suite before running
+all tests.
 
-The most critical test of the flood monitor is its ability to detect real, historical catastrophes. We have implemented a backtesting framework (`tests/test_backtesting.py`) that replays major historical events (e.g., the 2010 and 2022 Mega Floods) through the current risk model.
+## Choose focused evidence
 
-```mermaid
-flowchart TD
-    GT[Ground Truth Event<br/>e.g. 2022 Mega Flood] --> R[replay_event]
-    R --> C1[Compute risk: Indus-Lower]
-    R --> C2[Compute risk: Indus-Upper]
-    R --> C3[Compute risk: Chenab-Middle]
-    C1 --> E{Risk >= medium?}
-    C2 --> E
-    C3 --> E
-    E -- Yes --> D[Event Detected ✅]
-    E -- No --> M[Event Missed ❌]
+| Changed boundary | Tests or records to consult |
+|---|---|
+| Workflow, persistence or retries | `test_workflow_foundation.py`, `test_workflow_concurrent_retry.py`, `test_canonical_runtime_smoke.py` |
+| Publication, authorization or provenance | `test_publication_boundary.py`, `test_publication_lineage_boundary.py`, `test_canonical_review_queue.py` |
+| Public pages, farmer or livestock journeys | `test_streamlit_public_pages.py`, `test_public_preparedness_journeys.py`, [UX acceptance matrix](product/UI_UX_ACCEPTANCE_MATRIX.md) |
+| Research and GIS diagnostics | `test_geo_measurements.py`, `test_dam_service.py`, `test_backtesting.py` |
+
+Historical replay tests use scenario rainfall and simulated dam inputs.
+Their results exercise software behavior. They do not establish warning
+accuracy, historical lead time, or scientifically validated site conditions.
+
+## Exercise the migration chain
+
+Use a separate disposable database. From Bash:
+
+```bash
+migration_dir=$(mktemp -d)
+export DATABASE_URL="sqlite:///$migration_dir/flood-monitor.db"
+alembic upgrade head
+alembic downgrade base
+alembic upgrade head
+alembic current
+python -m compileall -q src/pakistan_flood_monitor
 ```
 
-**Limitation**: The replay uses deterministic simulated dam inputs in tests, not historical observed dam conditions or independently verified outcomes. It is a software diagnostic and cannot establish historical warning accuracy or operational readiness.
+End at `b4d9d93f2a10`. The downgrade removes the schema, so use this sequence
+only against an isolated database prepared for this check. For a target
+deployment see [deployment](deployment.md).
 
-## Unit Testing
+## Report scope
 
-Unit tests focus heavily on:
-1. **Dam Database Integrity**: Ensuring all hardcoded dams have correct metadata, IDs, and upstream mapping.
-2. **Haversine Math**: Verifying geographic distance calculations between coordinates.
-3. **Risk Scoring Logic**: Validating that various fill-level classifications generate the correct upstream risk scores.
-4. **Edge Cases**: Ensuring missing imagery or boundary conditions don't crash the risk pipelines.
-
-## Test Directory Structure
-
-```text
-tests/
-├── test_dam_service.py      # Validates dam mappings, graph edges, and risk math
-├── test_backtesting.py      # Replays historical events against the risk model
-└── ...
-```
-
-## Writing New Tests
-
-1. Create a file prefixed with `test_` in the `tests/` directory.
-2. Use `pytest` fixtures for mocking external API calls (e.g., STAC or Open-Meteo).
-3. Do not run live network calls in standard unit tests. Mock the responses to ensure tests remain fast and deterministic.
-4. If writing a new backtest event, add the ground truth data to `GROUND_TRUTH_EVENTS` in `test_backtesting.py`.
-
-## Offline CI
-
-`.github/workflows/canonical-checks.yml` installs the project and runs the complete `tests/` suite
-with network sockets disabled, Unix-domain sockets enabled for the in-process test client, and an
-temporary SQLite database selected by the test configuration even if `DATABASE_URL` is set. Tests
-requiring another database must create it explicitly. Test fixtures replace live provider calls and keep prototype dam histories
-and generated reports in temporary directories. CI checks that tracked `storage/` and `data/` files
-were not changed. Pillow is a declared dependency for image-processing imports. A green result does
-not validate real provider integrations, historical warning accuracy, Docker, PostgreSQL, worker
-crash recovery, or scientific and operational readiness. Dependency versions are not fully locked.
+The workflow definition in `.github/workflows/canonical-checks.yml` targets
+Python 3.12 and these offline checks. Confirm hosted results separately.
+The [implementation ledger](engineering/IMPLEMENTATION_STATUS.md) records
+verified runs and gaps. Component tests establish route, widget and API
+behavior. Use rendered browser evidence for layout, keyboard and assistive
+technology acceptance. Live providers, domain validity, target database
+behavior and deployment readiness require separate verification.

@@ -1,5 +1,9 @@
 # Project Progress and Technical Implementation Report
 
+> Historical prototype report. Counts, readiness claims and proposed infrastructure
+> below reflect an earlier snapshot. For the current [documentation homepage](docs/INDEX.md)
+> and [implementation evidence](docs/engineering/IMPLEMENTATION_STATUS.md), follow those references.
+
 ## 1. Executive Summary
 
 The Pakistan Flood Monitor is an advanced, satellite-driven flood monitoring and early warning system designed for Pakistan's major river corridors. The project has progressed into a robust prototype, successfully implementing a multi-source data pipeline, machine learning modules for water detection, and a comprehensive Streamlit dashboard.

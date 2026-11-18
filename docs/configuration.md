@@ -1,55 +1,39 @@
-# Configuration
+# Configuration reference
 
-The Pakistan Flood Monitor uses two main configuration sources: environment variables and YAML threshold definitions.
+The canonical API and CLI load settings from the process environment. At
+import, `src/pakistan_flood_monitor/config.py` reads a simple repository-root
+`.env` file when present and leaves already-set variables in effect. Start
+from `.env.example` if you need a local file. Keep credentials in untracked
+local or deployment configuration.
 
-## 1. Environment Variables
+| Setting | Consumer and meaning |
+|---|---|
+| `APP_MODE` | Canonical safety mode, one of `test`, `demo` or `operational`. Default `demo`. Invalid values fail startup. |
+| `DATABASE_URL` | Canonical SQLAlchemy URL. Default `sqlite:///./storage/pakistan_flood_monitor.db`. Export it explicitly when running root Alembic, which reads the process environment. |
+| `WORKFLOW_MAX_ATTEMPTS` | Canonical per-task attempt limit, default 3. |
+| `API_BASE_URL` | Streamlit adapter's canonical API origin. When set, Home and My Area use the API with no fixture fallback. Unset in standalone demo/test to use local fixtures. |
+| `FLOOD_MONITOR_ADMIN_TOKEN`, `FLOOD_MONITOR_ANALYST_TOKEN`, `FLOOD_MONITOR_REVIEWER_TOKEN`, `FLOOD_MONITOR_SERVICE_TOKEN` | Role secrets for internal FastAPI routes. Each route declares allowed roles. See [authorization](api.md#authorization). |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Compose interpolation and database settings. `POSTGRES_PASSWORD` must be set before using Compose. |
+| `NASA_BEARER_TOKEN`, `NASA_EARTHDATA_USERNAME` | Optional provider settings consumed by the research hydromet tooling. Standalone demo and offline tests do not require them. |
 
-Environment files (`.env.local`, `.env.staging`, `.env.prod`) contain non-secret,
-environment-specific toggles. Inject credentials such as `DATABASE_DSN` from the
-deployment platform's secret manager; never commit them to these files.
+`DATABASE_DSN` and environment-specific files mentioned in old guidance refer
+to legacy or prototype paths. The canonical loader does not discover
+`.env.local`, `.env.staging`, or `.env.prod` by convention. Use the
+process environment or the local `.env` described above. A research helper
+may explicitly read a separate file.
 
-### Example `.env.local`
+## Threshold sources
 
-```env
-# Required safety boundary: test | demo | operational
-APP_MODE=demo
+The canonical workflow consumes the Pydantic `Settings.thresholds` from
+`src/pakistan_flood_monitor/config.py` and records the threshold values
+with input versions. The YAML files under `config/thresholds/` belong to
+file-based configuration and legacy or prototype paths. Their top-level
+groups include `corridor_thresholds`, `hydromet_thresholds`,
+`review_thresholds` and `breach_weights`, across the two files.
 
-# NASA Earthdata (Required for HLS/IMERG)
-NASA_EARTHDATA_USERNAME=your_username
-NASA_BEARER_TOKEN=your_token
+Check the actual consumer before changing a value. The Streamlit Settings
+page directs authorized operators to server-side configuration. The API
+registration endpoint records version metadata, so changing a registry entry
+alone does not edit the deployed threshold file.
 
-# STAC APIs
-STAC_ENDPOINT=https://earth-search.aws.element84.com/v1
-
-# FastAPI Internal Security
-FLOOD_MONITOR_ADMIN_TOKEN=secret_admin_token
-FLOOD_MONITOR_ANALYST_TOKEN=secret_analyst_token
-```
-
-Production deployments must use `APP_MODE=operational`. In that mode, unavailable scientific inputs
-produce an explicit `UNAVAILABLE` response; the application never substitutes hash/random/stub data.
-
-> **Security Note:** Never commit `.env` files with actual secrets to version control. Use secret managers for production.
-
-## 2. Threshold Configurations (`config/thresholds/`)
-
-The application uses YAML files to configure physical and analytical thresholds. These can be adjusted without changing code.
-
-### `flood_thresholds.yaml`
-Configures SAR backscatter drop thresholds, NDWI cutoffs, and rainfall triggers.
-Example:
-```yaml
-sar_backscatter_drop_db: 2.5
-ndwi_threshold: 0.1
-rainfall_trigger_mm: 50.0
-```
-
-### `breach_weights.yaml`
-Configures the Evidence Scorecard weights for predicting levee/dam breaches.
-Example:
-```yaml
-sar_anomaly_weight: 0.4
-hydromet_context_weight: 0.3
-embankment_proximity_weight: 0.2
-exposure_significance_weight: 0.1
-```
+See [setup](setup.md), [deployment](deployment.md) and [ADR-001](adr/ADR-001-canonical-runtime.md).

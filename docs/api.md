@@ -1,66 +1,53 @@
-# API Contract
+# API contract
 
-The project contains a programmatic REST API built with **FastAPI**. While the primary user experience is via the Streamlit dashboard (`streamlit_app.py`), the FastAPI application (`src/pakistan_flood_monitor/api/main.py`) exposes endpoints for systemic monitoring, third-party integration, and administration.
+The canonical service is `pakistan_flood_monitor.api.main:app`. For startup
+see [local setup](setup.md). Use `/docs` or `/openapi.json` on a running
+instance to discover full routes, parameters and schemas. This page explains
+the lifecycle, availability and access boundaries that the generated schema
+cannot fully describe.
 
-> **Note**: Currently, the FastAPI application uses an **in-memory storage model** for operational state (run history, events, review logs). Restarting the FastAPI server will reset this state.
-
-## Starting the API
-
-```bash
-APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --reload --port 8000
-```
+Canonical workflow runs and tasks are durable. `/internal/runs` and several
+review, report, audit and public views rely on process-local state. Use
+`/internal/workflow-runs/{run_id}` for the persisted workflow and see
+[runtime architecture](architecture.md) for storage boundaries.
 
 ## Authorization
 
-Endpoints under `/internal` require a Bearer token in the `Authorization` header.
-- For Analyst actions: Use the token specified in `FLOOD_MONITOR_ANALYST_TOKEN`.
-- For Admin actions: Use the token specified in `FLOOD_MONITOR_ADMIN_TOKEN`.
-- Reviewer and service roles use `FLOOD_MONITOR_REVIEWER_TOKEN` and `FLOOD_MONITOR_SERVICE_TOKEN`.
+Public routes allow reads without a bearer credential. Internal routes require
+a configured role secret in `Authorization: Bearer <token>`. The environment
+variables and route permissions are described in [configuration](configuration.md)
+and below. Missing or unrecognized credentials return 401. A recognized role
+without route permission returns 403. The internal rate limiter can return 429
+with a `Retry-After` header.
 
-Unsigned `v1.<base64 JSON>` identity tokens are no longer accepted: they were forgeable.
-Replace them with a configured role secret. Audit identities for these secrets are role-based;
-they do not establish an individual user identity or token expiry. Rotate any exposed secrets.
+The server resolves audit identities to role principals. A shared role secret
+does not identify a person or provide individual token expiry. Unsigned
+asserted identities are rejected. Keep internal routes and analyst access in
+a trusted deployment.
 
-Endpoints under `/public` are unauthenticated.
+## Core endpoints
 
-## Request / Response Flow
+### Public routes
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Auth as Auth Middleware
-    participant Route as FastAPI Route
-    participant Store as In-Memory Store
-    
-    Client->>Auth: POST /internal/admin/review-event (Bearer Token)
-    Auth->>Auth: Validate Token against env vars
-    alt Invalid Token
-        Auth-->>Client: 401 Unauthorized
-    else Valid Token
-        Auth->>Route: Proceed with Request
-        Route->>Store: Apply Lifecycle Transition
-        Store-->>Route: Updated State
-        Route-->>Client: 200 OK + Updated Event JSON
-    end
-```
-
-## Core Endpoints
-
-### Public Routes (`/public`)
-- `GET /public/corridors`: Lists configured pilot river corridors. This catalogue does not establish current observations, freshness, or administrative coverage.
-- `GET /public/events`: Returns the eligible published event snapshot. Each record includes a nullable
-  `corridor_id`. The ID is the stored association when it exactly matches a configured pilot corridor.
-  Unknown or absent associations are null. My Area filters the snapshot locally, and unassociated
-  records remain available in the all-events view. Record timestamps remain distinct from feed freshness.
-- `GET /public/corridors/{aoi_name}/events`: Returns active flood events for a given corridor.
-- `GET /public/events/{event_id}`: Retrieves details for a specific flood event.
-- `GET /public/alerts/feed`: Returns a feed of recent alerts.
+| Route | Behavior |
+|---|---|
+| `GET /health` | Service health and runtime mode. Service reachability gives no evidence of local flood conditions. |
+| `GET /public/limitations` | Public limitations statement. |
+| `GET /public/corridors` | Six configured pilot corridor references. Outside test mode, its state is unknown and no run is attached. The catalogue's `active` flag is not live monitoring status. |
+| `GET /public/events` | Eligible published snapshot with nullable configured `corridor_id`. Events without a configured association remain in the all-events view. Individual timestamps describe the record, not feed freshness. |
+| `GET /public/corridors/{aoi_name}/events` | Eligible records for that corridor, optionally filtered by status or confidence bucket. Returns 404 if no corridor run history exists. |
+| `GET /public/events/{event_id}` | Eligible event detail or 404. |
+| `GET /public/alerts/feed` | Public-safe renderings derived from eligible events. |
+| `GET /public/risk-summary/{level}` | Aggregates eligible public events. See the [risk-summary contract](https://github.com/afaq-ahmad/pakistan-flood-monitor/blob/main/data_contracts/README.md). |
+| `GET /public/publish/{aoi_name}`, `GET /public/advisories/{aoi_name}/mobile`, `GET /public/corridors/{aoi_name}/status` | Raw run-derived views return 503 outside test mode pending reviewed-product publication. |
 
 ### Internal Routes (`/internal`)
 
 #### Operational Runs
-- `POST /internal/run/{aoi_name}`: Manually triggers the flood monitoring pipeline for a corridor.
-- `GET /internal/runs`: Lists recent pipeline execution runs.
+- `POST /internal/run/{aoi_name}`: Runs the canonical workflow (admin).
+  The existing GET alias has the same permission and starts work too.
+- `GET /internal/runs`: Lists this process's run summaries (admin, analyst).
+- `GET /internal/workflow-runs/{run_id}`: Reads persisted workflow and task state (admin).
 
 #### Analyst Review Workflow
 - `GET /internal/review-queue` lists the current API process's review candidates for
@@ -80,16 +67,19 @@ sequenceDiagram
   Use it from a trusted internal deployment. It has read-only triage controls and displays
   a distinct access-denied or unavailable state. Live transitions and audit remain available
   through the existing role-protected API. A durable review and audit contract is tracked in P1-002.
-- `POST /internal/admin/review-event`: Advances an event through the lifecycle (`draft` -> `review` -> `approved` -> `published`).
-- `POST /internal/reports/field`: Role-protected intake into process-local report state. A
+- `POST /internal/admin/review-event`: Admin, analyst and reviewer roles can
+  submit allowed lifecycle transitions. Publication requires the publication gate.
+- `POST /internal/reports/field`: Internal intake into process-local report state for admin, analyst and reviewer. A
   duplicate receipt returns `accepted_duplicate` only for the same authenticated role principal
   and event. Conflicting reuse returns HTTP 409 without the existing payload. Report IDs retain
   their current format. Shared role credentials do not establish distinct reporter identities.
-- `POST /internal/field-reports/{report_id}/moderate`: Moderates a crowdsourced field report.
+- `POST /internal/field-reports/{report_id}/moderate`: Moderates an internal report (admin, analyst).
 
 #### Settings & Configurations
-- `POST /internal/admin/register-threshold`: Updates threshold weights (requires Admin).
-- `GET /internal/monitoring/metrics`: Exports Prometheus-compatible operational metrics.
+- `POST /internal/admin/register-threshold`: Records threshold version metadata (admin).
+- `GET /internal/monitoring/metrics`: JSON metrics (admin, analyst).
+- `GET /internal/monitoring/metrics/prometheus`: Prometheus text metrics (admin, analyst).
+- `GET /internal/admin/state/export` and `POST /internal/admin/state/restore`: Explicit runtime snapshots (admin).
 
 ### Publication lineage
 
@@ -104,7 +94,7 @@ routes still need a reviewed-product publication design and must not be relied o
 ### Concurrent workflow requests
 
 A workflow execution claims its persisted run before processing. A duplicate request observes the
-existing run; `GET /internal/run/{aoi}` returns HTTP 409 with `workflow_in_progress`, its run ID and
+existing run; `GET /internal/run/{aoi_name}` returns HTTP 409 with `workflow_in_progress`, its run ID and
 status while the existing run is queued or running. Explicit retry claims only a terminal run, and
 uses its original persisted run ID. A queued or running run left after a crash cannot be reclaimed
 automatically: safe recovery requires worker ownership/fencing and an operator procedure, which are
