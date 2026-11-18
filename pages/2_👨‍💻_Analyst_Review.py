@@ -1,25 +1,93 @@
 import streamlit as st
 import pandas as pd
-from backend_service import data_service, DEMO_WATERMARK
+from backend_service import DEMO_WATERMARK, DataService, ReviewQueueUnavailable
+from pakistan_flood_monitor.config import AppMode
+from pakistan_flood_monitor.models.review_queue import REVIEW_QUEUE_PAGE_SIZE
 
 st.set_page_config(page_title="Analyst Review", page_icon="👨‍💻", layout="wide")
 st.title("👨‍💻 Analyst Review Queue")
-st.markdown("Validate machine detections, review evidence, and manage lifecycle transitions.")
+data_service = DataService()
 
-# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
-if data_service.is_demo_mode:
-    st.warning(
-        f"**{DEMO_WATERMARK}** — Operating in local prototype/demo mode. "
-        "Review actions update local records and do not affect live operational systems."
+
+def set_queue_offset(offset: int) -> None:
+    st.session_state["review_queue_offset"] = offset
+
+
+def render_api_queue() -> None:
+    st.caption(
+        "Read-only candidate list from the current API process. Review transitions and audit "
+        "history are available through the internal API."
     )
-elif not data_service.is_demo_mode and not __import__("os").getenv("API_BASE_URL"):
-    st.error("⛔ Operational API unavailable. Live reviews cannot be submitted.")
+    token = st.text_input(
+        "Review API token", type="password", key="review_queue_token",
+        on_change=set_queue_offset, args=(0,),
+    ).strip()
+    if not token:
+        st.info("Enter a review credential to load candidates.")
+        return
+
+    col_status, col_refresh = st.columns([3, 1])
+    status = col_status.selectbox(
+        "Lifecycle status", [None, "draft", "review", "approved"],
+        format_func=lambda value: value or "All",
+        key="api_review_status", on_change=set_queue_offset, args=(0,),
+    )
+    col_refresh.button("Refresh queue")
+    offset = st.session_state.get("review_queue_offset", 0)
+    try:
+        with st.spinner("Loading analyst queue…"):
+            queue = data_service.fetch_review_queue(token, offset=offset, status=status)
+    except ReviewQueueUnavailable as error:
+        st.error(str(error))
+        return
+
+    if queue.app_mode in (AppMode.DEMO, AppMode.TEST) or any(
+        item.product_label == "SIMULATED" for item in queue.items
+    ):
+        st.warning(DEMO_WATERMARK)
+    if not queue.items:
+        st.info("No candidates match this page and filter in the current API process.")
+    else:
+        st.dataframe([
+            {
+                "Event": item.event_id,
+                "Corridor": item.corridor_id or "Unavailable",
+                "Class": item.event_class or "Unavailable",
+                "Status": item.status,
+                "Recorded detection (UTC)": item.detected_at.isoformat() if item.detected_at else "Unavailable",
+                "Model confidence (%)": item.machine_confidence_pct,
+                "Product label": item.product_label or "Unavailable",
+            }
+            for item in queue.items
+        ], hide_index=True)
+
+    previous, following = st.columns(2)
+    previous.button(
+        "Previous page", disabled=offset == 0, on_click=set_queue_offset,
+        args=(max(0, offset - REVIEW_QUEUE_PAGE_SIZE),),
+    )
+    following.button(
+        "Next page", disabled=queue.next_offset is None, on_click=set_queue_offset,
+        args=(queue.next_offset or offset,),
+    )
+
+
+if data_service.has_api:
+    render_api_queue()
+    st.stop()
+if not data_service.is_demo_mode:
+    st.error("The analyst queue is unavailable. No API endpoint is configured.")
+    st.stop()
+
+st.warning(
+    f"**{DEMO_WATERMARK}** — Review actions update local demo records."
+)
 
 # Filters
 st.subheader("🔎 Queue Filters")
 fc1, fc2, fc3, fc4 = st.columns(4)
-events = data_service.get_events()
-corridors_list = ["All"] + sorted(events["corridor_id"].dropna().unique().tolist()) if not events.empty else ["All"]
+queue = data_service.get_review_queue()
+corridors_list = ["All"] + sorted(queue["corridor_id"].dropna().unique().tolist()) if not queue.empty else ["All"]
 statuses_list = ["All","draft","queued","review","active","approved"]
 classes_list = ["All","flood","possible_breach"]
 bands = ["All","low","medium","high"]
@@ -29,7 +97,6 @@ f_status = fc2.selectbox("Status", statuses_list, key="rq_stat")
 f_class = fc3.selectbox("Event Class", classes_list, key="rq_cls")
 f_band = fc4.selectbox("Confidence Band", bands, key="rq_band")
 
-queue = data_service.get_review_queue()
 if f_corridor != "All" and not queue.empty:
     queue = queue[queue["corridor_id"] == f_corridor]
 if f_status != "All" and not queue.empty:
@@ -108,13 +175,13 @@ else:
                     st.write(f"Conflicting: {fr_summary['conflicting']}")
 
             with rc:
-                st.markdown("#### ✅ Review Checklist")
-                st.checkbox("Candidate geometry inspected", value=True, key=f"chk1_{eid}")
-                st.checkbox("Confidence available", value=True, key=f"chk2_{eid}")
-                st.checkbox("Exposure summary checked", value=pop > 0, key=f"chk3_{eid}")
-                st.checkbox("Public limitations present", value=True, key=f"chk4_{eid}")
+                st.markdown("#### Demo review checklist")
+                st.checkbox("Candidate geometry inspected", key=f"chk1_{eid}")
+                st.checkbox("Confidence available", key=f"chk2_{eid}")
+                st.checkbox("Exposure summary checked", key=f"chk3_{eid}")
+                st.checkbox("Public limitations present", key=f"chk4_{eid}")
                 st.checkbox("Public copy previewed", key=f"chk5_{eid}")
-                st.checkbox("Urdu copy present", value=pd.notna(row.get("what_this_means_ur")), key=f"chk6_{eid}")
+                st.checkbox("Urdu copy present", key=f"chk6_{eid}")
                 st.checkbox("Notes added", key=f"chk7_{eid}")
 
                 st.markdown("#### ⚡ Actions")
@@ -142,7 +209,7 @@ else:
                         st.error(f"Failed to reject event {eid}. Check backend service and permissions.")
 
 # Audit Timeline
-st.subheader("📜 Audit Timeline")
+st.subheader("📜 Demo Audit Timeline")
 audit = data_service.get_audit_log()
 if not audit.empty:
     st.dataframe(audit.sort_values("timestamp", ascending=False), width="stretch", hide_index=True)

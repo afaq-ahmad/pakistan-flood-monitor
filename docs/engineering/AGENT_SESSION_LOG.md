@@ -150,3 +150,10 @@ Append entries; never rewrite earlier handoffs.
   simulation labels, and a canonical test-mode pipeline run. The focused queue, authentication,
   and public boundary suite passed 25 tests with sockets disabled. Next: connect Streamlit
   with a per-session credential and verify that it never reads the local audit in API mode.
+
+- API projection checkpoint verified at `2206a8273ee9b2e09c72d0f3c266e3b31d0651d1`.
+- Streamlit now uses a session password widget for the queue. API mode has no local audit or
+  mutation controls, and local demo review starts with unchecked attestations.
+- Dashboard and demo focused suite passed 35 tests. A transport outage and an unsupported
+  credential both produce a safe user message. SQLite migration round-trip and compile checks
+  passed. Next: verify the final offline suite and document hosted CI and browser limitations.
