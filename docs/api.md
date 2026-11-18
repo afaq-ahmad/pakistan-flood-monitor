@@ -65,10 +65,12 @@ sequenceDiagram
   `limit` is 1–100 (default 25), and `offset` is nonnegative (default 0).
   The response contains `app_mode`, `items`, and `next_offset` (null at the end).
   Rows contain the event ID, corridor, class, lifecycle state, recorded detection time,
-  model confidence percentage when known, and product label and watermark when available.
+  `machine_confidence_pct` on a 0–100 scale when known, and product label and watermark when
+  available. Canonical historic naive UTC detection times are serialized with a UTC offset.
   Missing metadata stays unavailable. Demo/test and identified synthetic records carry
   a simulation marker. Unknown lineage does not establish an operational observation.
-  The queue is a read-only, process-local snapshot. It is subject to change between pages
+  The response sets `Cache-Control: no-store`. The queue is a read-only, process-local
+  snapshot. It is subject to change between pages
   and can be incomplete after restart or across workers.
 - The API-connected Streamlit viewer uses a role credential supplied in that browser session.
   Use it from a trusted internal deployment. It has read-only triage controls and displays

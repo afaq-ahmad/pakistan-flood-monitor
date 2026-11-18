@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-18**, against `main` at `339ad5d`, with fixes verified on the PR #85 branch. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `5f700f6` and the read-only analyst changes in PR #86. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -216,10 +216,20 @@ Continue ENG-001 validation before human review; other backlog statuses remain u
 - Next UI-001 action is to specify the private queue and audit contract alongside durable review
   (P1-002). Keep P1-003 reviewed publication and operational GIS export open.
 
-## Analyst queue continuation (2026-11-18)
+## Analyst queue continuation (2026-11-18, PR #86)
 
-PR #85 merged as `5f700f6`. UI-001 resumes with a scoped, authenticated read-only queue
-because the public feed cannot enumerate unpublished candidates. The no-API dashboard
-and demo export fixes already exist on main. The analyst queue contract is documented in
-[the API guide](../api.md#analyst-review-workflow). P1-002 retains the durable review, audit,
-and concurrency design work.
+- PR #85 merged as `5f700f6`. UI-001 remains PARTIAL. The canonical API now offers a bounded,
+  role-protected read-only queue with simulation labels and a minimized response. Its scope is
+  the current API process. The Streamlit viewer uses an explicitly entered session credential
+  and avoids local audit and fixture reads in API mode. The local demo's review checklist starts
+  unchecked.
+- The queue, authentication, and publication regression group passed 25 tests. The Streamlit
+  and demo regression group passed 35 tests. The full offline suite passed 269 tests with
+  475 warnings. SQLite upgrade/downgrade/upgrade, compilation, diff and tracked-data checks passed.
+- Chromium startup was blocked by local socket permissions. The
+  [main baseline](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44254312814)
+  and [implementation checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44256032041)
+  reported failure with zero hosted jobs. Docker and PostgreSQL were unavailable locally.
+- Next, propose the P1-002 durable event identity and the review/audit transaction,
+  including a review version check, restart behavior, migration, and rollback criteria.
+  Keep live dashboard transitions and public products pending contract review.

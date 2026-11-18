@@ -96,3 +96,16 @@ Docker, PostgreSQL, live providers, scientific acceptance and mobile/assistive b
 remain open. The next UI-001 step is to specify an authenticated analyst queue and test listing,
 transition feedback and audit together against the canonical API. The implementation ledger and
 session log record the scope and restart point.
+
+## Analyst queue continuation
+
+After PR #85 merged, PR #86 addressed the disconnected analyst list in UI-001. API mode now
+reads a private queue for draft, review, and approved candidates. Role checks, bounded
+pagination, and the minimized projection protect the response. The viewer accepts a supplied
+session credential, distinguishes an empty queue from a credential or API failure, and avoids
+the local audit CSV. The API, per-session auth, and Streamlit boundary were verified offline.
+
+Review decisions still depend on the existing canonical API. The queue covers the current API
+process and may be incomplete after restart. P1-002 tracks a transactional review and audit
+contract before exposing live transitions in the dashboard. This slice adds no product
+publication, scientific inputs, or validated warning capabilities.

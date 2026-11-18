@@ -68,7 +68,9 @@ Review and audit state remains partly in memory; restart may lose it. Acceptance
 restart-safe review, authorization, audit and concurrency tests with migration/rollback. Requires
 reviewed-product and persistence contract before implementation.
 - [x] Identify in-memory state and restart limitation.
-- [ ] Design approved durable contract and implement/test.
+- [ ] Propose the durable event identity, review version and review/audit transaction contract.
+- [ ] Define migration, restart, duplicate submission, concurrent transition and rollback acceptance tests.
+- [ ] Implement and test the contract after review.
 
 ## P1-003 — Reviewed public products
 Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending reviewed products.
@@ -77,7 +79,7 @@ Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending
 - [ ] Implement and test availability, freshness and safe degradation.
 
 ## UI-001 — Public and analyst dashboard end-to-end audit
-Status: IN_PROGRESS; owner: Codex on `audit/ui-001-analyst-queue`; baseline: `5f700f6`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
+Status: PARTIAL; read-only analyst slice in [PR #86](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/86); baseline: `5f700f6`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
 Audit maps/cards, empty/outage states, demo watermark, districts, localization, mobile, field reports,
 exports and status actions. Acceptance: evidence-backed inventory and integration tests; no synthetic
 or unreviewed output represented as operational. Prototype UI is not an authoritative warning service.
@@ -90,7 +92,9 @@ or unreviewed output represented as operational. Prototype UI is not an authorit
 - [x] Test role enforcement, pagination, simulation labels, and public-feed isolation for the canonical queue. The focused queue, authentication, and public boundary suite passed 25 tests.
 - [x] Wire a credential-scoped analyst viewer with distinct empty, access-denied, and unavailable states. Verified in Streamlit AppTest through the actual FastAPI route and offline failure cases.
 - [x] Remove default attestations from the separate demo checklist and verify local/API isolation. The viewer, dashboard boundary and prior demo suite passed 35 focused tests.
+- [x] Run the full offline suite (269 passed) and SQLite migration round-trip for PR #86.
 - [ ] Define a durable review and audit contract before implementing live dashboard mutations (P1-002).
+- [ ] Verify hosted CI and before/after browser render. GitHub runs on main and the implementation checkpoint returned zero jobs, and Chromium startup was blocked by local socket permissions.
 - [ ] Verify browser presentation, keyboard access, and actual file download transfer.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
 
