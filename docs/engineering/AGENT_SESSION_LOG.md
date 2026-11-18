@@ -433,3 +433,9 @@ Append entries; never rewrite earlier handoffs.
 - Existing farmer guide now shows a short checklist at each stage and offers detailed sections with specific references and an expanded print view. Uses native controls and local content. The existing Pakistan Agricultural Research Council link could not be verified in this session, so local soil and replanting questions point to district extension offices and the section has a specific technical reference.
 - `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_preparedness_pages.py -q --tb=short` passed 18 tests. Chromium failed at startup with a denied socket, so physical print fidelity and mobile rendering remain unverified.
 - Next: improve the livestock guide using the same components, verify the quantity and animal-health changes, then run the cross-page acceptance matrix.
+
+### 2026-11-18 15:14 UTC · PK-010 livestock preparedness
+
+- [Draft PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95). Farm checkpoint verified on remote at `3ebf1e6538a4412dcf062f9ac1b745ae64fe72bd`.
+- Livestock checklist and all-details print view use the same native components. Replaced the untraceable fixed fodder duration and removed unsupported wound-treatment and disease-list copy. Linked the LEGS handbook, NDMA guidance and provincial contact pages. Local shelter and veterinary availability remain unverified.
+- Preparedness AppTest suite passed 19 tests. Next: run journeys A–F using the real Home route and deterministic fixtures. Address any verified public boundary gap and record browser, language and bandwidth evidence.

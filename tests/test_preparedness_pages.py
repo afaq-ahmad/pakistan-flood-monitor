@@ -155,3 +155,22 @@ class TestLivestockPreparedness:
         page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
         all_text = " ".join(m.value for m in page.markdown)
         assert "Urdu" in all_text
+
+    def test_livestock_checklists_sources_and_print_view(self, dashboard):
+        page = AppTest.from_file(HOME).switch_page(str(LIVESTOCK_PAGE)).run()
+        assert not page.exception
+        assert [header.value for header in page.header[:3]] == [
+            "Before flooding", "During flooding", "After flooding",
+        ]
+        assert any("protected fodder and clean water" in block.value for block in page.main.markdown)
+        body = " ".join(block.value for block in page.markdown)
+        assert "2–4 weeks" not in body
+        assert "Treat visible wounds" not in body
+        assert "https://livestock.sindh.gov.pk/contact-us" in body
+        assert "https://lahoredivision.punjab.gov.pk/provincial" in body
+
+        page.checkbox[0].check().run()
+        assert not page.exception
+        assert not page.expander
+        assert any(heading.value == "Feed and water before flooding" for heading in page.subheader)
+        assert any("LEGS, feed and water chapters" in block.value for block in page.markdown)
