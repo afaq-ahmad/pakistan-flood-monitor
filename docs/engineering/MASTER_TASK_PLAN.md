@@ -230,3 +230,12 @@ PK-002 initial slice: static, attributed FFD and NDMA source links only; no live
 - [ ] Audit model maturity and candidate datasets.
 - [ ] Compare defensible baselines with out-of-sample validation.
 - [ ] Test probabilistic calibration and preserve operational disablement.
+
+## ENG-001 — Resumable agent GitHub workflow
+Priority: engineering reliability; Status: IN_PROGRESS; owner: PR #83 integration agent.
+Base: `21450751d7b24e389cee8cbf9336d04bc8223e7c`; branch: `engineering/resumable-agent-workflow`.
+Acceptance: startup instructions, safe checkpoint/recovery helpers, isolated failure-path tests,
+one draft PR, verified remote checkpoints, and factual handoff. Existing flood backlog is unchanged.
+- [x] Open a draft PR after initial workflow documentation checkpoint.
+- [ ] Implement and test safe preflight, checkpoint and recovery workflows.
+- [ ] Validate integration, update status and handoff, verify PR and remote head.
