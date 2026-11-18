@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
-dashboard = ["streamlit>=1.35", "folium>=0.16", "streamlit-folium>=0.21", "plotly>=5.22"]
+dashboard = ["streamlit>=1.46", "folium>=0.16", "streamlit-folium>=0.21", "plotly>=5.22"]
 ml = ["xgboost>=2.0", "lightgbm>=4.3"]
 dl = ["torch>=2.2", "segmentation-models-pytorch>=0.3"]
 workflow = ["prefect>=2.16", "dask>=2024.2"]

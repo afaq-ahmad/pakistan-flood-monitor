@@ -6,18 +6,16 @@ import folium
 from streamlit_folium import st_folium
 
 from backend_service import DEMO_WATERMARK, DataService
+from public_information import show_demo_notice, show_event_feed_status, show_official_information_link
 from pakistan_flood_monitor.config import settings
 
-st.set_page_config(page_title="Public Dashboard", page_icon="🌍", layout="wide")
-st.title("🌍 Public Flood Dashboard")
-st.page_link("pages/16_📚_Official_Information.py", label="Official flood information")
+st.set_page_config(page_title="My Area", page_icon="🌍", layout="wide")
+st.title("My Area")
+show_official_information_link()
 data_service = DataService()
-if data_service.is_demo_mode:
-    st.warning(DEMO_WATERMARK)
-    fresh = data_service.freshness_status()
-    st.caption(f"Demo run freshness: {fresh['message']}")
+show_demo_notice(data_service)
 
-st.subheader("My Area")
+st.subheader("Check information for my area")
 corridor_names = tuple(corridor.name for corridor in settings.pilot_corridors)
 selected_corridor = None
 if corridor_names:
@@ -35,24 +33,13 @@ st.caption(
 )
 
 events = data_service.get_public_events()
-if data_service.event_api_error:
-    st.error(f"Event information is unavailable. {data_service.event_api_error}")
-    st.stop()
-
-if not data_service.is_demo_mode:
-    st.caption("Event feed freshness is unavailable.")
-
 if selected_corridor is not None and not events.empty:
     if not events["corridor_id"].isin(corridor_names).all():
         st.caption("Events without a configured corridor are available in the all-events view.")
     events = events[events["corridor_id"] == selected_corridor]
 
-if events.empty:
-    message = (
-        f"No published events are linked to {selected_corridor} in this feed."
-        if selected_corridor is not None else "No published events were returned."
-    )
-    st.info(f"{message} Conditions may still be unknown.")
+show_event_feed_status(data_service, empty=events.empty, corridor=selected_corridor)
+if data_service.event_api_error or events.empty:
     st.stop()
 
 if data_service.is_demo_mode:
@@ -72,7 +59,7 @@ def event_area_label(event: pd.Series) -> str:
     return "Corridor unavailable"
 
 
-st.subheader("Published events")
+st.subheader("Available flood information")
 for _, event in events.iterrows():
     with st.expander(f"{event['event_id']} · {event_area_label(event)}"):
         for label, field in (("Published", "published_at"), ("Detected", "detected_at")):

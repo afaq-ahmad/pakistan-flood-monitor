@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
+import streamlit as st
 from fastapi.testclient import TestClient
 from streamlit.testing.v1 import AppTest
 
@@ -10,10 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 HOME = ROOT / "streamlit_app.py"
 PUBLIC = next((ROOT / "pages").glob("1_*")).relative_to(ROOT)
 HOME_LINKS = [
-    ("My Area", "Public_Dashboard", "Public Flood Dashboard"),
-    ("Official Information", "Official_Information", "Official flood information"),
-    ("Farmer Safety", "Farmer_Preparedness", "Farmer Preparedness Guide"),
-    ("Livestock Safety", "Livestock_Preparedness", "Livestock Preparedness Guide"),
+    ("Open My Area", "Public_Dashboard", "My Area"),
+    ("Prepare my farm", "Farmer_Preparedness", "Farmer Preparedness Guide"),
+    ("Prepare my livestock", "Livestock_Preparedness", "Livestock Preparedness Guide"),
+    ("View official flood information", "Official_Information", "Official flood information"),
     ("Community Reporting", "Field_Reports", "Field Reports Moderation"),
 ]
 
@@ -36,8 +37,39 @@ def assert_public_home_navigation(page):
     ]
     assert all(link.page_script_hash and not link.external and not link.disabled for link in links)
     order = [item.type if item.type == "page_link" else getattr(item, "value", None) for item in page.main]
-    assert max(i for i, kind in enumerate(order) if kind == "page_link") < order.index("Published events")
+    assert order.index("Available flood information") < order.index("Check information for my area")
+    assert order.index("Check information for my area") < order.index("page_link")
     assert not page.button
+
+
+def test_native_navigation_groups_public_pages_and_keeps_all_existing_urls(dashboard, monkeypatch):
+    navigation = st.navigation
+    calls = []
+
+    def track_navigation(pages, *, position):
+        groups = {
+            section: [st.Page(item).url_path if isinstance(item, str) else item.url_path for item in items]
+            for section, items in pages.items()
+        }
+        calls.append((groups, position))
+        return navigation(pages, position=position)
+
+    monkeypatch.setattr(st, "navigation", track_navigation)
+    page = AppTest.from_file(HOME).run()
+
+    assert not page.exception
+    (groups, position), = calls
+    assert position == "top"
+    assert list(groups) == ["", "Public information", "Research", "Operations"]
+    assert groups[""] == [""]
+    assert groups["Public information"] == [
+        "Public_Dashboard", "Farmer_Preparedness", "Livestock_Preparedness",
+        "Official_Information", "Field_Reports",
+    ]
+    assert "Analyst_Review" in groups["Operations"]
+    assert "Satellite_Viewer" in groups["Research"]
+    expected_routes = [path.stem.split("_", 2)[2] for path in (ROOT / "pages").glob("*.py")]
+    assert sorted(route for group in groups.values() for route in group) == sorted(["", *expected_routes])
 
 
 def test_home_links_resolve_to_existing_public_pages(dashboard, monkeypatch):
@@ -57,7 +89,7 @@ def test_demo_home_shows_only_published_fixtures(dashboard):
     assert_public_home_navigation(page)
     watermark = dashboard.DEMO_WATERMARK.removeprefix("⚠️ ")
     assert any(watermark in warning.value for warning in page.warning)
-    expected = f"Events in this feed: {len(dashboard.DataService().get_public_events())}."
+    expected = f"Published events in this feed: {len(dashboard.DataService().get_public_events())}."
     assert any(item.value == expected for item in page.markdown)
     main = list(page.main)
     assert next(i for i, item in enumerate(main) if item.type == "warning") < next(
@@ -92,13 +124,59 @@ def test_home_keeps_public_links_when_event_feed_changes(dashboard, monkeypatch,
     assert not page.success
     assert not page.metric
     if result in {"outage", "timeout"}:
-        assert "Event information is unavailable" in page.error[0].value
+        assert "Flood information is unavailable" in page.error[0].value
     elif result == "operational-empty":
         assert not page.error
         assert any("No published events" in info.value and "unknown" in info.value for info in page.info)
     else:
         assert not page.error
-        assert any(text.value == "Events in this feed: 1." for text in page.markdown)
+        assert any(text.value == "Published events in this feed: 1." for text in page.markdown)
+        assert any("update time for this feed is unavailable" in text.value for text in page.caption)
+
+
+@pytest.mark.parametrize("path", [None, PUBLIC], ids=["home", "my-area"])
+def test_public_stale_notice_describes_demo_processing(dashboard, monkeypatch, path):
+    monkeypatch.setattr(
+        dashboard.DataService, "freshness_status",
+        lambda service: {"status": "stale", "message": "Last completed 90 minutes ago"},
+    )
+    page = AppTest.from_file(HOME)
+    if path:
+        page.switch_page(str(path))
+    page.run()
+
+    assert not page.exception
+    assert "SIMULATED / DEMO DATA" in page.warning[0].value
+    assert page.warning[1].value == "Demo processing is stale. Last completed 90 minutes ago."
+
+
+def test_home_initial_render_only_reads_canonical_public_feed(dashboard, monkeypatch):
+    import nasa_service
+    import pystac_client
+
+    monkeypatch.setattr(dashboard, "API_BASE_URL", "http://api.test")
+    monkeypatch.setattr(dashboard, "_APP_MODE", "operational")
+    calls = []
+
+    def get(url, *, timeout):
+        calls.append((url, timeout))
+        return httpx.Response(503)
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("Home attempted provider access or local fixture fallback")
+
+    monkeypatch.setattr(httpx, "get", get)
+    monkeypatch.setattr(nasa_service, "fetch_corridor_rainfall", unexpected)
+    monkeypatch.setattr(pystac_client.Client, "open", unexpected)
+    monkeypatch.setattr(dashboard.DataService, "_load", unexpected)
+    page = AppTest.from_file(HOME).run()
+
+    assert_public_home_navigation(page)
+    assert calls == [("http://api.test/public/events", 2.0)]
+    assert page.error
+    assert not page.warning
+    assert not page.metric
+    assert all("Published events in this feed:" not in item.value for item in page.markdown)
 
 
 def test_demo_public_page_filters_cards_map_and_exposure(dashboard, monkeypatch):
@@ -131,7 +209,7 @@ def test_operational_without_api_shows_no_fixture_events(dashboard, monkeypatch,
     assert not page.exception
     assert not page.metric
     assert not page.warning
-    assert "No event API is configured" in page.error[0].value
+    assert "Flood information source is unavailable" in page.error[0].value
     if path is None:
         assert_public_home_navigation(page)
     assert dashboard.DataService().get_event("evt-indus-001") is None
@@ -207,14 +285,14 @@ def test_reference_corridors_available_without_published_feed(dashboard, monkeyp
     page = AppTest.from_file(HOME).switch_page(str(PUBLIC)).run()
 
     assert not page.exception
-    assert "My Area" in [item.value for item in page.subheader]
+    assert "Check information for my area" in [item.value for item in page.subheader]
     selector = page.selectbox(key="my_area_corridor")
     assert selector.options == ["All published events", *(corridor.name for corridor in settings.pilot_corridors)]
     selector.select("Chenab-Middle").run()
     assert not page.exception
     assert page.selectbox(key="my_area_corridor").value == "Chenab-Middle"
     assert any("coverage is unverified" in item.value for item in page.caption)
-    assert page.get("page_link")[0].proto.label == "Official flood information"
+    assert page.get("page_link")[0].proto.label == "View official flood information"
     assert not page.metric
     assert not page.success
     assert not page.dataframe
@@ -283,7 +361,7 @@ def test_my_area_filters_the_real_public_api_and_preserves_unassigned_events(das
     assert not any("chenab-draft" in item.label or "chenab-ineligible" in item.label for item in page.expander)
     assert any("2026-05-01T10:00:00Z" in item.value and "Published" in item.value for item in page.markdown)
     assert any("2026-04-30T08:00:00Z" in item.value and "Detected" in item.value for item in page.markdown)
-    assert any("freshness is unavailable" in item.value for item in page.caption)
+    assert any("update time for this feed is unavailable" in item.value for item in page.caption)
     assert any("Exposure data is unavailable" in item.value for item in page.info)
     assert not page.dataframe
     assert len(calls) == 2
