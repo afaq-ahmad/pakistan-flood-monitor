@@ -77,14 +77,20 @@ Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending
 - [ ] Implement and test availability, freshness and safe degradation.
 
 ## UI-001 — Public and analyst dashboard end-to-end audit
-Status: PARTIAL; implementation in [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85); baseline: `339ad5d`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
+Status: IN_PROGRESS; owner: Codex on `audit/ui-001-analyst-queue`; baseline: `5f700f6`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
 Audit maps/cards, empty/outage states, demo watermark, districts, localization, mobile, field reports,
 exports and status actions. Acceptance: evidence-backed inventory and integration tests; no synthetic
 or unreviewed output represented as operational. Prototype UI is not an authoritative warning service.
 - [x] Inventory public and analyst data paths, including standalone dashboard. See the [functionality gap audit](FUNCTIONALITY_GAP_AUDIT.md).
 - [x] Verify public snapshot, mode, dashboard install, and demo export boundaries with offline tests.
 - [x] Verify the standalone HTML prototype and feed are labelled in demo/test and refuse operational mode.
-- [ ] Specify authenticated review-queue and audit contracts before implementing the canonical analyst workflow.
+- [x] Verify the public/dashboard boundary work merged in [PR #85](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/85).
+- [x] Reproduce the analyst discovery gap. The page filters a published-only API feed for drafts while using local audit CSV.
+- [x] Specify the [authorized read-only queue](../api.md#analyst-review-workflow) and its process-local limits.
+- [ ] Test role enforcement, pagination, simulation labels, and public-feed isolation for the canonical queue.
+- [ ] Wire a credential-scoped analyst viewer with clear empty, access-denied, and unavailable states.
+- [ ] Remove default attestations from the separate demo checklist and test local/API isolation.
+- [ ] Define a durable review and audit contract before implementing live dashboard mutations (P1-002).
 - [ ] Verify browser presentation, keyboard access, and actual file download transfer.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
 

@@ -215,3 +215,11 @@ Continue ENG-001 validation before human review; other backlog statuses remain u
   providers and scientific validation were outside the verified environment.
 - Next UI-001 action is to specify the private queue and audit contract alongside durable review
   (P1-002). Keep P1-003 reviewed publication and operational GIS export open.
+
+## Analyst queue continuation (2026-11-18)
+
+PR #85 merged as `5f700f6`. UI-001 resumes with a scoped, authenticated read-only queue
+because the public feed cannot enumerate unpublished candidates. The no-API dashboard
+and demo export fixes already exist on main. The analyst queue contract is documented in
+[the API guide](../api.md#analyst-review-workflow). P1-002 retains the durable review, audit,
+and concurrency design work.

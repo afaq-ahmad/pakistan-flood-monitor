@@ -59,6 +59,21 @@ sequenceDiagram
 - `GET /internal/runs`: Lists recent pipeline execution runs.
 
 #### Analyst Review Workflow
+- `GET /internal/review-queue` lists the current API process's review candidates for
+  admin, analyst, and reviewer roles. The items are ordered by descending recorded detection
+  time, then event ID. Optional `status` filters to `draft`, `review`, or `approved`;
+  `limit` is 1–100 (default 25), and `offset` is nonnegative (default 0).
+  The response contains `app_mode`, `items`, and `next_offset` (null at the end).
+  Rows contain the event ID, corridor, class, lifecycle state, recorded detection time,
+  model confidence percentage when known, and product label and watermark when available.
+  Missing metadata stays unavailable. Demo/test and identified synthetic records carry
+  a simulation marker. Unknown lineage does not establish an operational observation.
+  The queue is a read-only, process-local snapshot. It is subject to change between pages
+  and can be incomplete after restart or across workers.
+- The API-connected Streamlit viewer uses a role credential supplied in that browser session.
+  Use it from a trusted internal deployment. It has read-only triage controls and displays
+  a distinct access-denied or unavailable state. Live transitions and audit remain available
+  through the existing role-protected API. A durable review and audit contract is tracked in P1-002.
 - `POST /internal/admin/review-event`: Advances an event through the lifecycle (`draft` -> `review` -> `approved` -> `published`).
 - `POST /internal/field-reports/{report_id}/moderate`: Moderates a crowdsourced field report.
 
