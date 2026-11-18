@@ -142,7 +142,8 @@ work remains open and a reproducible session log exists. Do not interpret test p
 - [ ] Verify Docker, PostgreSQL, live providers and UI when available.
 - [x] Reconcile merged PR #88 and re-run the clean offline baseline at `cb70717` (278 passed).
 - [x] Record the incremental [end-user acceptance matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md#independent-qa-follow-up) against current main without re-auditing closed workstreams.
-- [ ] Record final commit, PR and next exact task in session log.
+- [x] Record draft PR #89, 293-test offline acceptance and handoff for this independent QA continuation.
+- [ ] Complete hosted and browser verification and outstanding QA workstreams.
 
 
 ## Pakistan community features — research-backed backlog
@@ -240,8 +241,8 @@ Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified 
 
 
 ### PK-006 — Community reports
-Priority: P2; Status: PARTIAL. The FL-05 boundary and failure-feedback slice is in progress on
-`fix/pk-006-field-report-qa` from `cb70717`. Dependencies for operational intake: P1-002, SEC-001,
+Priority: P2; Status: PARTIAL. The FL-05 boundary and failure-feedback slice passed offline in
+[draft PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89), based on `cb70717`. Dependencies for operational intake: P1-002, SEC-001,
 a durable report store and privacy/retention policy. This containment slice uses the existing
 demo boundary and canonical role checks.
 - [ ] Audit existing field-report flow; distinguish reports from verified observations.
@@ -255,6 +256,8 @@ demo boundary and canonical role checks.
 - [x] Verify no report CSV reads/writes in operational and API-backed modes, explicit unavailable state and labelled demo moderation.
 - [x] Verify stale and failed writes preserve demo CSV and return a failure. Verify every button's failure message and acknowledged success across AppTest rerun.
 - [x] Verify an idempotent same-identity, same-event receipt, sanitized conflicts, concurrent same-process retry linkage, and unchanged authorization and IDs. The related suite passed 64 tests.
+- [x] Run full offline suite and verify SQLite upgrade/downgrade/re-upgrade, compile and tracked-data isolation (293 passed, 475 warnings).
+- [ ] Verify Field Reports and My Area at 360 px with keyboard/screen-reader and visual contrast checks.
 - [ ] Design resident consent, categories, receipt and private evidence checks for future intake (FL-05).
 - [ ] Define a private acknowledgement and retry/idempotency contract with minimal coarse-area fields, moderation states and retention rules. Exercise unauthorized, duplicate/spam and write-failure cases before enabling operational intake. Verify durable storage and explicit consent for any onward integration.
 

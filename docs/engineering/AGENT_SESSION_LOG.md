@@ -290,3 +290,23 @@ Append entries; never rewrite earlier handoffs.
   process lock. Tested with synthetic API records, concurrent retries and unauthorized moderation.
   The selected application/API regressions passed 64 tests. Next: verify the full local suite,
   hosted workflow and exact handoff before closing the checkpoint.
+
+### 2026-11-18 UTC — QA-001 / PK-006 acceptance handoff
+
+- Repository afaq-ahmad/pakistan-flood-monitor. Branch `fix/pk-006-field-report-qa`,
+  [draft PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89) to main
+  `cb707175b82e72f232dc1ed19a470b9ba3738f51`. Verified implementation checkpoint
+  `80ee8aa59e7a5da8dc5d3732f64f9fbb6a96d3c6` before the handoff.
+- Closed the tested FL-05 mode, failure-feedback and receipt ownership defects. Existing
+  canonical auth, publication and registry behavior are preserved. The report path is still
+  process-local. No schema or scientific changes. PK-006, QA-001 and SEC-001 remain partial.
+- Baseline 278 passed. Focused final 64 passed. The full
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 293 tests with 475 warnings. SQLite round-trip to `b4d9d93f2a10`, compile, tracked data,
+  local links and whitespace checks passed.
+- Main and implementation Actions runs reported failure with zero jobs. Chromium could not
+  create a local socket. Browser usability, screen-reader/RTL and real-device checks remain
+  unverified. The final checkpoint updates QA matrix, plan, ledger and handoff only.
+- Next: reproduce PK-011 / FL-08 in an offline operational AppTest with optional forecast
+  dependencies present, then review the presentation guard before any provider invocation
+  or warning-like output. Keep scientific validation and durable report intake open.
