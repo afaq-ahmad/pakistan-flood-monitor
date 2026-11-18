@@ -383,3 +383,9 @@ Append entries; never rewrite earlier handoffs.
   - `pytest tests/test_field_report_boundaries.py -v`: 15 passed.
   - Full offline suite: 333 passed, 0 failed, 978 warnings.
 - Next: commit and push to remote, open draft PR, verify remote SHA and status.
+
+### 2026-11-18 13:09 UTC — PK-006 / FL-05 documentation checkpoint
+
+- Claimed `fix/pk-006-report-receipts` at verified main `90062a0`. PRs #89–91 merged. No open PRs or issues returned.
+- Reconciled REMAINING_WORK with merged work, documented the hash-only receipt and acceptance cases in the master plan and farmer QA matrix.
+- Baseline: `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` — 333 passed, 480 warnings. Next: reproduce the preview and empty-state failures before changing page 3.

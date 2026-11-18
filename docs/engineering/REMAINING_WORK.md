@@ -1,21 +1,20 @@
 # Pakistan Flood Monitor — Remaining Work Documentation
 
-> [!IMPORTANT]
-> This document catalogues the **verified gaps, missing items, and remaining
-> work** across the repository as of `d37488a` on `main` (18 November 2026).
-> It is derived from code inspection, test results, task-plan evidence, and
-> the QA matrix — not speculation.
+## Current checkpoint · 18 November 2026
 
-## Summary of Current State
+Baseline `90062a0` on main includes PRs #89–91. The full offline suite passed
+333 tests with 480 warnings here. No open PR or issue owned PK-006 at intake.
 
-| Metric | Value |
-|---|---|
-| Last verified main commit | `300d60c` |
-| Full offline test suite | 322 passed (0 failed, 973 warnings) |
-| Merged PRs | #87 (reference catalogue), #88 (corridor selector), #89 (field report QA), #90 (preparedness & categories) |
-| Pages implemented | 18 (1–16 existing + 17 Farmer Preparedness + 18 Livestock Preparedness) |
+| Existing task | Implemented on main | Remaining acceptance |
+|---|---|---|
+| PK-006 / FL-05 (selected) | Eight categories and a standalone demo form. The submit handler hashes the input and displays a receipt without saving a report or adding it to a queue. | Show a practice preview with category, configured corridor and date. Avoid collecting real descriptions or implying delivery. Keep it available when example moderation rows are missing. |
+| PK-006 / P1-002 / SEC-001 | Authorized internal API and demo fixture moderation | Agree on reporter identity, consent, retention, coarse location and private retrieval. Acknowledge operational submissions only after a durable write. Verify retry, restart and rollback before enabling resident intake. |
+| PK-011 / FL-08, FL-03, FL-09 | PR #91 added forecast/dam operational gates and corrected historical language and rainfall result counts. | Independent provider and scientific validation remain open. |
+| PK-001 / PK-003 / PK-010 | Corridor lookup, source directory and English preparedness guides | Verify small-screen and keyboard journeys, review Urdu with people and validate administrative coverage before expanding it. |
+| PK-007 | Exposure prerequisites specified | Licensed boundaries, consent, validated extent, CRS/time alignment, crop and model uncertainty, and independent loss evidence remain outstanding. |
 
----
+The sections below preserve the planning snapshot from PRs #90–91. The current
+checkpoint above supersedes their status labels and next-session instructions.
 
 ## 1. Completed Work (Merged to Main)
 

@@ -129,3 +129,13 @@ private reporting, independently verified observations, and live moderation rema
   provider, opens the prototype in operational mode, and checks that unavailable is shown before
   any provider call or alert-style output. Review the presentation guard against ADR-001 separately.
   Existing scientific forecast and dam validation remain open.
+
+### FL-05 · demo acknowledgement follow-up
+
+| Journey and reproduction on main at `90062a0` | Expected | Actual and cause | Impact / confidence | Acceptance |
+|---|---|---|---|---|
+| In standalone demo open Field Reports, enter a fictional note, consent, submit, then inspect the queue. | A real receipt identifies a saved submission. A rehearsal identifies itself before and after the action. | Page 3 calculates a hash and displays “Report received” and “Pending Moderation”. No write or queue insertion occurs. The existing acceptance test checks those strings alone. | P1 / confirmed by handler inspection and the passing baseline test. A visitor can mistake the screen for acknowledgement of a loss report. | Render a labelled preview, verify selected category/area/date, unchanged queue/file and repeat behavior. |
+| Open the demo with no moderation CSV or no configured corridors. | Practice remains usable independently of fixture rows and selectable areas come from configuration. | An early stop hides the form when rows are missing. A hardcoded fallback supplies two areas when coverage is empty. | P2 / confirmed by control flow. | Exercise both empty states and the operational/API boundary in AppTest. |
+
+Operational reporting remains blocked on private durable intake and policy. This
+slice owns the presentation contract only.
