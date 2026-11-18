@@ -107,3 +107,45 @@ def test_public_api_snapshot_skips_unknown_location(dashboard, monkeypatch):
     assert any("missing-location" in card.label for card in page.expander)
     assert "unreviewed" not in rendered_maps[0]
     assert not page.dataframe
+
+
+@pytest.mark.parametrize("feed", ["empty", "error", "timeout", "unconfigured"])
+def test_reference_corridors_available_without_published_feed(dashboard, monkeypatch, feed):
+    from pakistan_flood_monitor.config import settings
+
+    monkeypatch.setattr(dashboard, "_APP_MODE", "operational")
+    monkeypatch.setattr(dashboard, "API_BASE_URL", None if feed == "unconfigured" else "http://api.test")
+    requested = []
+
+    def get(url, **kwargs):
+        requested.append(url)
+        if feed == "timeout":
+            raise httpx.ReadTimeout("offline fixture")
+        return httpx.Response(503 if feed == "error" else 200, json={"events": []})
+
+    monkeypatch.setattr(httpx, "get", get)
+    page = AppTest.from_file(HOME).switch_page(str(PUBLIC)).run()
+
+    assert not page.exception
+    assert "Reference river corridors" in [item.value for item in page.subheader]
+    references = [item.value for item in page.markdown if "Chenab-Middle" in item.value]
+    assert len(references) == 1
+    assert references[0].split(", ") == [corridor.name for corridor in settings.pilot_corridors]
+    assert any("coverage is unverified" in item.value for item in page.caption)
+    assert page.get("page_link")[0].proto.label == "Official flood information"
+    assert not page.metric
+    assert not page.success
+    assert not page.dataframe
+    assert requested == ([] if feed == "unconfigured" else ["http://api.test/public/events"])
+
+
+def test_reference_catalogue_can_be_unconfigured(dashboard, monkeypatch):
+    from pakistan_flood_monitor.config import settings
+
+    monkeypatch.setattr(settings, "pilot_corridors", [])
+    monkeypatch.setattr(dashboard, "_APP_MODE", "operational")
+    page = AppTest.from_file(HOME).switch_page(str(PUBLIC)).run()
+
+    assert not page.exception
+    assert "No reference river corridors are configured." in [item.value for item in page.info]
+    assert not page.metric

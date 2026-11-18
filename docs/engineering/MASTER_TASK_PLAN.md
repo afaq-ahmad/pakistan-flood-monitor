@@ -144,17 +144,38 @@ work remains open and a reproducible session log exists. Do not interpret test p
 
 ## Pakistan community features — research-backed backlog
 
-Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
+Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Reproducible farmer, livestock and community findings are in the [QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
 
 ### PK-001 — My Area
-Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003, P1-003. Data: Validated administrative boundaries and area/corridor mapping.
-- [ ] Audit district data and show no-data/unknown coverage; never infer property risk.
-- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+Priority: P1; Status: PARTIAL; reference catalogue in [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87); baseline `d24fa22`.
+Dependencies for validated local coverage: UI-001, P0-003, P1-003, and validated administrative boundaries.
+Reference catalogue dependencies: the existing canonical pilot corridor settings.
+Files: `pages/1_🌍_Public_Dashboard.py`, `src/pakistan_flood_monitor/config.py`,
+`backend_service.py`, and `tests/test_streamlit_public_pages.py`.
 
-- [ ] Audit district and corridor data and supported coverage.
-- [ ] Validate district/tehsil and corridor associations.
-- [ ] Show observations, official notices and history separately with timestamps.
-- [ ] Test empty, unknown and demo states across map and cards.
+**Problem and scope.** Residents lose area context when the published feed is empty or unavailable.
+Show configured reference names independently from the feed. The current slice displays no
+administrative or property coverage and changes no publication or scientific product contract.
+The district filter retains its existing published-event behavior.
+
+**Acceptance and tests.** In offline AppTest, an empty 200, 503, timed-out or unconfigured endpoint
+leaves the label list and official-source navigation visible. Display no inferred village-level
+coverage, safety status, synthetic observations, impact metrics, or map on these paths. Show
+configured absence explicitly and preserve successful demo district filtering.
+
+- [x] Trace canonical names, public event fields and published-only data path (FL-01/01B/06).
+- [x] Reproduce missing area context on empty response, 503 and timeout using AppTest.
+- [x] Verify the [planning checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/commit/170a2608d8ac3effec415da1d432fd03816ad288) and open draft PR #87 before editing the public dashboard.
+- [x] Add reference-list regressions before implementation. All five failed against the baseline.
+- [x] Verify reference names and official navigation for an empty 200, 503, timeout, and API absence. Verify that an empty configured catalogue has an explicit state.
+- [x] Verify demo/published filtering, fail-closed publication, and official navigation with 30 focused tests.
+- [x] Run the full offline suite (274 passed, 475 warnings) and record delivery evidence.
+- [ ] Verify browser/mobile and keyboard behavior when a browser is available.
+- [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
+- [ ] Show reviewed observations, official notices and history separately, with source/issue times.
+
+**Blockers.** Authoritative local coverage, aliases, and scientific freshness are pending. The
+reference-name slice passed offline. Chromium startup was blocked and hosted workflows on main and the implementation checkpoint returned zero jobs. Browser and mobile acceptance remain open.
 
 ### PK-002 — Official source hub
 Priority: P1; Status: PARTIAL; Dependencies: P0-003. Data: Curated FFD and NDMA links; source permissions for any ingestion.
@@ -167,6 +188,8 @@ Priority: P1; Status: PARTIAL; Dependencies: P0-003. Data: Curated FFD and NDMA 
 - [ ] Create a versioned registry with attribution and link maintenance.
 - [ ] Show issue/acquisition times only when supported by actual source data.
 - [ ] Test source failures, expiry, permissions and accessibility.
+- [ ] Revalidate provincial source links and record check date, owner and timeout handling (FL-04).
+
 
 ### PK-003 — Urdu and low-bandwidth access
 Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003. Data: Human-reviewed translations and accessibility research.
@@ -176,6 +199,8 @@ Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003. Data: Human-reviewe
 - [ ] Audit critical English/Urdu text and translation fallback.
 - [ ] Design mobile, text-only, printable low-bandwidth views.
 - [ ] Test accessibility and record regional-language needs.
+- [ ] Test 360 px reflow, reviewed Urdu/RTL, keyboard order and essentials without tiles (FL-06/12).
+
 
 ### PK-004 — Community sharing cards
 Priority: P1; Status: NOT_STARTED; Dependencies: P1-003, PK-003. Data: Authorized reviewed products and issue timestamps.
@@ -185,6 +210,8 @@ Priority: P1; Status: NOT_STARTED; Dependencies: P1-003, PK-003. Data: Authorize
 - [ ] Define source/area/issue-time/freshness schema.
 - [ ] Restrict sharing to eligible reviewed content.
 - [ ] Implement and test text and print formats with reviewed translations.
+- [ ] Test issuer, issue/expiry, scope, confidence and demo label through copy/export; validate real provider acceptance (FL-07/11).
+
 
 ### PK-005 — Verified relief directory
 Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified official contacts and maintained service status.
@@ -194,6 +221,8 @@ Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified 
 - [ ] Verify official directory sources and scope.
 - [ ] Model verification time, expiry and service status.
 - [ ] Add moderated corrections and privacy tests.
+- [ ] Design verified animal shelter, water, fodder and veterinary resource records with expiry and provider ownership (FL-04).
+
 
 ### PK-006 — Community reports
 Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Moderated field reports and privacy/retention policy.
@@ -203,6 +232,8 @@ Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Moderated fi
 - [ ] Audit field-report authorization and moderation.
 - [ ] Design categories, evidence, deduplication and retention.
 - [ ] Test sensitive-location and publication boundaries.
+- [ ] Reproduce local moderation result handling in isolation and design resident consent, categories, receipt and private evidence checks (FL-05).
+
 
 ### PK-007 — Farmers and livestock
 Priority: P2; Status: BLOCKED; Dependencies: DATA-001, GIS-001, PK-006. Data: Validated flood extents and licensed agricultural layers.
@@ -212,6 +243,8 @@ Priority: P2; Status: BLOCKED; Dependencies: DATA-001, GIS-001, PK-006. Data: Va
 - [ ] Inventory agricultural datasets and exposure methods.
 - [ ] Validate spatial overlays and separate reported from verified damage.
 - [ ] Test units, temporal alignment and unsupported compensation claims.
+- [ ] Specify crop-stage, storage, irrigation and livestock data separately; validate methods, licensing and unknown-versus-zero semantics (FL-03/04).
+
 
 ### PK-008 — River observation explorer
 Priority: P2; Status: BLOCKED; Dependencies: DATA-001. Data: Licensed gauge data, units and timestamps.
@@ -230,6 +263,8 @@ Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Authorizatio
 - [ ] Audit partner-mode authorization and existing exports.
 - [ ] Design reviewed summaries and sensitive-data minimization.
 - [ ] Add authorization and audit tests.
+- [ ] Review Partner advisory payload, remove unsupported authorizations and verify plaintext source/expiry and redaction (FL-07/13).
+
 
 ### PK-010 — Historical and preparedness explorer
 Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated licensed historical sources and approved preparedness guidance.
@@ -239,6 +274,8 @@ Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated lice
 - [ ] Audit historical sources, dates and geometry.
 - [ ] Distinguish history from forecasts and unknown coverage.
 - [ ] Verify preparedness guidance and legend tests.
+- [ ] Check provenance and permissions of bundled historical flood outlines; distinguish approximate outlines from verified training evidence (FL-03).
+
 
 ### PK-011 — Validated forecasting
 Priority: P3; Status: BLOCKED; Dependencies: DATA-001. Data: Independent historical rainfall/gauge datasets and out-of-sample evaluation.
@@ -250,6 +287,8 @@ PK-002 initial slice: static, attributed FFD and NDMA source links only; no live
 - [ ] Audit model maturity and candidate datasets.
 - [ ] Compare defensible baselines with out-of-sample validation.
 - [ ] Test probabilistic calibration and preserve operational disablement.
+- [ ] Treat FL-08 as P0 presentation risk. First reproduce and gate the prototype forecast page and missing-imagery dam paths in operational mode. Assert unavailable output and absence of evacuation language in offline tests.
+
 
 ## ENG-001 — Resumable agent GitHub workflow
 Priority: engineering reliability; Status: PARTIAL; owner: PR #83 integration agent.

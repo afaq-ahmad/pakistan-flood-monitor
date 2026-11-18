@@ -6,6 +6,7 @@ import folium
 from streamlit_folium import st_folium
 
 from backend_service import DEMO_WATERMARK, DataService
+from pakistan_flood_monitor.config import settings
 
 st.set_page_config(page_title="Public Dashboard", page_icon="🌍", layout="wide")
 st.title("🌍 Public Flood Dashboard")
@@ -15,6 +16,16 @@ if data_service.is_demo_mode:
     st.warning(DEMO_WATERMARK)
     fresh = data_service.freshness_status()
     st.caption(f"Demo run freshness: {fresh['message']}")
+
+st.subheader("Reference river corridors")
+if settings.pilot_corridors:
+    st.write(", ".join(corridor.name for corridor in settings.pilot_corridors))
+else:
+    st.info("No reference river corridors are configured.")
+st.caption(
+    "These are configured reference names. District, tehsil, village and farm coverage is unverified. "
+    "Check official sources for current notices."
+)
 
 events = data_service.get_public_events()
 if data_service.event_api_error:

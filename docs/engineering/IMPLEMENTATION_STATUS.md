@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-18**, against `main` at `5f700f6` and the read-only analyst changes in PR #86. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `d24fa22` and the reference catalogue changes in draft PR #87. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -233,3 +233,21 @@ Continue ENG-001 validation before human review; other backlog statuses remain u
 - Next, propose the P1-002 durable event identity and the review/audit transaction,
   including a review version check, restart behavior, migration, and rollback criteria.
   Keep live dashboard transitions and public products pending contract review.
+
+## Farmer and community audit (18 November 2026)
+
+Base `d24fa22` includes the merged read-only analyst queue from PR #86. The
+[persona walkthrough](../product/FARMER_LIVESTOCK_USER_JOURNEYS.md) and
+[QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md) record deterministic evidence and
+remaining evidence needs. In draft PR #87, PK-001 renders the canonical reference names
+and official-source link on empty, errored, timed-out, and unconfigured feeds. Five new
+regressions failed before the edit and passed after it. The focused suite passed 30 tests
+and the full offline suite passed 274 tests with 475 warnings. The change adds no migration
+or publisher behavior. Browser/mobile acceptance remains pending.
+
+The [main workflow](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44266515268)
+and [implementation checkpoint workflow](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44267412433)
+reported failure with zero jobs. Chromium startup failed on local socket permissions.
+FL-08's prototype forecast and dam presentation, report protection, reviewed products and
+validated farm-level exposure remain open. The next scoped change is the operational
+forecast page guard under PK-011, exercised with injected prototype responses.
