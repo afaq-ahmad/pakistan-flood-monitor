@@ -120,3 +120,12 @@ records, and the missing-imagery dam probe returned a synthetic number marked as
 proxy. Forecast wording that can be mistaken for an official warning was confirmed by source
 inspection. The first implementation slice is limited to PK-001's static reference catalogue,
 with no claim of administrative coverage.
+
+## Independent end-user QA continuation
+
+Merged PR #88 provides corridor selection. The [incremental acceptance matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md#independent-qa-follow-up)
+reconciles current behavior and pending cases from `cb70717`. Baseline AppTest verified that
+Field Reports still loads its local fixture when an API is configured and gives no visible error
+on a declined moderation action. The selected PK-006 slice closes these boundaries and checks
+ownership of canonical duplicate receipts. Operational intake, durable moderation and all
+scientific safeguards retain their current contracts and dependencies.

@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-18**, against `main` at `6f35e9e` and the My Area selector changes in draft PR #88. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `cb70717` and the independent QA changes in draft PR #89. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 
@@ -266,3 +266,17 @@ reported failure with zero jobs. Chromium startup failed on socket permissions. 
 retains mobile, browser and keyboard checks. Future farmer and livestock content requires
 verified, attributed English guidance and human-reviewed Urdu under PK-010. Reports and
 property exposure retain the PK-006 and PK-007 prerequisites.
+
+## Independent QA and report boundaries
+
+PR #88 merged. Draft PR #89 adds the ten-journey QA acceptance matrix and contains the FL-05
+demo/API separation and declined-write failures. Canonical duplicate receipts retain their ID
+and require the same authenticated role principal and event to return the prior payload.
+The focused suite passed 64 tests and the full offline suite passed 293 tests with 475 warnings.
+The SQLite migration round-trip, compilation and tracked-data checks passed.
+
+PK-006 stays PARTIAL. Resident intake, consent, per-reporter identity, durable records and
+live moderation depend on P1-002 and SEC-001. The previous runtime state still uses shared role
+credentials and process-local reports. Cross-process concurrency, DB write recovery for reports,
+browser keyboard/reflow and scientific validation remain open. Hosted Actions returned failure
+with zero jobs and Chromium startup failed locally.

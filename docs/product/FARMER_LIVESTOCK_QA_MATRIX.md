@@ -64,3 +64,68 @@ events when there is no match. FL-01B remains open for administrative mapping.
 - The related dashboard, publication and official source suites passed 34 tests. The full offline
   suite passed 278 tests with 475 warnings. SQLite downgrade/re-upgrade, compilation, tracked-data
   isolation and whitespace checks passed.
+
+## Independent QA follow-up
+
+Baseline `cb70717` includes merged PR #88. The complete network-disabled baseline passed
+278 tests with 475 warnings. The matrix below reuses the existing FL IDs. **PASS** refers to
+the stated fixture contract. **FAIL** means a reproduced or directly confirmed defect.
+**BLOCKED** identifies an unavailable prerequisite or feature. **UNVERIFIED** marks a missing
+test environment or evidence gap.
+
+| Journey | Result at baseline | Current evidence and remaining boundary |
+|---|---|---|
+| Select an area with no events (FL-01/06) | PASS | AppTest preserves configured corridor and official-source navigation on empty 200, timeout, 503 and unconfigured feed. A disconnected browser first load remains unverified. |
+| Select an area with a published event (FL-01B/02) | PASS at corridor resolution | Canonical FastAPI-to-Streamlit test uses published, unassigned, draft and ineligible fixtures. Administrative locality and property associations remain BLOCKED by boundary validation. |
+| See coverage and official sources (FL-01/04) | PASS for the link directory | Configured corridor scope and unavailable district/tehsil/village/farm coverage are labelled. AppTest verifies navigation and the local source registry. External reachability was outside the offline run. |
+| Understand freshness and missing observations (FL-02/09) | PASS for the public feed, FAIL for a prototype | Public page separates unavailable freshness, event timestamps and empty versus failed feed. Operational data-integrity tests check no-data and provider failure. The existing NASA auto-load success count can include failed attempts (FL-09). Provider expiry through every UI and wrong-unit payload rejection remain UNVERIFIED. |
+| View agricultural information (FL-03) | BLOCKED for validated farm-level answers | AppTest verifies unavailable operational exposure. Demo crop/exposure values and approximate historical outlines do not establish verified farm loss. English preparedness content needs verified attribution. |
+| View livestock information (FL-04/08) | BLOCKED for livestock services | The static directory works. Species-specific content and verified service availability remain missing. Missing-imagery dam output and unvalidated forecast language remain open under FL-08. Missing optional forecast dependency was injected in AppTest and disabled the run control. |
+| Submit a community report (FL-05) | BLOCKED for residents | Existing canonical tests cover authorized intake, coordinate validation, same-identity retry and event linkage. The application has no resident consent/submission workflow or restart-safe store. |
+| Follow moderation (FL-05/10) | FAIL for page 3, PASS for the covered API roles | At baseline, API-configured page 3 displayed four local metrics and moderation controls. A declined demo update produced zero visible errors. Canonical tests verify unauthorized moderation, audit entries and transitions. P1-002 still owns durable review and concurrent modification. |
+| Export or share eligible information (FL-07/11/13) | PASS for demo export, BLOCKED for operational export | Demo GeoJSON/manifest tests verify provenance and invalid coordinates. Canonical operational publication remains guarded. Demo Partner text and stub notification receipts do not establish a reviewed product, delivery, freshness or expiry. |
+| Recover from service failure (FL-06/09) | PASS for public feed and analyst fixture paths | Socket-disabled tests cover timeout/503, incomplete event envelope, anonymous/forbidden roles, and retry semantics. Explicit snapshot export/restore tests do not prove automatic report recovery. Database failure for report persistence remains UNVERIFIED because that store is absent. |
+
+### FL-05 — verified baseline and selected changes
+
+| Finding | Reproduction and code | Expected result and impact | Severity / confidence | Acceptance test and state |
+|---|---|---|---|---|
+| Mode boundary | Set operational mode and an API fixture URL, then open page 3. `pages/3_📱_Field_Reports.py` calls `DataService.get_field_reports()`, which loads CSV in every mode. | The page reports unavailable and the helper neither reads nor changes local reports in operational/API mode. This prevents accidental disclosure and a misleading parallel queue. | P1 / High, reproduced | PASS in draft PR #89 across API-configured demo and both operational configurations. No local reads or writes. |
+| False completion | In local demo, inject a declined moderation result and click Approve. UI unconditionally proceeds to success/rerun and the user receives no lasting error. Direct CSV write also propagates filesystem failures. | Failed, missing or stale actions show a clear error. After an acknowledged save, reread and show the new demo moderation state. Preserve old bytes when a save fails. Approval does not certify an observation. | P1 / High for declined action, reproduced. Injected write failure also reproduced. | PASS in draft PR #89 for each declined action, malformed/empty CSV, saved state, stale state and an interrupted write. |
+| Idempotency ownership | Canonical `ingest_field_report` derives the receipt from a client ID. It currently returns an existing report without checking its stored event and server-selected submitting identity. | Same authorized identity and event can replay. A conflicting receipt returns a generic conflict without the prior payload. This protects precise locations, notes and evidence from unintended disclosure. | P1 / High, confirmed by failing synthetic API regressions. | PASS in draft PR #89 for event/principal conflicts and same-scope replays, including concurrent retries in one process. |
+
+### Evidence limits
+
+The offline checks exercised API and component behavior, including missing district/AOI, null timestamps,
+invalid export coordinates, empty/malformed responses and no fixture fallback. The supported SQLite
+migration test, workflow concurrency fixtures and explicit snapshot recovery are separate from durable
+field reporting. Cross-process concurrency, browser map tile failure, contrast, real keyboard/screen-reader
+navigation, 360 px reflow, Urdu/RTL reading order, live-provider timing and field comprehension remain open.
+Chromium startup failed before a page could render. Existing Markdown and CSV paths were reviewed for
+this slice, without a general XSS, CSV-injection or secret-exposure certification.
+
+### Independent QA resolution and verification
+
+[Draft PR #89](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/89) changes the FL-05
+moderation row from FAIL to PASS for the tested unavailable/demo boundaries. The resident-intake
+row remains BLOCKED. Streamlit demo writes only to its local fixture through temporary-file
+replacement, with explicit acknowledged success or failure. The canonical path separately validates
+an authorized intake, stores a process-local record, applies allowed moderation transitions and
+audits them. The existing publication gate still controls what reaches the public view. Durable
+private reporting, independently verified observations, and live moderation remain prerequisites.
+
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_field_report_boundaries.py -q --tb=no`
+  produced 13 failures and one pass before the edit. The final regression file contains 15 cases.
+- The focused Field Reports, API, analyst and publication suite passed 64 tests. It verified
+  401/403 denial, 409 conflicts without stored report content, a 400 stale moderation action,
+  a same-scope replay retaining its ID, and one linked record after concurrent process-local retries.
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 293 tests with 475 warnings. SQLite reached `b4d9d93f2a10` after downgrade/re-upgrade.
+  Compilation, changed-file whitespace, local links and tracked-data checks passed.
+- [Main](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44278515915) and the
+  [implementation checkpoint](https://github.com/afaq-ahmad/pakistan-flood-monitor/actions/runs/44280556574)
+  reported hosted failure with zero jobs. Local browser startup failed on socket permissions.
+- Next QA case: add offline AppTest for PK-011 / FL-08 that injects a functioning optional forecast
+  provider, opens the prototype in operational mode, and checks that unavailable is shown before
+  any provider call or alert-style output. Review the presentation guard against ADR-001 separately.
+  Existing scientific forecast and dam validation remain open.
