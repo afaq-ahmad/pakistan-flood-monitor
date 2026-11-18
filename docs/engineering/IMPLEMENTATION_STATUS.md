@@ -182,3 +182,10 @@ The authoritative work tracker and session handoff are `MASTER_TASK_PLAN.md` and
 API review failures do not write local state (the implementation commit in this PR). Full offline suite: 204 passed, 475 warnings.
 Local-only CSV, local exposure, live scientific data, restart-safe review and fenced recovery remain
 open; see P0-003 and P1/DATA tasks. Streamlit browser verification, Docker and PostgreSQL not run.
+
+## Pakistan community research follow-up (2026-11-18)
+
+Pakistan-specific needs research and feature specifications are linked from the master plan. PK-002
+provides a static FFD/NDMA link page only, with no live warning feed. P0-003 and operational data,
+durable review and fenced recovery remain open. PDMA helpline verification timed out; no number is
+published. Browser/mobile validation and live provider licensing remain unverified.

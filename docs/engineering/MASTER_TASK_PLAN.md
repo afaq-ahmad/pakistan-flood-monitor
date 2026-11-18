@@ -120,3 +120,113 @@ work remains open and a reproducible session log exists. Do not interpret test p
 - [x] Run focused tests (8 passed) and complete offline suite (204 passed, 475 warnings).
 - [ ] Verify Docker, PostgreSQL, live providers and UI when available.
 - [ ] Record final commit, PR and next exact task in session log.
+
+
+## Pakistan community features — research-backed backlog
+
+Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
+
+### PK-001 — My Area
+Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003, P1-003. Data: Validated administrative boundaries and area/corridor mapping.
+- [ ] Audit district data and show no-data/unknown coverage; never infer property risk.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Audit district and corridor data and supported coverage.
+- [ ] Validate district/tehsil and corridor associations.
+- [ ] Show observations, official notices and history separately with timestamps.
+- [ ] Test empty, unknown and demo states across map and cards.
+
+### PK-002 — Official source hub
+Priority: P1; Status: PARTIAL; Dependencies: P0-003. Data: Curated FFD and NDMA links; source permissions for any ingestion.
+- [ ] Static attributed directory implemented; verify ongoing link maintenance and accessibility.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [x] Check FFD and NDMA public pages and implement static attributed links (2026-11-18).
+- [x] Verify static HTTPS registry offline (9 focused tests; 205 full-suite tests passed).
+- [ ] Inventory other official sources and permitted machine-readable access.
+- [ ] Create a versioned registry with attribution and link maintenance.
+- [ ] Show issue/acquisition times only when supported by actual source data.
+- [ ] Test source failures, expiry, permissions and accessibility.
+
+### PK-003 — Urdu and low-bandwidth access
+Priority: P1; Status: PARTIAL; Dependencies: UI-001, P0-003. Data: Human-reviewed translations and accessibility research.
+- [ ] Audit translations, mobile layout, text-only and print views.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Audit critical English/Urdu text and translation fallback.
+- [ ] Design mobile, text-only, printable low-bandwidth views.
+- [ ] Test accessibility and record regional-language needs.
+
+### PK-004 — Community sharing cards
+Priority: P1; Status: NOT_STARTED; Dependencies: P1-003, PK-003. Data: Authorized reviewed products and issue timestamps.
+- [ ] Design source-attributed cards; test expiry and publication authorization.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Define source/area/issue-time/freshness schema.
+- [ ] Restrict sharing to eligible reviewed content.
+- [ ] Implement and test text and print formats with reviewed translations.
+
+### PK-005 — Verified relief directory
+Priority: P1/P2; Status: BLOCKED; Dependencies: P1-002, SEC-001. Data: Verified official contacts and maintained service status.
+- [ ] Design verification, expiry and moderation; never infer active shelter availability.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Verify official directory sources and scope.
+- [ ] Model verification time, expiry and service status.
+- [ ] Add moderated corrections and privacy tests.
+
+### PK-006 — Community reports
+Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Moderated field reports and privacy/retention policy.
+- [ ] Audit existing field-report flow; distinguish reports from verified observations.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Audit field-report authorization and moderation.
+- [ ] Design categories, evidence, deduplication and retention.
+- [ ] Test sensitive-location and publication boundaries.
+
+### PK-007 — Farmers and livestock
+Priority: P2; Status: BLOCKED; Dependencies: DATA-001, GIS-001, PK-006. Data: Validated flood extents and licensed agricultural layers.
+- [ ] Separate estimated exposure, reported losses and verified damage.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Inventory agricultural datasets and exposure methods.
+- [ ] Validate spatial overlays and separate reported from verified damage.
+- [ ] Test units, temporal alignment and unsupported compensation claims.
+
+### PK-008 — River observation explorer
+Priority: P2; Status: BLOCKED; Dependencies: DATA-001. Data: Licensed gauge data, units and timestamps.
+- [ ] Validate official measurements, freshness and stage definitions.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Inventory gauge sources and permissions.
+- [ ] Validate units, timestamps and stage definitions.
+- [ ] Implement missing/stale states and source lineage tests.
+
+### PK-009 — Partner and NGO information
+Priority: P2; Status: PARTIAL; Dependencies: P1-002, SEC-001. Data: Authorization, audited exports and reviewed summaries.
+- [ ] Audit partner mode; constrain access and sensitive data.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Audit partner-mode authorization and existing exports.
+- [ ] Design reviewed summaries and sensitive-data minimization.
+- [ ] Add authorization and audit tests.
+
+### PK-010 — Historical and preparedness explorer
+Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated licensed historical sources and approved preparedness guidance.
+- [ ] Distinguish history from prediction; validate maps and legends.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+- [ ] Audit historical sources, dates and geometry.
+- [ ] Distinguish history from forecasts and unknown coverage.
+- [ ] Verify preparedness guidance and legend tests.
+
+### PK-011 — Validated forecasting
+Priority: P3; Status: BLOCKED; Dependencies: DATA-001. Data: Independent historical rainfall/gauge datasets and out-of-sample evaluation.
+- [ ] Keep operational forecast disabled until independently validated.
+- [ ] Validate safety, attribution, accessibility, required data and acceptance tests.
+
+PK-002 initial slice: static, attributed FFD and NDMA source links only; no live feed or claims of active warnings. Link review date 2026-11-18. Browser/mobile and ongoing link verification remain pending.
+
+- [ ] Audit model maturity and candidate datasets.
+- [ ] Compare defensible baselines with out-of-sample validation.
+- [ ] Test probabilistic calibration and preserve operational disablement.
