@@ -1,91 +1,65 @@
-# Local Setup
+# Run Pakistan Flood Monitor locally
 
-This guide explains how to configure and run the Pakistan Flood Monitor locally.
+This tutorial starts a labelled local demo. Use Python 3.12 to match the offline
+CI environment. Runtime imports require Python 3.11 or newer because they use
+`datetime.UTC`. The package metadata still advertises Python 3.10, which
+cannot import that symbol. See the [configuration reference](configuration.md)
+for how mode and database settings are selected.
 
-## Prerequisites
+## Install the project
 
-- **Python**: Version 3.10 or higher.
-- **Git**: To clone the repository.
-- **Pip/Venv**: Standard Python packaging.
-
-## 1. Clone the Repository
+From a shell with Git and Python 3.12 available:
 
 ```bash
-git clone <repository_url> pakistan-flood-monitor
+git clone https://github.com/afaq-ahmad/pakistan-flood-monitor.git
 cd pakistan-flood-monitor
-```
-
-## 2. Create Virtual Environment
-
-Create and activate a virtual environment:
-
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
-
-# Linux / macOS
 python -m venv .venv
 source .venv/bin/activate
+python -m pip install -e ".[dev,dashboard]"
 ```
 
-## 3. Install Dependencies
+In PowerShell, activate with `.\.venv\Scripts\Activate.ps1` in place of
+`source`. Run the remaining commands from the repository root. The dashboard
+extra installs Streamlit and the dashboard's supporting libraries.
 
-The project uses a standard `pyproject.toml`. Install the application along with development dependencies:
+## Open the standalone demo
+
+Run the dashboard with `API_BASE_URL` unset:
 
 ```bash
-pip install -e ".[dev,dashboard]"
+APP_MODE=demo python -m streamlit run streamlit_app.py --server.address 127.0.0.1
 ```
 
-*Note: If testing is required, ensure you install `pytest` explicitly if not covered by the dev block.*
+In PowerShell set `$env:APP_MODE = "demo"` before running the command without
+the Bash assignment prefix. Open `http://127.0.0.1:8501`. Look for the demo
+watermark and follow **Open My Area** to the corridor selector. The official
+information and preparedness pages work independently of the event feed.
 
-## 4. Environment Variables
+Local demo uses checked-in fixtures. It does not require satellite or rainfall
+credentials. If your environment or untracked `.env` sets `API_BASE_URL`,
+clear that setting to use local fixtures. See [troubleshooting](troubleshooting.md)
+if the page instead says that flood information is unavailable.
 
-Create a local environment file. 
+## Connect to the canonical API
+
+In a second terminal with the same environment active:
 
 ```bash
-cp .env.example .env
+APP_MODE=demo python -m uvicorn pakistan_flood_monitor.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-### Required Credentials
-
-While the application primarily uses open/free data sources (like the public STAC endpoints for Earth Search), certain NASA APIs require a free Earthdata login.
-1. Register for free at [NASA Earthdata](https://urs.earthdata.nasa.gov/users/new).
-2. Generate a Bearer Token.
-3. Update `.env.local` with your credentials:
-   ```env
-   NASA_EARTHDATA_USERNAME=your_username
-   NASA_BEARER_TOKEN=your_token
-   STAC_ENDPOINT=https://earth-search.aws.element84.com/v1
-   ```
-
-## 5. Storage Directories
-
-The system requires local directories for caching images and model outputs. Ensure these exist (they are usually created by the scripts, but creating them avoids startup warnings):
+Open `http://127.0.0.1:8000/health` and confirm `app_mode` is `demo`. The
+API reference UI is at `http://127.0.0.1:8000/docs`. Restart the first terminal's
+Streamlit process with this connection:
 
 ```bash
-mkdir -p storage/satellite storage/ml storage/flood_memory storage/dams/imagery storage/dams/water_masks storage/dams/fill_history
+APP_MODE=demo API_BASE_URL=http://127.0.0.1:8000 python -m streamlit run streamlit_app.py --server.address 127.0.0.1
 ```
 
-## 6. Running the Dashboard
+For PowerShell set `$env:API_BASE_URL = "http://127.0.0.1:8000"` before running
+Streamlit. With a fresh API, Home can show an empty published feed. An empty
+feed and an unavailable source are separate states. The UI does not switch
+to local fixture events after an API error.
 
-The primary user interface is the Streamlit dashboard.
-
-```bash
-python -m streamlit run streamlit_app.py
-```
-
-The application will start and be available at `http://localhost:8501`. With no
-`API_BASE_URL`, `APP_MODE=demo` shows watermarked local fixtures. To use the canonical
-published event feed, set `API_BASE_URL=http://localhost:8000` and start the API. The
-home and public dashboard show an unavailable state when an operational feed is unconfigured
-or unreachable. An empty feed gives no information about local flood conditions.
-
-## 7. Running the FastAPI Backend (Optional)
-
-If you are developing API integrations or internal toolchains, you can run the FastAPI server:
-
-```bash
-APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --reload --port 8000
-```
-This API will be available at `http://localhost:8000`, with interactive Swagger documentation at `http://localhost:8000/docs`.
+For automated validation, follow [offline testing](testing.md). For a
+persistent demo or Compose, follow [deployment](deployment.md).

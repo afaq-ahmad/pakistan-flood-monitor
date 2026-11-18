@@ -1,106 +1,55 @@
-# Architecture
+# Runtime architecture
 
-> **Canonical runtime:** `pakistan_flood_monitor.api.main:app`. See
-> [ADR-001](adr/ADR-001-canonical-runtime.md). The `src/app` tree and standalone Streamlit services
-> are migration/demo surfaces; they are not a second operational runtime.
+The canonical runtime is the `pakistan_flood_monitor` package. FastAPI, the
+`flood-monitor` CLI and the canonical workflow share integrity rules.
+[ADR-001](adr/ADR-001-canonical-runtime.md) records that decision.
 
-## Runtime data-safety modes
+## Entry points
 
-Set `APP_MODE` explicitly:
-
-| Mode | Synthetic fixtures | Publication behaviour |
+| Surface | Entry point | Current behavior |
 |---|---|---|
-| `test` | Allowed and labelled | Allowed for automated fixture tests |
-| `demo` | Allowed and visibly watermarked | Synthetic lineage cannot become a public event |
-| `operational` | Prohibited | Missing data fail closed as `UNAVAILABLE` |
+| Canonical FastAPI | `pakistan_flood_monitor.api.main:app` | Public event and source contracts, protected operational routes and workflow access |
+| Canonical CLI | `flood-monitor run`, `flood-monitor run-status` | Run the canonical workflow or inspect durable run and task records |
+| Streamlit | `streamlit_app.py` | Home plus 18 registered pages using one menu. API-backed Home and My Area read `/public/events`. The analyst queue uses a supplied role credential. |
+| Standalone HTML | `dashboard_app:app` | Separate demo/test prototype with a local mock feed |
+| Legacy package | `src/app/` | Deprecated compatibility and migration source with a separate Alembic history |
 
-Every scientific input carries an observation label, availability state, units, source URI/time,
-processing version, and quality status. The current default is `demo`, which prevents an unset local
-environment from being mistaken for an operational deployment.
+Some Streamlit research pages use direct provider helpers or local assets.
+Their existence does not establish a canonical operational provider pipeline.
+See [implementation status](engineering/IMPLEMENTATION_STATUS.md).
 
-The Pakistan Flood Monitor is built as a hybrid Python application using **Streamlit** for the frontend dashboard, supported by several modular backend services and data pipelines.
-
-## High-Level Architecture Diagram
-
-```mermaid
-graph TD
-    subgraph "External Data Providers"
-        STAC[Earth Search STAC<br/>Sentinel 1/2]
-        NASA[NASA POWER API<br/>Rainfall/Climate]
-        METEO[Open-Meteo API<br/>14-day Forecasts]
-    end
-
-    subgraph "Backend Services (Python)"
-        SML[Satellite ML Service<br/>Spectral Water Indices]
-        DAM[Dam Service<br/>Reservoir Fill Proxy]
-        FOR[Forecast Service<br/>LSTM & Baselines]
-        ADV[Advanced ML Service<br/>SAR Simulation]
-        NAS[NASA Service<br/>Hydromet APIs]
-    end
-
-    subgraph "Data Storage"
-        CSV[(CSV Storage<br/>data/)]
-        IMG[(Local Image Storage<br/>storage/)]
-        INMEM[(In-Memory State<br/>FastAPI)]
-    end
-
-    subgraph "User Interfaces"
-        STRM[Streamlit Application<br/>streamlit_app.py + pages/]
-        FAST[FastAPI Interface<br/>api/main.py]
-    end
-
-    STAC --> SML
-    STAC --> ADV
-    NASA --> NAS
-    METEO --> FOR
-
-    SML --> IMG
-    ADV --> IMG
-    DAM --> IMG
-
-    NAS --> STRM
-    SML --> STRM
-    DAM --> STRM
-    FOR --> STRM
-    ADV --> STRM
-
-    CSV --> STRM
-    INMEM <--> FAST
-```
-
-## Module Interaction Flow
-
-When an analyst reviews an area, the data flows across modules to generate a complete situational picture:
+## Public reads and workflow persistence
 
 ```mermaid
-sequenceDiagram
-    participant UI as Streamlit Dashboard
-    participant Dam as Dam Service
-    participant SML as Satellite ML Service
-    participant FC as Forecast Service
-    
-    UI->>Dam: Get Upstream Risk for Corridor
-    Dam-->>UI: Dam Fill & Travel Times
-    UI->>SML: Request Satellite Water Mask
-    SML-->>UI: Spectral Water Indices Mask
-    UI->>FC: Request 14-Day Forecast
-    FC-->>UI: LSTM & Linear Leaderboard
+flowchart TB
+    Streamlit["Streamlit public pages"] -->|Published event request| API["Canonical API"]
+    Streamlit -->|Standalone demo or test| Fixtures["Local fixtures"]
+    CLI["Canonical CLI"] --> Workflow["Canonical workflow"]
+    API -->|Authorized workflow request| Workflow
+    Workflow --> DB["SQL database for runs and tasks"]
+    API --> State["Process-local review and publication state"]
 ```
 
-## Storage Layer
+Durable runs and task status use the SQLAlchemy workflow repository. API event
+and review state, the queue read model, reports, audit entries and other
+registries are still partly process-local. An administrator can export and
+restore a runtime snapshot. That explicit operation does not provide an
+automatic restart recovery or multi-worker consistency contract.
 
-Unlike traditional enterprise stacks that require complex database setups (e.g., PostgreSQL/PostGIS), this project currently relies on a lightweight, file-based storage architecture:
+Use the canonical root Alembic chain, currently at `b4d9d93f2a10`, for the
+canonical database. The legacy chain under `src/app/db/alembic/` is independent.
+See [deployment](deployment.md) for migration commands and
+[the task plan](engineering/MASTER_TASK_PLAN.md) for worker fencing and durable
+review work.
 
-1. **CSV Data (`data/`)**: Core tabular data (events, historical regions, corridors, mock data) is stored in standard CSV and JSON files. This is queried heavily by the Streamlit application via `backend_service.py`.
-2. **File Storage (`storage/`)**: Downloaded satellite imagery, ML-generated water masks, and historical flood snapshots are stored directly on the local filesystem. This prevents database bloat and ensures easy ML training dataset portability.
-3. **In-Memory Store**: The FastAPI module (`src/pakistan_flood_monitor/api/main.py`) stores operational state (like run history, event lifecycle, and review queues) in memory. This is primarily for runtime operations and prototype testing without database overhead.
+## Modes and decision boundaries
 
-> **Note**: A known limitation of the current architecture is the "split-brain" syndrome. Streamlit queries services and storage directly, bypassing the FastAPI application. Future iterations will route Streamlit requests through FastAPI using `httpx`.
+| Mode | Data and publication policy |
+|---|---|
+| `test` | Deterministic fixtures for automated contracts |
+| `demo` | Visibly labelled synthetic data for demonstrations |
+| `operational` | Required observations and lineage must be traceable. Missing required inputs produce unavailable results. |
 
-## Core Modules
-
-- `satellite_ml_service.py`: Discovers images via STAC and runs Spectral Index processing (NDWI/MNDWI/AWEI) to distinguish water from land.
-- `dam_service.py`: Computes haversine distances to map river flow, fetches bounding box imagery, and scores flood risk based on upstream dam surface area fills.
-- `advanced_ml_service.py`: A simulated module to evaluate SAR (Synthetic Aperture Radar) inputs which penetrate clouds, and real topography logic using Copernicus DEM/HAND metrics.
-- `forecast_service.py`: Integrates with external weather APIs to provide look-ahead river level predictions via a model leaderboard (Persistence vs Linear vs LSTM).
-- `backend_service.py`: Provides read interfaces for Streamlit to parse the `data/` directory CSV files seamlessly.
+The publication gate protects the eligible event view. Reviewed products,
+external warning authority and independently validated observations are
+separate concerns. See [API contracts](api.md) and [public limitations](overview.md).

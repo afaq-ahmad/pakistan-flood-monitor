@@ -448,3 +448,47 @@ Append entries; never rewrite earlier handoffs.
 - Focused guide and public, directory, review, reporting and dashboard suites passed 74 tests. The first full run exposed stale module references in guide mode selection after test reloads. The page now supplies the active DataService to the shared renderer. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) after correction.
 - SQLite migration round trip to `b4d9d93f2a10`, compile checks, tracked-data isolation and diff validation passed. Chromium was denied its startup socket. No rendered screenshots, print pagination or actual keyboard and screen-reader validation.
 - Next: run UX-A05, UX-A06 and UX-A15 on a browser-enabled runner at 320, 360, 390, 768 and 1440 px. Tab from Home to each guide, open a detail, enable the print view, inspect PDF pagination and verify the official notices remain accessible without tiles. Record viewport evidence before accepting the responsive and assistive checks.
+
+### 2026-11-18 UTC · ENG-001 documentation architecture
+
+- Main `77dc8b7` includes merged PR #95. GitHub returned no open documentation workstream. Dedicated branch `docs/obsidian-knowledge-base`.
+- Indexed the 33 baseline Markdown files with audience, Diátaxis form, authority, code/task references, dispositions, revision and links. Added the Obsidian homepage and contributor guide.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 353 tests (480 warnings) on Python 3.12.14.
+- Next: correct README and setup guidance, show actual architecture and persistence, reconcile API descriptions and relabel historical/status snapshots. Preserve ownership of task state, evidence, handoffs and ADRs.
+
+### 2026-11-18 UTC · ENG-001 onboarding and architecture
+
+- Draft [PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96) opened after remote index checkpoint `6bc43f4098ebace34d69256c7e6a746ced4bef07`.
+- README now leads to the index and one setup tutorial. Verified Home plus 18 registered pages and six configured corridors from the merged router and canonical settings. Explained canonical, Streamlit, standalone and legacy entry points, and distinguished workflow persistence from process-local review state.
+- Python 3.12.14 passed the baseline suite. Python 3.11 is required by the runtime's `datetime.UTC` import. The broader package metadata remains a follow-up. Checked 34 local links in the six updated pages.
+- Next: reconcile configuration, deployment, testing and HTTP references and record each discrepancy with its evidence.
+
+### 2026-11-18 UTC · ENG-001 runtime references and handoff
+
+- [Draft PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96)
+  on `docs/obsidian-knowledge-base`. The onboarding checkpoint reached remote
+  `54df1c9643d12d4e23799e3a2745202ee9c77bb6`.
+- Corrected configuration precedence, Compose and migration guidance, API
+  contracts and troubleshooting. Labelled the earlier progress report and the
+  PR #92 checkpoint as historical. The product roadmap keeps feature specs
+  and the master plan owns task status. No executable files changed.
+- All 36 tracked Markdown files passed local GFM HTML parsing and title checks
+  (the PR template intentionally uses section headings). Verified 186 local
+  link occurrences including six heading fragments, with no unresolved
+  targets. The 33-file baseline inventory and link graph remain reproducible
+  against `77dc8b7`. Visual previews in GitHub and Obsidian remain pending.
+- Compared 24 documented method/path pairs to canonical OpenAPI. In-process
+  checks verified reviewed-product 503, missing credential 401, wrong-role
+  403 and JSON versus Prometheus content types. Temporary SQLite
+  upgrade/downgrade/re-upgrade reached `b4d9d93f2a10`. A demo workflow and a
+  separate `run-status` process used the same isolated DB successfully.
+- The legacy ledger heading is a repository test contract and was restored
+  after its rename failed the first regression run.
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`
+  passed 353 tests (480 warnings) after correction. Hosted CI, live providers,
+  Docker/PostGIS and Python 3.11 smoke execution remain unverified.
+- Next: on a machine with Obsidian, open `docs/` as a vault, follow Index → Local
+  setup and Index → Agent workflow → Master task plan, then confirm the
+  architecture Mermaid block and heading links in Obsidian and the GitHub PR.
+  Separately track the Python 3.11 minimum-version smoke and packaging metadata
+  in OPS-001.

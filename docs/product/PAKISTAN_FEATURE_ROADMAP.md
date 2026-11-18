@@ -1,6 +1,12 @@
 # Pakistan feature roadmap
 
-The authoritative checklist and task statuses are in [MASTER_TASK_PLAN.md](../engineering/MASTER_TASK_PLAN.md). This document is a design aid, not a second progress tracker. Research and validation are documented in [needs and evidence](PAKISTAN_USER_NEEDS_AND_EVIDENCE.md), [farmer and livestock journeys](FARMER_LIVESTOCK_USER_JOURNEYS.md), and the [QA matrix](FARMER_LIVESTOCK_QA_MATRIX.md).
+This document owns Pakistan-specific feature specifications and research
+priorities. Priority and status labels below describe the original planning
+context. The [master task plan](../engineering/MASTER_TASK_PLAN.md) owns
+current task state. See [needs and evidence](PAKISTAN_USER_NEEDS_AND_EVIDENCE.md),
+[farmer and livestock journeys](FARMER_LIVESTOCK_USER_JOURNEYS.md) and
+[the QA matrix](FARMER_LIVESTOCK_QA_MATRIX.md) for the research and acceptance
+basis.
 
 ## Value and feasibility matrix
 

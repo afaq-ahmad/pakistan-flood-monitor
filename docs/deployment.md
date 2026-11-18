@@ -1,77 +1,62 @@
-# Deployment Guide
+# Run a local deployment
 
-The Pakistan Flood Monitor is currently designed as a prototype to be run locally or on a single virtual machine. It consists of two primary services: the Streamlit Dashboard and the FastAPI backend.
+Use [local setup](setup.md) for the tutorial and loopback commands. This page
+covers the existing development Compose stack and canonical database
+migration. An operational deployment requires the outstanding data and
+recovery acceptance work in the [master task plan](engineering/MASTER_TASK_PLAN.md).
 
-## Deployment Architecture
+## Existing Compose stack
 
-```mermaid
-graph LR
-    subgraph "Cloud Provider (e.g., AWS EC2 / DigitalOcean)"
-        NGINX[Nginx Reverse Proxy]
-        
-        subgraph "Application Server"
-            STRM[Streamlit UI<br/>Port 8501]
-            FAST[FastAPI<br/>Port 8000]
-        end
-        
-        VOL[(Persistent Block Storage<br/>/storage & /data)]
-    end
-    
-    Users((Users)) --> |HTTP/HTTPS| NGINX
-    NGINX --> |/api| FAST
-    NGINX --> |/| STRM
-    
-    STRM <--> VOL
-    FAST <--> VOL
+The root `docker-compose.yml` defines three services:
+
+| Service | Actual configuration |
+|---|---|
+| `db` | PostGIS 15 container with a named database volume, health check and host port 5432 |
+| `api` | Canonical FastAPI in demo mode on port 8000, using the shared development Dockerfile and repository bind mount |
+| `streamlit` | Streamlit on port 8501 with `API_BASE_URL=http://api:8000` inside the stack |
+
+The Dockerfile uses Python 3.11 and installs the dashboard extra. Compose
+publishes ports on the host, enables API reload and mounts local source and
+data. Treat the stack as development infrastructure. Use it on a trusted host
+with access limited to intended users. For a loopback-only demo use the native
+local commands in the setup tutorial.
+
+With Docker Compose installed and `POSTGRES_PASSWORD` set in your development
+environment, start the database and apply the canonical migration explicitly:
+
+```bash
+docker compose config --quiet
+docker compose up -d db
+docker compose run --rm api alembic upgrade head
+docker compose up --build -d api streamlit
 ```
 
-## Considerations for Production
+Open `http://localhost:8501` and check the API at
+`http://localhost:8000/health`. Compose provides a database, and migration is
+a separate command. Docker/PostGIS startup and migration were not exercised in
+the documentation verification environment.
 
-Currently, the system is **not production-ready** for high availability due to the following architectural constraints:
+## Migrate the canonical database
 
-1. **In-Memory State**: The FastAPI application stores runtime state in memory. Any restart or crash will lose the operational queue.
-2. **File-Based Storage**: The Streamlit application relies on local CSVs and image folders. While this works on a single VM, it cannot scale horizontally across multiple instances without a shared network drive or migration to cloud object storage (e.g., AWS S3).
-3. **Split-Brain Syndrome**: Streamlit queries local data services directly rather than pulling everything exclusively through the FastAPI backend.
+From the repository root, export the intended SQLAlchemy `DATABASE_URL` and run:
 
-## Single VM Deployment Steps
+```bash
+alembic upgrade head
+alembic current
+```
 
-To deploy the current prototype to a single cloud VM (e.g., Ubuntu 22.04):
+The canonical head is `b4d9d93f2a10`. Use the root `alembic.ini`. The
+independent legacy history under `src/app/db/alembic/` is a migration source,
+so apply only the chain that belongs to the target database. In demo/test, the
+workflow repository can initialize missing canonical tables for local use.
+Operational runs require an applied schema.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/afaq-ahmad/pakistan-flood-monitor.git
-   cd pakistan-flood-monitor
-   ```
+A SQLite round trip is listed in [testing](testing.md). Back up deployed data
+and verify both migrations and rollback in the target environment. The
+workflow tables persist runs and tasks. Event review, field reports and
+runtime audit state remain partly process-local. Use the protected snapshot
+API for explicit export or restore, and track durable review and worker crash
+recovery in the [task plan](engineering/MASTER_TASK_PLAN.md).
 
-2. **Setup Environment**:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -e ".[dev]"
-   # Configure non-secret production values in .env.prod.
-   # Inject DATABASE_DSN, NASA Earthdata credentials, and other secrets through
-   # the process manager or deployment platform's secret manager.
-   ```
-
-3. **Run via Process Manager (e.g., PM2 or Systemd)**:
-   It is recommended to run both services using a process manager to ensure they restart on failure.
-
-   *FastAPI*:
-   ```bash
-   APP_MODE=demo uvicorn pakistan_flood_monitor.api.main:app --host 0.0.0.0 --port 8000
-   ```
-
-   *Streamlit*:
-   ```bash
-   python -m streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0
-   ```
-
-4. **Nginx Configuration**:
-   Configure Nginx to proxy pass `/` to `localhost:8501` and `/api` to `localhost:8000`.
-
-## Future Deployment Roadmap
-
-Before scaling for true multi-user institutional deployment, the following must be implemented:
-- **Database Layer**: Migrate in-memory state and CSV data to PostgreSQL/PostGIS.
-- **Object Storage**: Move `storage/` contents to an S3-compatible object store.
-- **Background Workers**: Move long-running satellite ML downloads from synchronous execution to Celery/Redis workers.
+See [architecture](architecture.md) for runtime boundaries and
+[configuration](configuration.md) for settings.

@@ -7,9 +7,11 @@ Schema contracts for published flood events, alerts, and review payloads.
 - `level`: `tehsil`, `district`, or `province`.
 - Supports sorting via `sort_by` (`risk_score`, `exposure_score`, `severity_score`, `confidence_score`, `province`, `district`, `tehsil`, `event_count`) and `order` (`asc` or `desc`).
 - Supports filtering via `province`, `district`, `min_risk`, `min_exposure`, `min_severity`, and `min_confidence`.
-- Includes only currently reviewed/approved events (`approved` or `published` lifecycle states).
+- Includes only eligible published events. Outside test mode, the public gate also revalidates publication eligibility.
 
 ### Success response example
+
+Illustrative values for shape only. The metrics do not establish local risk or official warnings.
 
 ```json
 {
@@ -28,7 +30,7 @@ Schema contracts for published flood events, alerts, and review payloads.
       "severity_score": 11.9,
       "confidence_score": 0.81,
       "latest_event_id": "evt-2026-0007",
-      "latest_event_status": "approved",
+      "latest_event_status": "published",
       "latest_review_status": "analyst_validated"
     }
   ],

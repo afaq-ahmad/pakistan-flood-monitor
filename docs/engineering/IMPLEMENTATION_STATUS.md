@@ -1,8 +1,29 @@
 # Implementation status
 
 Last verified for this follow-up: **2026-11-18**, against `main` at `cb70717` and the independent QA changes in draft PR #89. Read this file with root
-[`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
+[repository operating contract](https://github.com/afaq-ahmad/pakistan-flood-monitor/blob/main/AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
+
+## Verified main checkpoint for 18 November 2026
+
+Baseline `77dc8b7` includes [PR #95](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/95).
+The full offline suite passed 353 tests with 480 warnings on Python 3.12.14.
+A temporary SQLite migration round trip reached `b4d9d93f2a10`, and a demo
+run was readable from a separate CLI process. The table below describes merged
+behavior. Later sections record earlier verification snapshots.
+
+| Merged work | Evidence and scope |
+|---|---|
+| PRs #85–89 | Public and analyst API boundaries, the read-only queue, pilot corridor selection and Field Reports QA |
+| PRs #90–92 | English preparedness guides, demo/test gating of prototype forecast and dam pages, and practice reporting without a submission |
+| PRs #93–94 | Public Home and grouped Streamlit navigation. All 18 existing page paths were retained. |
+| PR #95 | Farm and livestock checklists and print view, six component/API journeys, named official links and removal of web settings controls |
+
+See the [documentation homepage](../INDEX.md) for the current guides and the
+[master task plan](MASTER_TASK_PLAN.md) for pending verification. Python 3.10
+cannot load the runtime's `datetime.UTC` imports. Package metadata still
+declares 3.10 and is a tracked follow-up. Docker/PostGIS, browser accessibility,
+reviewed Urdu and scientific readiness remain open.
 
 ## Current contract
 
@@ -16,7 +37,7 @@ claims against code and Git history; update this ledger in each consolidated-pro
 | Package version | `0.1.0` in `pyproject.toml` |
 | Canonical DB migration head | Root Alembic chain: `b4d9d93f2a10` (durable canonical pipeline tasks) |
 | Legacy DB migration head | `src/app/db/alembic`: `0005_add_lineage_metadata_to_provenance` |
-| CI | `.github/workflows/canonical-checks.yml` runs the full offline suite and SQLite migration round-trip on this branch |
+| CI | `.github/workflows/canonical-checks.yml` defines the offline suite and SQLite migration round-trip |
 
 The two Alembic histories are not reconciled. The root chain imports canonical package metadata; the
 legacy chain belongs to `src/app`. A later migration task must not create another chain or silently
@@ -78,7 +99,11 @@ Severity reflects current evidence, not an exhaustive safety assessment.
 
 ## Test and validation status
 
-Baseline verified before this documentation change:
+See the verified main checkpoint above for current results.
+
+### Historical records
+
+Earlier baseline checks:
 
 - `python -m pytest tests/ -q --tb=short` — **blocked** in the base environment: `No module named pytest`.
 - After `uv sync --all-extras` and locally adding `pytest`: `.venv/bin/python -m pytest tests/ -q

@@ -1,42 +1,43 @@
-# Troubleshooting Guide
+# Troubleshooting
 
-This document outlines common issues encountered during local development and usage of the Pakistan Flood Monitor, along with their resolutions.
+## Flood information is unavailable or empty
 
-## 1. Streamlit Dashboard Issues
+Check `APP_MODE` and `API_BASE_URL` in the Streamlit process. When a source is
+configured, try the canonical API's `/health` and `/public/events` endpoints.
+A reachable server can return an empty eligible feed. A timeout or failed
+response produces an unavailable message and does not expose fixture events.
+Official-source links and preparedness pages remain available without the
+event feed. See [API behavior](api.md).
 
-### Symptom: `FileNotFoundError` when loading dashboard
-**Cause**: The local data directories or CSV files have not been generated, or the `data/` and `storage/` folders are missing.
-**Fix**: Ensure you have created the storage directories. If mock data is missing, run the application once which should trigger default data fallbacks, or ensure `data/corridors.csv` exists based on the repository defaults.
+For a local demo disconnected from the API, use `APP_MODE=demo` and unset
+`API_BASE_URL`. Start from the repository root so checked-in fixture paths
+resolve. See [local setup](setup.md).
 
-### Symptom: NASA Hydromet Page Shows Empty Data / Fails
-**Cause**: The NASA POWER API might be rate-limiting you, or your NASA Earthdata credentials in `.env.local` are incorrect.
-**Fix**: 
-1. Check `.env.local` for `NASA_EARTHDATA_USERNAME` and `NASA_BEARER_TOKEN`.
-2. Ensure you have authorized the application via Earthdata login.
-3. Check terminal logs for `401 Unauthorized` or `429 Too Many Requests`.
+## Forecast, dam or provider results are unavailable
 
-### Symptom: Dashboard is Very Slow to Load
-**Cause**: Streamlit re-renders the UI on every interaction. If caching (`@st.cache_data`) is bypassed, it fetches live satellite metadata synchronously.
-**Fix**: Do not disable Streamlit caching in development unless actively debugging a service. Ensure external API calls are wrapped in caching decorators.
+Operational forecasts and dam-risk prototype output are disabled. Required
+canonical scientific data failures are reported explicitly. Use the
+[implementation ledger](engineering/IMPLEMENTATION_STATUS.md) to see which
+providers and products are verified. Missing data gives no evidence of local
+conditions.
 
-## 2. ML & Satellite Pipeline Issues
+The research pages can query providers independently. Check the selected
+source and its error before interpreting a result. NASA POWER and
+authenticated Earthdata products have different requirements. See
+[configuration](configuration.md).
 
-### Symptom: Sentinel-2 Images Not Downloading
-**Cause**: The Earth Search STAC API might be down, or the bounding box requested has 100% cloud cover.
-**Fix**: 
-1. Check the target coordinates for the corridor in `satellite_ml_service.py`.
-2. The system has heuristic fallbacks to bypass STAC failures. Check the terminal logs to see if a `Fallback` was triggered.
+## A run or review is missing after restart
 
-### Symptom: SAR Analysis or Forecasts Return 0.0
-**Cause**: The SAR and advanced ML modules currently use simulated/mock data structures for demonstration. If they fail, they return zeros or empty arrays.
-**Fix**: This is expected behavior for the prototype. Check `advanced_ml_service.py` to trace the simulation logic.
+Use `flood-monitor run-status <run-id>` with the same `DATABASE_URL` used by
+the original canonical run. Check the root migration state with
+`alembic current`. Event and review views still depend partly on
+process-local state, and an abandoned running task requires a recovery
+procedure. See [architecture](architecture.md) and [deployment](deployment.md).
 
-## 3. FastAPI Backend Issues
+## An internal request is rejected
 
-### Symptom: "Draft" Events Disappear After Restart
-**Cause**: The FastAPI application uses an in-memory dictionary to store events.
-**Fix**: This is an architectural limitation of the current prototype. Any restart of `uvicorn` will flush the state. Future iterations will include a PostgreSQL database.
-
-### Symptom: `401 Unauthorized` on `/internal` API Routes
-**Cause**: Missing or incorrect Bearer token.
-**Fix**: Pass the `Authorization: Bearer <token>` header with the exact string defined in your `.env.local` for `FLOOD_MONITOR_ADMIN_TOKEN` or `FLOOD_MONITOR_ANALYST_TOKEN`.
+HTTP 401 means the bearer credential is missing or unrecognized. HTTP 403
+means the configured role lacks access to that route. HTTP 429 means the
+internal request limit was reached. Inspect the `Retry-After` header before
+retrying. See [API authorization](api.md#authorization) and
+[configuration](configuration.md).
