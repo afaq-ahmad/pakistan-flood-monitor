@@ -398,3 +398,10 @@ Append entries; never rewrite earlier handoffs.
 - Six acceptance cases failed before repair. `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_field_report_boundaries.py tests/test_safety_gates_and_community_reporting.py -q --tb=short` passed 29 (9 warnings). Same command with `tests/` passed 336 (480 warnings).
 - SQLite upgrade/downgrade/re-upgrade, package/page compile, tracked data isolation and diff checks passed. Chromium headless startup at 360 px failed with socket permission denied before rendering. No browser, participant or operational safety validation.
 - Next: agree the PK-006 private receipt and retention contract and test commit failure, authorized lookup and retry after restart against durable storage. Final implementation SHA and hosted check state are recorded on the PR.
+
+### 2026-11-18 14:28 UTC · UI-001 design checkpoint
+
+- Repository afaq-ahmad/pakistan-flood-monitor, branch `ux/ui-001-public-home` from `39dd0e4`. PRs #85–92 are merged. No open PR owned this workstream at intake. The first draft will follow this documentation checkpoint.
+- Audited Home and the 18 Streamlit pages. Traced the demo HTML app and local/canonical adapters. Verified misleading Operations and Training trigger feedback on local AppTest. The design and acceptance documents track follow-up under existing tasks.
+- Baseline `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short` passed 336 tests with 480 warnings. Chromium could not start due to socket permissions.
+- This checkpoint contains documentation. Next: add UX-A01–03 AppTests, then improve Home links and place publication status below them. Preserve the current routes, mode and publication boundaries.
