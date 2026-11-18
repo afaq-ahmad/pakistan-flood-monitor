@@ -89,3 +89,13 @@ Append entries; never rewrite earlier handoffs.
   - `pytest tests/test_agent_git_workflow.py -v`: 7 passed (100%).
   - Full suite `pytest tests/ -q --tb=short`: 228 passed, 0 failed (exit code 0).
 - Next exact action: Open PR to main, verify remote CI, and submit focused handoff.
+
+### 2026-11-18 UTC — UI-001 functionality audit and implementation checkpoint
+
+- Repository: afaq-ahmad/pakistan-flood-monitor. Branch: `audit/ui-001-functionality-gaps`;
+  base and last verified remote main: `339ad5de0951260a52f9ea3505c42962cec1a109`. PR pending.
+- Claimed UI-001 public-data and export slice. PR #84 was merged and no open PR/issue matched.
+- Added functionality and dependency matrix. Baseline Streamlit AppTest hit
+  `ModuleNotFoundError: No module named 'folium'` from Public Dashboard after
+  installing `.[dev,dashboard]`; home opened without a demo warning. Full baseline running.
+- Next: fix the public feed boundary, dashboard install and demo export; exercise pages offline.

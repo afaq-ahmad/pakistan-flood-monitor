@@ -76,11 +76,12 @@ Status: PARTIAL; dependencies: P1-002, DATA-001. PR #75 blocks raw views pending
 - [ ] Implement and test availability, freshness and safe degradation.
 
 ## UI-001 — Public and analyst dashboard end-to-end audit
-Status: NOT_STARTED; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
+Status: IN_PROGRESS; owner: Codex on `audit/ui-001-functionality-gaps`; baseline: `339ad5d`; dependencies: P0-001, P0-002; files: `pages/`, `dashboard/`, `backend_service.py`.
 Audit maps/cards, empty/outage states, demo watermark, districts, localization, mobile, field reports,
 exports and status actions. Acceptance: evidence-backed inventory and integration tests; no synthetic
 or unreviewed output represented as operational. Prototype UI is not an authoritative warning service.
-- [ ] Trace every public and analyst data path, including standalone dashboard.
+- [x] Inventory public and analyst data paths, including standalone dashboard. See the [functionality gap audit](FUNCTIONALITY_GAP_AUDIT.md).
+- [ ] Verify public snapshot, mode, clean install, and demo export boundaries in offline page tests.
 - [ ] Verify mode, freshness, authorization, privacy and error handling with UI tests.
 
 ## DATA-001 — Real environmental processing and validation
