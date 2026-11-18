@@ -1,6 +1,6 @@
 # Implementation status
 
-Last verified for this follow-up: **2026-11-17**, against `main` at `65aa6d4`. Read this file with root
+Last verified for this follow-up: **2026-11-18**, against `main` at `9a51f46`. Read this file with root
 [`AGENTS.md`](../../AGENTS.md) and applicable [ADRs](../adr/README.md) before every task. Verify stale
 claims against code and Git history; update this ledger in each consolidated-prompt PR.
 

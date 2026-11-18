@@ -2,11 +2,30 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
-from backend_service import data_service
+from backend_service import data_service, DEMO_WATERMARK
 
 st.set_page_config(page_title="Public Dashboard", page_icon="🌍", layout="wide")
 st.title("🌍 Public Flood Dashboard")
 st.markdown("Live situational awareness for monitored river corridors in Pakistan.")
+
+# ── Demo / data-mode watermark (ADR-001 / P0-003) ────────────────────────────
+# When no live API is configured and local CSV data is loaded, the dashboard
+# MUST display a prominent watermark so users are not misled into treating
+# synthetic prototype data as operational flood information.
+if data_service.is_demo_mode:
+    st.warning(
+        f"**{DEMO_WATERMARK}**  \n"
+        "No live event API is configured. Data shown below is from local prototype "
+        "files and does not reflect current flood conditions. "
+        "Follow official **NDMA / PDMA** channels for authoritative guidance."
+    )
+elif not data_service.is_demo_mode and not __import__("os").getenv("API_BASE_URL"):
+    # Operational mode without API: fail closed with an explicit banner.
+    st.error(
+        "⛔ **Operational data unavailable.** "
+        "No live API is configured and this instance is not in demo mode. "
+        "Follow official NDMA / PDMA channels."
+    )
 
 # Emergency banner
 fresh = data_service.freshness_status()
@@ -84,10 +103,17 @@ exposure = data_service.get_exposure()
 if search != "All" and not exposure.empty and "district" in exposure.columns:
     exposure = exposure[exposure["district"] == search]
 if not exposure.empty:
+    if data_service.exposure_data_source == "local_csv":
+        st.caption(
+            f"ℹ️ {DEMO_WATERMARK} — Exposure figures below are from prototype "
+            "CSV data and are not derived from the current live event feed."
+        )
     st.dataframe(exposure[["event_id","district","flooded_area_sqkm","population_exposed",
                            "roads_exposed_km","health_facilities_exposed","schools_exposed",
                            "cropland_sqkm","housing_damage_class","infrastructure_damage_class"]],
                  width="stretch", hide_index=True)
+elif data_service.exposure_data_source == "unavailable":
+    st.info("Exposure data is not available for this configuration.")
 
 # How to read this map
 with st.expander("ℹ️ How to Read This Map"):

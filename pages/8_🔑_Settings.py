@@ -21,7 +21,7 @@ with tab1:
     st.text_input("FLOOD_MONITOR_ADMIN_TOKEN", type="password", value="admin-local-dev-token", key="admin_tok")
     st.text_input("FLOOD_MONITOR_ANALYST_TOKEN", type="password", value="analyst-local-dev-token", key="analyst_tok")
     if st.button("💾 Save API Keys"):
-        st.success("API keys would be saved to `.env.local` in production.")
+        st.info("ℹ️ Credential persistence via UI is disabled for security. Configure keys in `.env.local` or your server environment.")
 
 with tab2:
     st.subheader("Flood Detection Thresholds")
@@ -84,4 +84,4 @@ with tab4:
     st.text_input("DEFAULT_CRS", value="EPSG:4326", key="crs")
     st.number_input("CORRIDOR_BUFFER_METERS", value=5000, step=500, key="buffer")
     if st.button("💾 Save Environment Config"):
-        st.success("Environment config saved. Restart required for changes to take effect.")
+        st.info("ℹ️ Environment settings are read at startup. Update `.env` or system environment variables and restart the service.")
