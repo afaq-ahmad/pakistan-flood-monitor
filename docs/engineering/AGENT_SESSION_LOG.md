@@ -520,3 +520,17 @@ Append entries; never rewrite earlier handoffs.
   open as the vault. Inspect labels and navigation at narrow widths and
   record visual evidence under ENG-001 before starting the P1-003
   publication timestamp contract.
+
+### 2026-11-18 UTC · ENG-001 agent contract checkpoint
+
+- PR #97 merged into current main `ec8700be0b50b66b240705279bbc1c13d11d5f34`.
+  No suitable open PR at intake. Started `docs/engineering-standards`.
+- Consolidated `AGENTS.md`, the startup sequence and engineering review
+  standards. Preserved the canonical runtime, scientific and security
+  safeguards. The index and documentation guide link the standards.
+- Main baseline passed 353 tests (480 warnings). Focused
+  `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_agent_operating_contract.py tests/test_agent_git_workflow.py -q --tb=short`
+  passed 11 tests. The diff contains documentation only.
+- Next: verify clean installs on Python 3.11 and 3.12, the Python 3.10
+  compatibility boundary, startup commands, migration and quality checks.
+  Update the contributor, development and testing guides and PR template.

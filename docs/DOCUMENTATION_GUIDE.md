@@ -28,6 +28,7 @@ and baseline evidence. See [Diátaxis](https://diataxis.fr/).
 | Information | Authoritative location |
 |---|---|
 | Operating requirements for agents | Repository-root `AGENTS.md` and [agent GitHub workflow](engineering/AGENT_GITHUB_WORKFLOW.md) |
+| Engineering and code review standards | [Engineering standards](engineering/ENGINEERING_STANDARDS.md) |
 | Open, blocked and completed task state | [Master task plan](engineering/MASTER_TASK_PLAN.md) |
 | Checkpoint and recovery context | [Session handoff log](engineering/AGENT_SESSION_LOG.md) |
 | Actual implementation coverage and validation gaps | [Implementation ledger](engineering/IMPLEMENTATION_STATUS.md), verified against code and test evidence |

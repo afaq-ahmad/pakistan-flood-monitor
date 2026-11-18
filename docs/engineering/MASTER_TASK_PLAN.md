@@ -341,6 +341,7 @@ PK-002 initial slice: static, attributed FFD and NDMA source links only; no live
 
 
 ## ENG-001 — Resumable agent GitHub workflow
+Current checkpoint: agent instructions and engineering standards on `docs/engineering-standards` from `ec8700b`.
 Priority: engineering reliability; Status: PARTIAL; owner: PR #83 integration agent.
 Base: `21450751d7b24e389cee8cbf9336d04bc8223e7c`; branch: `engineering/resumable-agent-workflow`.
 Acceptance: startup instructions, safe checkpoint/recovery helpers, isolated failure-path tests,
@@ -355,3 +356,5 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [ ] Verify canonical imports and the SQLite workflow on Python 3.11, then reconcile package metadata with the actual supported floor (OPS-001).
 - [x] Document verified entry points, SQL boundaries and the canonical environmental processing path on `docs/verified-runtime-architecture` from `bbf988e`.
 - [x] Trace public reads, review, field reports and agent recovery. Verify six Mermaid diagrams at the grammar level, compare 26 route/method pairs with canonical OpenAPI, and verify all 25 event-state pairs and four aliases. See [draft PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97).
+- [x] Consolidate the root startup, scope and safety rules, align branch and ownership steps, and publish the [engineering standards](ENGINEERING_STANDARDS.md). The 11 focused contract and Git helper tests passed.
+- [ ] Verify the development commands and compatibility evidence. Document a staged quality baseline.

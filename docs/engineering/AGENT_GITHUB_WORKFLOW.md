@@ -13,7 +13,8 @@ flowchart TD
     Remote --> Recovery{"Clean worktree and verified ownership?"}
     Recovery -->|Conflict or divergence| Resolve["Preserve work and coordinate"]
     Recovery -->|Verified| Branch["Recover or create the dedicated branch"]
-    Branch --> Task["Claim an eligible task"]
+    Branch --> Evidence["Read task records and verify evidence"]
+    Evidence --> Task["Claim an eligible task and check baseline"]
     Task --> Change["Implement one scoped checkpoint"]
     Change --> Test["Run checks and inspect diff"]
     Test --> Commit["Record result and commit"]
@@ -39,20 +40,30 @@ which runtime the agent may extend.
 
 ## Start or resume
 
-1. Verify repository identity, branch, HEAD, status, untracked files, upstream and remote
-   without printing URLs that might contain credentials. Never discard a dirty workspace.
-2. Fetch remote metadata. Inspect open PRs for the assigned workstream; read the PR description,
-   branch, base, commits, changes, reviews and checks. Reuse its branch only if appropriate.
-   Closed or merged PRs are not automatically reused. If access is unavailable, report the
-   limitation; do not assume there is no PR. Never expose authentication values.
-3. Recover the latest PR branch with a clean workspace and fast-forward only. Stop on divergence,
-   ambiguous ownership, conflicts, or uncommitted changes; preserve work and coordinate.
-4. Read AGENTS.md, this guide, MASTER_TASK_PLAN.md, AGENT_SESSION_LOG.md,
-   IMPLEMENTATION_STATUS.md and relevant ADRs. Reconcile the claims against code, remote
-   commits and tests. Run an appropriate baseline smoke check.
-5. Select one eligible task by ID, checking dependencies, ownership and prior changes. Agree an
-   integration owner before multiple agents touch a shared branch. Markdown ownership is advisory,
-   not a distributed lock. Other agents use isolated branches/worktrees and avoid conflicting files.
+1. Confirm repository identity. Inspect branch, HEAD, upstream, remotes,
+   changed files and untracked paths without printing credential-bearing
+   URLs. Read the root `AGENTS.md` on the starting checkout. Preserve
+   all local changes.
+2. Fetch remote metadata. Inspect open PRs for the workstream, including
+   the head and base, commits, review comments, changes and checks.
+   Verify the current remote head and coordinate ownership. If PR listing
+   is unavailable, report the gap and use an authorized alternative.
+3. Recover the verified open PR branch in a clean worktree using a
+   fast-forward only. If no suitable open PR exists, branch from the
+   latest intended base. Preserve ahead or divergent commits and
+   coordinate before updating an ambiguous or dirty checkout.
+4. Read `AGENTS.md` on the recovered branch, [applicable ADRs](../adr/README.md),
+   the [master task plan](MASTER_TASK_PLAN.md), the latest
+   [handoff](AGENT_SESSION_LOG.md), the [implementation ledger](IMPLEMENTATION_STATUS.md)
+   and [relevant guides](../INDEX.md). Verify completion claims against code,
+   tests and Git history. Consult recent merged PRs when they affect the task.
+5. Choose one authorized, eligible task. Check dependencies and record the
+   existing task ID and ownership in the plan or handoff. Coordinate work on
+   shared branches and avoid overlapping files. Markdown ownership is
+   advisory. Use the existing plan and preserve previously verified work.
+6. Run the appropriate [baseline checks](../testing.md), then begin the
+   selected task. Record exact failures and distinguish pre-existing,
+   environmental and newly introduced failures.
 
 ## Small, durable checkpoints
 
