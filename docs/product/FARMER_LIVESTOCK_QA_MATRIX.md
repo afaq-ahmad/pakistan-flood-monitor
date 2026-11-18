@@ -48,3 +48,19 @@ empty or unavailable paths. FL-01B's district, tehsil and mouza mapping remains 
 - Chromium could not create a local socket. Mobile rendering, browser keyboard checks, screenshots and a
   fully offline first load remain unverified. Hosted Actions on main and the implementation checkpoint
   failed with zero jobs. No scientific source, authorization or output contract changed.
+
+## My Area selector follow-up
+
+Baseline `6f35e9e` preserved the text references from PR #87. Draft PR #88 adds selection at
+configured corridor resolution. FL-01 and FL-06 now have offline selector and official-navigation
+coverage for empty 200, 503, timeout and unconfigured feeds. The named selection reports no linked
+events when there is no match. FL-01B remains open for administrative mapping.
+
+- The new API/UI subset initially failed four cases. Three showed the missing public corridor field
+  and the fourth showed that nullable timestamps could suppress the entire snapshot.
+- The real FastAPI-to-AppTest integration now preserves unassigned published records in the all-events
+  view, shows unavailable time/exposure, and filters a selected corridor without surfacing drafts.
+  The map is opt-in and requests container width. Browser/mobile and keyboard checks remain open.
+- The related dashboard, publication and official source suites passed 34 tests. The full offline
+  suite passed 278 tests with 475 warnings. SQLite downgrade/re-upgrade, compilation, tracked-data
+  isolation and whitespace checks passed.

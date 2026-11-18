@@ -112,8 +112,13 @@ existing district selector uses event-row properties that the canonical collecti
 | Local reference lines | `data/corridors.csv` has five lines and lacks Kabul-Nowshera. The lines are drawn from endpoints. | Existing illustrative map context only. A missing line does not rule out an ID, and a line does not define a district or catchment. |
 | District, tehsil, village and farm coverage | Configuration's district field includes province names. Demo events carry sample district/tehsil strings, and the legacy asset builder can accept district layers. No validated public locality registry or association is established. | Keep geographic mapping unavailable pending licensed boundaries and independent validation. Preserve labelled demo district filtering. |
 
-The next PK-001 slice will filter a single published snapshot by the selected configured ID.
+Draft PR #88 filters a single published snapshot by the selected configured ID.
 All-events remains available for records without a usable association. Empty matches, feed
 failure, freshness unknown, and unavailable measurements each retain explicit text. Use the
 official-source directory for current notices. Selection uses no identity, precise location,
 additional network request, or geometry inference.
+
+The selector and official-source navigation are rendered before an unavailable-feed return. The
+text list uses no map tiles, and a map can be requested for returned results. The API's nullable
+association means older or unlinked published records can still appear under All published events.
+Actual 360 px rendering and keyboard interaction remain unverified.

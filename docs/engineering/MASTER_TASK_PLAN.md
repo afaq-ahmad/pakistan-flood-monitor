@@ -147,7 +147,7 @@ work remains open and a reproducible session log exists. Do not interpret test p
 Specifications and provisional value/feasibility matrix: [Pakistan roadmap](../product/PAKISTAN_FEATURE_ROADMAP.md). Reproducible farmer, livestock and community findings are in the [QA matrix](../product/FARMER_LIVESTOCK_QA_MATRIX.md). Prior P0/P1 safeguards remain prerequisites; no task is operationally complete solely from a prototype.
 
 ### PK-001 — My Area
-Priority: P1; Status: IN_PROGRESS for the corridor selector slice. The reference catalogue merged in
+Priority: P1; Status: PARTIAL. The corridor selector slice is in [draft PR #88](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/88). The reference catalogue merged in
 [PR #87](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/87). Current baseline `6f35e9e`.
 Workstream branch `feat/pk-001-my-area-corridor`.
 Dependencies for validated local coverage: UI-001, P0-003, P1-003, and validated administrative boundaries.
@@ -181,13 +181,13 @@ mobile behavior with a real browser where available.
 - [x] Reproduce the missing corridor field and null-timestamp failure with four failing API/UI test cases before editing.
 - [x] Verify allowlisted published-only projection, selected/no-match and unassigned all-events states, and empty, timeout, unavailable and unconfigured feeds.
 - [x] Verify opt-in responsive map configuration, source navigation, separate timestamps, and demo district filtering with 34 focused API/UI tests.
-- [ ] Run the offline suite and publish the narrow selector slice.
+- [x] Run the full offline suite (278 passed, 475 warnings) and publish the implementation checkpoint.
 - [ ] Verify browser/mobile and keyboard behavior when a browser is available.
 - [ ] Validate permitted district/tehsil/mouza IDs, aliases and coverage mapping with partners.
 - [ ] Show reviewed observations, official notices and history separately, with source/issue times.
 
 **Blockers.** Authoritative local coverage, aliases, and scientific freshness are pending. The
-reference-name slice passed offline. Chromium startup was blocked and hosted workflows on main and the implementation checkpoint returned zero jobs. Browser and mobile acceptance remain open.
+reference and selector slices passed offline. Chromium startup was blocked and hosted workflows on main and the selector checkpoint returned zero jobs. Browser and mobile acceptance remain open.
 
 ### PK-002 — Official source hub
 Priority: P1; Status: PARTIAL; Dependencies: P0-003. Data: Curated FFD and NDMA links; source permissions for any ingestion.
