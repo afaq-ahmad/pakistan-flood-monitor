@@ -426,3 +426,10 @@ Append entries; never rewrite earlier handoffs.
 - Refined Home reading order and action labels. Home and My Area share textual availability, demo freshness and the official-information link in `public_information.py`. The operational feed supplies no feed-level update time. Local demo processing uses the existing freshness classification.
 - `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_streamlit_public_pages.py tests/test_streamlit_analyst_queue.py tests/test_field_report_boundaries.py -q --tb=short` passed 48 tests (4 warnings). The same command with `tests/` passed 345 tests (480 warnings). All 18 existing routes rendered in an offline AppTest smoke run. Temporary SQLite round-trip to `b4d9d93f2a10`, compilation, tracked-data isolation and whitespace checks passed.
 - Chromium stopped before rendering because its startup socket was denied. Complete viewport benchmarks and keyboard/assistive checks on a browser-enabled runner. Verify the grouped menu, deep-link/back navigation and screenshots at 320, 360, 390, 768 and 1440 px as the next UI acceptance slice.
+
+### 2026-11-18 15:11 UTC · PK-010 farm preparedness
+
+- Main `a804429` includes PR #94. No open workstream PR at intake. Branch `ux/pk-010-preparedness-journeys`.
+- Existing farmer guide now shows a short checklist at each stage and offers detailed sections with specific references and an expanded print view. Uses native controls and local content. The existing Pakistan Agricultural Research Council link could not be verified in this session, so local soil and replanting questions point to district extension offices and the section has a specific technical reference.
+- `APP_MODE=test .venv/bin/python -m pytest --disable-socket --allow-unix-socket tests/test_preparedness_pages.py -q --tb=short` passed 18 tests. Chromium failed at startup with a denied socket, so physical print fidelity and mobile rendering remain unverified.
+- Next: improve the livestock guide using the same components, verify the quantity and animal-health changes, then run the cross-page acceptance matrix.

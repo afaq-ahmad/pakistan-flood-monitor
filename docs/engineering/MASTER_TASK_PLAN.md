@@ -316,6 +316,9 @@ Priority: P3; Status: PARTIAL; Dependencies: DATA-001, GIS-001. Data: Dated lice
 - [ ] Check provenance and permissions of bundled historical flood outlines; distinguish approximate outlines from verified training evidence (FL-03).
 - [x] Add Farmer Preparedness page (`pages/17_🌾_Farmer_Preparedness.py`) with sourced English guidance for crops, grain/seed, equipment, chemicals, records and recovery. Text-first, no maps or live feed dependency. 8 offline tests pass.
 - [x] Add Livestock Preparedness page (`pages/18_🐄_Livestock_Preparedness.py`) with sourced English guidance for animal water/fodder, identification, welfare, veterinary links and recovery. Service availability treated as unknown. 9 offline tests pass.
+- [x] Add visible stage checklists, sourced topic details, and a text-first print view to Farmer Preparedness.
+- [ ] Apply the stage and print pattern to Livestock Preparedness. Replace unsupported fixed quantities and link veterinary sources.
+- [ ] Execute the six public journeys and record component evidence, remaining browser checks and Urdu readiness.
 - [ ] Verify and attribute additional government or humanitarian guidance for remaining agricultural topics.
 - [ ] Verify and attribute guidance for additional species-specific livestock needs. Treat service availability as unknown unless the provider verifies it (PK-005).
 - [ ] Review Urdu translations with a qualified human reviewer before publication. Keep preparedness content separate from model outputs, evacuation routes or operational notices.
