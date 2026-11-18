@@ -1,6 +1,6 @@
 ## Problem
 
-<!-- What focused problem does this PR solve? Link the task/issue when available. -->
+<!-- What focused problem does this PR solve? Link the existing task or issue and its acceptance criteria. -->
 
 ## Approach
 
@@ -8,7 +8,7 @@
 
 ## Changed components
 
-<!-- List affected packages, services, APIs, data contracts, UI surfaces, tests, and docs. -->
+<!-- List affected packages, services, APIs, data contracts, UI surfaces, tests and docs. Link changed architecture contracts and diagrams. -->
 
 ## Migrations and configuration
 
@@ -16,7 +16,7 @@
 
 ## Tests run and results
 
-<!-- Include exact commands and pass/fail counts. Identify pre-existing failures separately. -->
+<!-- Include the base used, exact commands, pass/fail counts and hosted check status. Record pre-existing failures and unverified boundaries separately. -->
 
 ## Scientific assumptions and data limitations
 
@@ -24,7 +24,7 @@
 
 ## Screenshots
 
-<!-- Required for UI changes. Otherwise write "Not applicable — no UI change." -->
+<!-- For UI changes include before and after evidence, or describe why visual checks are unavailable. Record any unverified browser or accessibility scenarios. -->
 
 ## Backward compatibility and rollback
 
@@ -32,9 +32,11 @@
 
 ## Out of scope and follow-up
 
-<!-- State what was intentionally not changed. Do not silently begin the next roadmap task. -->
+<!-- Record remaining acceptance work, blockers, rollout limits and the exact next task under the existing task ID. -->
 
 ## Self-review checklist
+
+Use the [engineering standards](https://github.com/afaq-ahmad/pakistan-flood-monitor/blob/main/docs/engineering/ENGINEERING_STANDARDS.md#review-before-requesting-acceptance) for the evidence behind these checks.
 
 - [ ] Scope is limited to the requested task; no unrelated refactor is included.
 - [ ] Canonical architecture and applicable ADRs are respected.
@@ -44,3 +46,4 @@
 - [ ] No machine score automatically publishes an emergency warning or insurance payout decision.
 - [ ] Tests and documentation cover every behavior change, and repository checks were run.
 - [ ] Security/privacy, failure modes, performance, compatibility, and rollback were reviewed.
+- [ ] UI and API contracts agree, and affected architecture documentation and diagrams were reviewed.

@@ -114,6 +114,7 @@ optical, hydromet, DEM/HAND, forecasts, exposure, dam and backtesting require in
 provenance and scientific validation. No invented values or warning claims. Dependencies: source access,
 accepted scientific decisions and validated datasets.
 - [ ] Inventory each source, real/prototype/simulated state, units, freshness and validation.
+- [ ] Restore the typed unavailable result at the downstream operational processor gate. A mocked extraction reaching `FloodHazardModule.run_daily` raises `NameError` for the missing `OperationalDataIntegrityError` import. Add a deterministic test for the degraded workflow result and structured 503. Keep publication blocked. This failure-path hardening can run offline while real provider work remains blocked.
 - [ ] Obtain authoritative sources and independent validation; implement in separately reviewed steps.
 
 ## GIS-001 — Spatial and raster audit
@@ -139,7 +140,9 @@ CSV injection, rate limits and sensitive data exposure with tests; do not assume
 Status: BLOCKED; files: `Dockerfile`, `docker-compose.yml`, CI, migrations.
 Offline CI exists; Docker, PostgreSQL, live provider and fresh deployment verification not established.
 - [x] Identify offline CI and SQLite migration checks.
-- [ ] Validate image, PostgreSQL migration and deployment with suitable infrastructure.
+- [ ] Validate image, PostgreSQL migration and deployment with suitable infrastructure. Compose v2.40.3 parsed the configuration with dummy credentials.
+- [x] Verify the Python runtime floor using 3.10, 3.11 and 3.12. Clean installs and the full offline suite passed on 3.11.18 and 3.12.14.
+- [ ] Reconcile `requires-python` with the verified 3.11 floor and review tracked `src/pakistan_flood_monitor.egg-info/` files. In a disposable checkout, verify metadata, a fresh install and the rejection of the unsupported Python 3.10 runtime.
 
 ## QA-001 — Full independent audit and handoff
 Status: IN_PROGRESS; owner: consolidated agent; baseline `58e735b`. Audit all workstreams above and
@@ -353,8 +356,8 @@ one draft PR, verified remote checkpoints, and factual handoff. Existing flood b
 - [x] Inventory the 33 baseline Markdown files and add the [vault index](../INDEX.md) and [documentation guide](../DOCUMENTATION_GUIDE.md) on `docs/obsidian-knowledge-base` from `77dc8b7`.
 - [x] Correct onboarding, architecture, persistence, API and status discrepancies. Preserve historical reports and accepted decisions. See [the discrepancy audit](DOCUMENTATION_INVENTORY.md) and [draft PR #96](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/96).
 - [ ] Open the vault in Obsidian and preview the index and all six architecture Mermaid diagrams in GitHub and Obsidian. Record rendering and cross-vault navigation evidence.
-- [ ] Verify canonical imports and the SQLite workflow on Python 3.11, then reconcile package metadata with the actual supported floor (OPS-001).
+- [x] Verify canonical imports and the SQLite workflow on Python 3.11. Package metadata follow-up is in [OPS-001](#ops-001--deployment-and-operational-verification).
 - [x] Document verified entry points, SQL boundaries and the canonical environmental processing path on `docs/verified-runtime-architecture` from `bbf988e`.
 - [x] Trace public reads, review, field reports and agent recovery. Verify six Mermaid diagrams at the grammar level, compare 26 route/method pairs with canonical OpenAPI, and verify all 25 event-state pairs and four aliases. See [draft PR #97](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/97).
 - [x] Consolidate the root startup, scope and safety rules, align branch and ownership steps, and publish the [engineering standards](ENGINEERING_STANDARDS.md). The 11 focused contract and Git helper tests passed.
-- [ ] Verify the development commands and compatibility evidence. Document a staged quality baseline.
+- [x] Verify the development commands and compatibility evidence, fix the existing CI expression scope and document a staged quality baseline. See [draft PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98).

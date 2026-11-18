@@ -8,7 +8,7 @@ User instructions and repository safety rules take precedence. Do not merge auto
 
 ```mermaid
 flowchart TD
-    Start["Agent starts or resumes"] --> Contract["Read operating instructions"]
+    Start["Agent starts or resumes"] --> Contract["Confirm repository and read root contract"]
     Contract --> Remote["Verify checkout and inspect PR and checks"]
     Remote --> Recovery{"Clean worktree and verified ownership?"}
     Recovery -->|Conflict or divergence| Resolve["Preserve work and coordinate"]

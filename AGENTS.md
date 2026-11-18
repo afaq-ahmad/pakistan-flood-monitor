@@ -50,7 +50,8 @@ failure or limitation.
   incomplete, failed or low-quality input must remain typed `UNAVAILABLE` or
   `DEGRADED` states. Represent input beyond a defined freshness window as a
   typed `STALE` state. Preserve reason code, source time, evaluation time and
-  the rule applied. Fail closed for required inputs. Use proxies only in an
+  the rule applied. Fail closed for required inputs. Keep unknown values
+  distinct from zero and historical averages. Use proxies only in an
   explicitly estimated product with method and uncertainty.
 - Validate the CRS, datum, axis order and output units. Never interpret degrees
   or EPSG:4326 planar results as metres or other metric units. Use a suitable

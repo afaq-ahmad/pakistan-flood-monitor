@@ -33,8 +33,10 @@ docker compose up --build -d api streamlit
 
 Open `http://localhost:8501` and check the API at
 `http://localhost:8000/health`. Compose provides a database, and migration is
-a separate command. Docker/PostGIS startup and migration were not exercised in
-the documentation verification environment.
+a separate command. Compose v2.40.3 accepted the checked-in configuration
+with a dummy development password and warned about the obsolete `version`
+key. Image build, stack startup and PostGIS migrations still need
+runtime verification.
 
 ## Migrate the canonical database
 

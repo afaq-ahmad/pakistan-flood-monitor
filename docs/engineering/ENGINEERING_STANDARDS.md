@@ -45,14 +45,17 @@ integrity decision. Use the [development guide](../development.md) and
   Carry typed failure, availability and freshness through to the caller.
 - Preserve [source and processing lineage](../architecture-environmental-data.md),
   model and configuration versions, and CRS and raster semantics. Verify
-  measurement units, spatial and temporal alignment, nodata, resampling
-  and uncertainty. Require independent scientific evidence before claiming
+  measurement units, alignment, transforms, resolution, nodata, acquisition
+  geometry and band semantics. Use categorical-safe resampling for masks
+  and report its effect on uncertainty. Require independent scientific evidence before claiming
   operational validity. A test fixture verifies software behavior.
 - Validate files against the intended path and access policy, and URLs
   against the intended destination and scheme policy. Enforce roles and
   visibility server-side. Keep credentials, sensitive report details and
   precise private locations out of ordinary logs, exports and errors.
   Preserve accountability in protected audit records.
+- Consider provider limits, memory or VRAM, storage growth and restart
+  recovery when changing resource-intensive or long-running work.
 
 ## Review before requesting acceptance
 

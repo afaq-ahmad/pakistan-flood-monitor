@@ -534,3 +534,34 @@ Append entries; never rewrite earlier handoffs.
 - Next: verify clean installs on Python 3.11 and 3.12, the Python 3.10
   compatibility boundary, startup commands, migration and quality checks.
   Update the contributor, development and testing guides and PR template.
+
+### 2026-11-18 UTC · ENG-001 verification and review guidance
+
+- [Draft PR #98](https://github.com/afaq-ahmad/pakistan-flood-monitor/pull/98)
+  targets `main`. Branch `docs/engineering-standards`; base `ec8700b`;
+  prior verified remote checkpoint `b1d951ac98a0d98626e5ab327716da230156c6e5`.
+- Updated setup, developer and contributor guidance, testing, the PR
+  template, inventory and task evidence. Actionlint 1.7.7 identified an
+  invalid job-level `runner.temp` reference. Moved the test database URL to
+  the pytest step and retained the separate migration database.
+- Fresh 3.11.18 and 3.12.14 environments installed
+  `python -m pip install -e '.[dev,dashboard]' pytest-socket==0.8.1`.
+  Each passed pip check, FastAPI and Streamlit loopback demo starts,
+  disposable SQLite upgrade/downgrade/re-upgrade and
+  `APP_MODE=test python -m pytest --disable-socket --allow-unix-socket tests/ -q --tb=short`.
+  Results were 353 passed on each version, with 978 and 480 warnings
+  respectively. Python 3.10.22 failed the canonical `datetime.UTC` import.
+  Editable install regenerated tracked egg-info. Restored the generated
+  files to their original content. Packaging repair is pending in OPS-001.
+- Compose v2.40.3 accepted the configuration with a dummy password.
+  Image build and PostGIS runtime remain pending. Git helper dry-runs and
+  all 11 focused contract and Git workflow tests passed. GitHub CLI lacked
+  authentication. The authorized integration published the draft checkpoint.
+- A narrow Ruff check reproduced an undefined exception in the downstream
+  operational processor gate with mocked acquisition and extraction.
+  Updated the architecture description and DATA-001. No runtime code,
+  schema, dependencies or lint gates changed.
+- Next: review the draft and check hosted workflow status. In a separate
+  DATA-001 change, exercise the downstream operational gate with an offline
+  extraction fixture, restore its typed integrity error, and verify the
+  structured 503 and absence of a new candidate or public event.
